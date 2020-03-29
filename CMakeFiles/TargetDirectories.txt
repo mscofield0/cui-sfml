@@ -1,0 +1,3 @@
+D:/Coding/__GIT/CUI-SFML/CMakeFiles/CUI-SFML.dir
+D:/Coding/__GIT/CUI-SFML/CMakeFiles/edit_cache.dir
+D:/Coding/__GIT/CUI-SFML/CMakeFiles/rebuild_cache.dir
