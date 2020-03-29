@@ -1,0 +1,3 @@
+[submodule "cui"]
+	path = cui
+	url = https://github.com/rokoburilo/CUI.git
