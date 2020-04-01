@@ -1,7 +1,0 @@
-#ifndef CUI_GLOBAL_CONSTANTS_HPP
-#define CUI_GLOBAL_CONSTANTS_HPP
-
-#include <cstdint>
-
-
-#endif	  // CUI_GLOBAL_CONSTANTS_HPP

@@ -1,6 +1,0 @@
-[submodule "include/gtest"]
-	path = include/gtest
-	url = https://github.com/google/googletest
-[submodule "include/sfml"]
-	path = include/sfml
-	url = https://github.com/SFML/SFML

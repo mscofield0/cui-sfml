@@ -1,0 +1,7 @@
+bin/
+CMakeFiles/
+lib/
+.gitmodules
+*.CMakeFiles
+CMakeCache.txt
+Makefile
