@@ -4,7 +4,7 @@ project(CUI-SFML)
 # -----------------------------
 
 set(INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include/")
-set(CUI_DIR "${CMAKE_SOURCE_DIR}/CUI/")
+set(CUI_DIR "${CMAKE_SOURCE_DIR}/CUI")
 set(SFML_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/SFML-2.5.1/include")
 set(SFML_DIR "${CMAKE_SOURCE_DIR}/SFML-2.5.1/lib/cmake/SFML")
 

@@ -1,0 +1,31 @@
+Common Source Document Tags
+
+@brief
+
+This tag supplies a brief description of a function for doxygen pages. This message should tell what happens in the function. By convention in Rosetta3 all functions must have brief tags. These included in the header file along with the declaration of the functions.
+
+@details
+
+This tag supplies a more detailed description. This message should give a user an idea of when it is valid to call this function( i.e. what must be true for the function to work), how the function carries out it function, and what will be true when the function returns. By convention in Rosetta3 all functions must have details tags. These are placed with the definition of the function.
+
+@param
+
+This tag can be used to document the purpose and meaning of params for functions. You can specify the nature of the param as input output or both in the following manner
+
+@param[in]
+
+@param[out]
+
+@param[in/out]
+
+@class
+
+This tag informs doxygen that the comment block should be associated with the class. This block should explain the purpose of the class, the design considerations, and relation to other classes. Also provide any information other programmers may find useful for using the classes.
+
+@example
+
+This tag allows you to insert code snippets which are then collected on the examples page. This way you can tell people how to use your code directly in the file with your class definition.
+
+@return
+
+This tag allows you to describe what the function is returning.
