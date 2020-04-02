@@ -6,7 +6,7 @@ project(CUI)
 
 # -----------------------------
 
-set(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
+set(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/cui")
 
 set(HEADER_FILES ${INCLUDE_DIR}/aliases.hpp
     ${INCLUDE_DIR}/compile_time/data_types/color.hpp
