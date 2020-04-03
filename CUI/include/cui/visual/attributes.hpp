@@ -2,7 +2,7 @@
 #define CUI_VISUAL_ATTRIBUTES_HPP
 
 #include <value_data.hpp>
-#include <compile_time/data_types/color.hpp>
+#include <data_types/color.hpp>
 
 namespace cui {
 

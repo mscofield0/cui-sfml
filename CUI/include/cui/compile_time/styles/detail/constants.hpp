@@ -5,9 +5,9 @@
 #include <compile_time/string/string_view.hpp>
 #include <compile_time/styles/detail/valid_attribute_types.hpp>
 #include <compile_time/value_data.hpp>
-#include <compile_time/data_types/color.hpp>
-#include <compile_time/data_types/instruction.hpp>
-#include <compile_time/data_types/vec.hpp>
+#include <data_types/color.hpp>
+#include <data_types/instruction.hpp>
+#include <data_types/vec.hpp>
 
 #include <aliases.hpp>
 
@@ -68,7 +68,8 @@ constexpr auto string_names =
         "green",
         "blue",
         "transparent",
-        "contain"
+        "left",
+        "right"
     );
 
 constexpr auto string_values = 
@@ -77,7 +78,8 @@ constexpr auto string_values =
         ValueData{Color(0, 255, 0 )},
         ValueData{Color(0, 0, 255 )},
         ValueData{Color(0, 0, 0, 0)},
-        ValueData{Instruction(Instruction::Functions::Contain)}
+        ValueData{Instruction(Functions::Left)},
+        ValueData{Instruction(Functions::Right)}
     );
 
 

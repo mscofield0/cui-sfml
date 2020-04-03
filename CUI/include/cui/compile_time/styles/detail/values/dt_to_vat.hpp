@@ -3,7 +3,7 @@
 
 #include <compile_time/styles/detail/values/validate_attribute_type.hpp>
 #include <compile_time/styles/detail/constants.hpp>
-#include <compile_time/data_types/data_types.hpp>
+#include <data_types/data_types.hpp>
 
 namespace cui::ct::styles::detail {
 

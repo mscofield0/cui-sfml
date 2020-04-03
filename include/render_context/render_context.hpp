@@ -7,9 +7,9 @@
 #include <render_context/visual_element.hpp>
 #include <render_context/render_cache.hpp>
 
-namespace cui {
+#include <render_context/detail/handle_x.hpp>
 
-class RenderCache;
+namespace cui {
 
 class RenderContext
 {
@@ -18,7 +18,7 @@ public:
 	using node_iterator_t = typename SceneGraph::const_iterator;
 	RenderContext(const SceneGraph& p_graph) : graph_(std::cref(p_graph)), cache_(graph_) {}
 
-	void update_visual_element(VisualElement& ve, const SceneGraph& graph, const node_iterator_t& p_node);
+	static RenderCache populate_cache(const SceneGraph& graph);
 
 	[[nodiscard]] auto graph() noexcept -> graph_ref& {
 		return graph_;
@@ -41,8 +41,13 @@ private:
 	RenderCache cache_;
 };
 
-void RenderContext::update_visual_element(VisualElement& ve, const RenderContext::node_iterator_t& p_node) {
-	handle_x(*this, ve, p_node);
+static RenderCache populate_cache(const SceneGraph& graph) {
+	RenderCache cache;
+
+	for(const auto& node_it : graph) {
+		cache.emplace_back();
+		update_visual_element()
+	}
 }
 
 }	 // namespace cui

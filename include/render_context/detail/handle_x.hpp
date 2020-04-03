@@ -2,14 +2,11 @@
 #define CUI_SFML_DETAIL_HANDLE_X_HPP
 
 #include <render_context/detail/dependencies.hpp>
+#include <render_context/detail/helper_macros.hpp>
 
 namespace cui {
 
-void handle_x(RenderContext& ctx, VisualElement& ve, const RenderContext::node_iterator_t& p_node) {
-	const auto& node = p_node.data();
-	const auto& index = p_node.index();
-	const auto& graph = ctx.graph().get();
-
+DEFINE_FUNCTION(handle_x) {
 	const auto& scheme = node.active_schematic().get();
 
 	if (scheme.x_rule()) {
@@ -27,10 +24,10 @@ void handle_x(RenderContext& ctx, VisualElement& ve, const RenderContext::node_i
 			using namespace data_types;
 
 			const auto parent_index = graph.get_parent_index(index);
-			const auto& parent_ve = ctx.cache()[parent_index];
+			const auto& parent_ve = cache[parent_index];
 
-			const auto [x, _] = parent_ve.getPosition();
-			const auto [_, y] = ve.getPosition();
+			const auto x = parent_ve.getPosition().x;
+			const auto y = ve.getPosition().y;
 
 			switch (val.instruction().active()) {
 				case Functions::Left: {
@@ -38,7 +35,7 @@ void handle_x(RenderContext& ctx, VisualElement& ve, const RenderContext::node_i
 					break;
 				}
 				case Functions::Right: {
-					const auto [w, _] = parent_ve.getSize();
+					const auto w = parent_ve.getSize().x;
 					ve.setPosition(x + w, y);
 					break;
 				}
@@ -48,7 +45,7 @@ void handle_x(RenderContext& ctx, VisualElement& ve, const RenderContext::node_i
 		}
 	} else {
 		const auto& val = scheme.x().integer_value();
-		const auto [_, y] = ve.getPosition();
+		const auto y = ve.getPosition().y;
 		ve.setPosition(val, y);
 	}
 }

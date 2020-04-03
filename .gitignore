@@ -6,3 +6,4 @@ lib/
 CMakeCache.txt
 Makefile
 .vscode
+log.txt

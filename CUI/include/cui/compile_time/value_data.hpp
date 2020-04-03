@@ -1,10 +1,10 @@
 #ifndef CUI_CT_VALUE_DATA_HPP
 #define CUI_CT_VALUE_DATA_HPP
 
-#include <compile_time/data_types/color.hpp>
-#include <compile_time/data_types/vec.hpp>
-#include <compile_time/data_types/instruction.hpp>
-#include <compile_time/data_types/data_types.hpp>
+#include <data_types/color.hpp>
+#include <data_types/vec.hpp>
+#include <data_types/instruction.hpp>
+#include <data_types/data_types.hpp>
 
 namespace cui::ct {
 

@@ -55,7 +55,7 @@ private:
 };
 
 template <u64 AOB, template <typename, u64> typename Container, u64 N>
-SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& sc) : tree_t{} {
+SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& sc) : tree_t{}, root_() {
 	this->nodes().reserve(AOB);
 	this->depths().reserve(AOB);
 	this->children().reserve(AOB);
@@ -66,7 +66,7 @@ SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& 
 		for (const auto style_name : block.style_list()) {
 			bool style_name_exists = false;
 			for (const auto& t_style : sc) {
-				if (style_name != t_style.name()) continue;
+				if (style_name != t_style.name() || t_style.name() == "root") continue;
 				if (style_name_exists == false) style_name_exists = true;
 				if (t_style.events().empty()) {
 					for (const auto& attr_data : t_style.attributes()) {
@@ -191,7 +191,7 @@ auto SceneGraph::partition(int l, int h) -> int {
 }
 
 auto SceneGraph::get_parent_index(const size_type index) const noexcept -> size_type {
-	const auto it = std::find(children().begin(), children().end(), [index](const auto& v) {
+	const auto it = std::find_if(children().begin(), children().end(), [index](const auto& v) {
 		return std::find(v.begin(), v.end(), index) != v.end();
 	});
 
