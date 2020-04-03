@@ -5,3 +5,4 @@ lib/
 *.CMakeFiles
 CMakeCache.txt
 Makefile
+.vscode

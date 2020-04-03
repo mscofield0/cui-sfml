@@ -11,11 +11,7 @@
 
 namespace cui {
 
-namespace {
-
 static SceneGraph default_ref = SceneGraph{};
-
-}
 
 template <typename RenderContext, typename EventManager>
 class Window

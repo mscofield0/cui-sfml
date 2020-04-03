@@ -132,12 +132,19 @@ public:
 		nodes().pop_back();
 	}
 
-protected:
-	[[nodiscard]] auto nodes() noexcept -> node_vec& {
+	[[nodiscard]] auto nodes() const noexcept -> const node_vec& {
 		return nodes_;
 	}
 
-	[[nodiscard]] auto nodes() const noexcept -> const node_vec& {
+	[[nodiscard]] auto children() const noexcept -> const child_vec& {
+		return children_;
+	}
+
+	[[nodiscard]] auto depths() const noexcept -> const depth_vec& {
+		return depths_;
+	}
+
+	[[nodiscard]] auto nodes() noexcept -> node_vec& {
 		return nodes_;
 	}
 
@@ -145,18 +152,11 @@ protected:
 		return children_;
 	}
 
-	[[nodiscard]] auto children() const noexcept -> const child_vec& {
-		return children_;
-	}
-
 	[[nodiscard]] auto depths() noexcept -> depth_vec& {
 		return depths_;
 	}
 
-	[[nodiscard]] auto depths() const noexcept -> const depth_vec& {
-		return depths_;
-	}
-
+protected:
 	node_vec nodes_;
 	child_vec children_;
 	depth_vec depths_;

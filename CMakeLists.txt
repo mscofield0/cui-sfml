@@ -22,8 +22,6 @@ target_link_libraries(CUI-SFML sfml-system sfml-window sfml-graphics)
 target_link_libraries(CUI-SFML CUI)
 set_target_properties(CUI-SFML   
 	PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 target_compile_features(CUI-SFML PUBLIC cxx_std_17)

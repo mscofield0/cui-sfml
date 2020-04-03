@@ -3,7 +3,7 @@
 
 #include <aliases.hpp>
 
-namespace cui::ct::data_types {
+namespace cui::data_types {
 
 class Color
 {
@@ -54,6 +54,6 @@ private:
 
 constexpr const Color transparent = Color(0), black = Color(0, 0, 0), white = Color(255, 255, 255);
 
-}	 // namespace cui::ct::data_types
+}	 // namespace cui::data_types
 
 #endif	  // CUI_CT_DATA_TYPES_COLOR_HPP

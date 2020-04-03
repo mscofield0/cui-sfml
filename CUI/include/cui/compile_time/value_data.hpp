@@ -8,11 +8,7 @@
 
 namespace cui::ct {
 
-namespace {
-
-using namespace data_types;
-
-}
+using namespace cui::data_types;
 
 struct Empty
 {};

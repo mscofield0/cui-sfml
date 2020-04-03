@@ -1,6 +1,10 @@
 #ifndef CUI_SCENE_GRAPH_HPP
 #define CUI_SCENE_GRAPH_HPP
 
+#include <algorithm>
+#include <optional>
+#include <iterator>
+
 #include <containers/nary_tree.hpp>
 #include <compile_time/scene.hpp>
 #include <compile_time/style.hpp>
@@ -21,6 +25,10 @@ public:
 	template <u64 AOB, template <typename, u64> typename Container, u64 N>
 	SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& sc);
 
+	auto get_parent_index(const size_type index) const noexcept -> size_type;
+
+	auto get_parent(const size_type index) const noexcept -> std::optional<const_iterator>;
+
 	void add_node(const_reference val);
 
 	void add_node(value_type&& val);
@@ -31,11 +39,18 @@ public:
 
 	void sort();
 
+	[[nodiscard]] auto root() noexcept -> value_type& {
+		return root_;
+	}
+
+	[[nodiscard]] auto root() const noexcept -> const value_type& {
+		return root_;
+	}
+
 private:
 	void swap_node_details(size_type a_idx, size_type b_idx);
 	auto partition(int l, int h) -> int;
 
-private:
 	value_type root_;
 };
 
@@ -173,6 +188,20 @@ auto SceneGraph::partition(int l, int h) -> int {
 
 	swap_node_details(i + 1, h);
 	return i + 1;
+}
+
+auto SceneGraph::get_parent_index(const size_type index) const noexcept -> size_type {
+	const auto it = std::find(children().begin(), children().end(), [index](const auto& v) {
+		return std::find(v.begin(), v.end(), index) != v.end();
+	});
+
+	return std::distance(children().begin(), it);
+}
+
+auto SceneGraph::get_parent(const size_type index) const noexcept -> std::optional<const_iterator> {
+	const auto idx = get_parent_index(index);
+	if (idx == length()) return std::nullopt;
+	return tree_t::operator[](idx);
 }
 
 }	 // namespace cui

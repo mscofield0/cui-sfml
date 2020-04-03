@@ -8,7 +8,7 @@
 namespace cui::ct::styles::detail {
 
 constexpr auto dt_to_vat(data_types::DataTypes data_type) -> ValidAttributeType {
-	using namespace cui::ct::data_types;
+	using namespace cui::data_types;
 	switch (data_type) {
 		case DataTypes::Color: {
 			return ValidAttributeType::RGBA;

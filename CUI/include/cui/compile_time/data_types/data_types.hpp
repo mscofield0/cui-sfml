@@ -3,7 +3,7 @@
 
 #include <aliases.hpp>
 
-namespace cui::ct::data_types {
+namespace cui::data_types {
 
 enum class DataTypes : byte
 {
@@ -17,6 +17,6 @@ enum class DataTypes : byte
 	Instruction
 };
 
-}	 // namespace cui::ct::data_types
+}	 // namespace cui::data_types
 
 #endif	  // CUI_CT_DATA_TYPES_HPP
