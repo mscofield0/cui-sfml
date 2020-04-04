@@ -19,8 +19,8 @@ class ValueData
 public:
 	ValueData() : active_(DataTypes::None), none_(nullptr) {}
 	ValueData(const Color& color) : active_(DataTypes::Color), rgba_(new Color(color)) {}
-	ValueData(const float& val) : active_(DataTypes::Float), float_value_(new float(val)) {}
-	ValueData(const int& val) : active_(DataTypes::Int), integer_value_(new int(val)) {}
+	ValueData(const float val) : active_(DataTypes::Float), float_value_(new float(val)) {}
+	ValueData(const int val) : active_(DataTypes::Int), integer_value_(new int(val)) {}
 	ValueData(const Vec2f& v2) : active_(DataTypes::Vec2), vec2_(new Vec2f(v2)) {}
 	ValueData(const Vec3f& v3) : active_(DataTypes::Vec3), vec3_(new Vec3f(v3)) {}
 	ValueData(const Vec4f& v4) : active_(DataTypes::Vec4), vec4_(new Vec4f(v4)) {}
@@ -235,12 +235,12 @@ public:
 		return (*this);
 	}
 
-	ValueData& operator=(const float& val) {
+	ValueData& operator=(const float val) {
 		float_value_ = new float(val);
 		return (*this);
 	}
 
-	ValueData& operator=(const int& val) {
+	ValueData& operator=(const int val) {
 		integer_value_ = new int(val);
 		return (*this);
 	}

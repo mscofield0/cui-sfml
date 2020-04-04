@@ -16,8 +16,7 @@ find_package(SFML COMPONENTS system window graphics REQUIRED)
 
 add_executable(CUI-SFML ./src/main.cpp)
 
-target_include_directories(CUI-SFML INTERFACE ${INCLUDE_DIR})
-target_include_directories(CUI-SFML INTERFACE ${SFML_INCLUDE_DIR})
+target_include_directories(CUI-SFML PRIVATE ${INCLUDE_DIR})
 target_link_libraries(CUI-SFML sfml-system sfml-window sfml-graphics)
 target_link_libraries(CUI-SFML CUI)
 set_target_properties(CUI-SFML   

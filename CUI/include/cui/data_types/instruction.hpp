@@ -8,7 +8,9 @@ namespace cui::data_types {
 enum class Functions : byte
 {
 	Left,
-	Right
+	Right,
+	Top,
+	Bottom
 };
 
 class Instruction

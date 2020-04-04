@@ -13,7 +13,7 @@ namespace cui {
 
 static SceneGraph default_ref = SceneGraph{};
 
-template <typename RenderContext, typename EventManager>
+template <typename RenderContext, typename EventManager, typename WindowOptions>
 class Window
 {
 	// impl type checking for RenderContext and EventManager
@@ -21,12 +21,12 @@ public:
 	template <template <typename, u64> typename Container, u64 Size, typename... Scenes>
 	Window(const Container<ct::Style, Size>& p_styles, const Scenes&... p_scenes)
 		: scenes_{SceneGraph{p_scenes, p_styles}...}, ctx_(scenes_.current_item()),
-		  event_manager_(scenes_.current_item()) {}
+		  event_manager_(scenes_.current_item(), ctx_) {}
 
 	template <template <typename> typename Container, u64 Size, typename... Scenes>
 	Window(const Container<ct::Style>& p_styles, const Scenes&... p_scenes)
 		: scenes_{SceneGraph{p_scenes, p_styles}...}, ctx_(scenes_.current_item()),
-		  event_manager_(scenes_.current_item()) {}
+		  event_manager_(scenes_.current_item(), ctx_) {}
 
 	[[nodiscard]] auto current_scene() noexcept -> SceneGraph& {
 		return scenes_.current_item();
@@ -42,6 +42,14 @@ public:
 
 	[[nodiscard]] auto scenes() const noexcept -> const TrackedVector<SceneGraph>& {
 		return scenes_;
+	}
+
+	void init(const WindowOptions& opt) {
+		ctx_.init(opt);
+	}
+
+	void render() const noexcept {
+		ctx_.render();
 	}
 
 	// Event manager interface
