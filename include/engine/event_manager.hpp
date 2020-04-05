@@ -18,16 +18,21 @@ class EventManager
 public:
 	using graph_ref = std::reference_wrapper<SceneGraph>;
 	using ctx_ref = const RenderContext&;
-	EventManager(SceneGraph& p_graph, ctx_ref p_ctx)
-		: graph_(std::ref(p_graph)), ctx_(p_ctx), thread_([this]() {
-			  while (true) {
-				  std::unique_lock<std::mutex> lock(this->data_mutex_);
-				  this->cv_.wait(lock, [this] { return !this->queue_.empty(); });
-				  this->queue_.front().execute();
-				  this->queue_.pop_back();
-				  this->cv_.notify_one();
-			  }
-		  }) {}
+	EventManager(SceneGraph& p_graph, ctx_ref p_ctx) : graph_(std::ref(p_graph)), ctx_(p_ctx) {
+		pool_.reserve(std::thread::hardware_concurrency() - 1);
+
+		for (auto& thread : pool_) {
+			thread = std::thread([this] {
+				while (true) {
+					std::unique_lock<std::mutex> lock(this->data_mutex_);
+					cv_.wait(lock, [this] { return !this->queue_.empty(); });
+					this->queue_.front().execute();
+					this->queue_.pop_back();
+					cv_.notify_one();
+				}
+			});
+		}
+	}
 
 	EventManager(const EventManager&) = delete;
 	EventManager(EventManager&&) = delete;
@@ -44,7 +49,7 @@ public:
 private:
 	graph_ref graph_;
 	ctx_ref ctx_;
-	std::thread thread_;
+	std::vector<std::thread> pool_;
 	std::vector<EventFunction> queue_;
 	std::condition_variable cv_;
 	std::mutex data_mutex_;
