@@ -79,10 +79,7 @@ void RenderContext::init(const WindowOptions& options) {
 }
 
 void RenderContext::update() {
-	for (const auto& node_it : graph_.get()) {
-		if (node_it.index() >= cache_.size()) cache_.emplace_back();
-		cache_.update_ve(graph_.get(), node_it.data(), node_it.index());
-	}
+	cache_.update_cache(graph_.get());
 }
 
 void RenderContext::render() const noexcept {

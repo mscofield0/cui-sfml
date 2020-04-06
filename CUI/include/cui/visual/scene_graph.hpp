@@ -19,6 +19,7 @@ public:
 	using tree_t = NaryTree<Node>;
 	using value_type = typename tree_t::value_type;
 	using size_type = typename tree_t::size_type;
+	static constexpr u64 root_index = -1;
 
 	SceneGraph() : tree_t() {}
 
@@ -191,6 +192,7 @@ auto SceneGraph::partition(int l, int h) -> int {
 }
 
 auto SceneGraph::get_parent_index(const size_type index) const noexcept -> size_type {
+	if (index == root_index) return length();
 	const auto it = std::find_if(children().begin(), children().end(), [index](const auto& v) {
 		return std::find(v.begin(), v.end(), index) != v.end();
 	});
