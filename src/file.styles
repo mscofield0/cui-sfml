@@ -1,0 +1,17 @@
+R"(
+square {
+    color: red;
+}
+
+square [abc] {
+    color: red;
+}
+
+triangle {
+    color: green;
+}
+
+circle {
+    color: blue;
+}
+)"

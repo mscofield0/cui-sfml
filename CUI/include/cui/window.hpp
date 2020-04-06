@@ -4,9 +4,9 @@
 #include <array>
 
 #include <containers/tracked_vector.hpp>
-#include <visual/scene_graph.hpp>
 #include <compile_time/style.hpp>
 #include <compile_time/scene.hpp>
+#include <scene_state.hpp>
 #include <aliases.hpp>
 
 namespace cui {
@@ -20,13 +20,13 @@ class Window
 public:
 	template <template <typename, u64> typename Container, u64 Size, typename... Scenes>
 	Window(const Container<ct::Style, Size>& p_styles, const Scenes&... p_scenes)
-		: scenes_{SceneGraph{p_scenes, p_styles}...}, ctx_(scenes_.current_item()),
-		  event_manager_(scenes_.current_item(), ctx_) {}
+		: running_(true), scenes_{SceneGraph{p_scenes, p_styles}...}, ctx_(scenes_.current_item()),
+		  event_manager_(scenes_.current_item(), ctx_, running_) {}
 
 	template <template <typename> typename Container, u64 Size, typename... Scenes>
 	Window(const Container<ct::Style>& p_styles, const Scenes&... p_scenes)
-		: scenes_{SceneGraph{p_scenes, p_styles}...}, ctx_(scenes_.current_item()),
-		  event_manager_(scenes_.current_item(), ctx_) {}
+		: running_(true), scenes_{SceneGraph{p_scenes, p_styles}...}, ctx_(scenes_.current_item()),
+		  event_manager_(scenes_.current_item(), ctx_, running_) {}
 
 	[[nodiscard]] auto current_scene() noexcept -> SceneGraph& {
 		return scenes_.current_item();
@@ -44,6 +44,10 @@ public:
 		return scenes_;
 	}
 
+	[[nodiscard]] bool is_running() const noexcept {
+		return running_;
+	}
+
 	void init(const WindowOptions& opt) {
 		ctx_.init(opt);
 	}
@@ -58,7 +62,8 @@ public:
 	}
 
 private:
-	TrackedVector<SceneGraph> scenes_;
+	bool running_;
+	TrackedVector<SceneState> scenes_;
 	RenderContext ctx_;
 	EventManager event_manager_;
 };

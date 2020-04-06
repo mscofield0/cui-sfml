@@ -17,7 +17,7 @@ public:
 	using time_point_t = steady_clock_t::time_point;
 	using duration_t = steady_clock_t::duration;
 
-	void register_timer_event(TimerEventFunction&& timer_evt) {
+	void dispatch_timer_event(TimerEventFunction&& timer_evt) {
 		std::unique_lock<std::mutex> lock(queue_mutex_);
 		const bool was_empty = queue_.empty();
 		queue_.push(std::move(timer_evt));
