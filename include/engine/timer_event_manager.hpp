@@ -20,19 +20,17 @@ public:
 	void register_timer_event(TimerEventFunction&& timer_evt) {
 		std::unique_lock<std::mutex> lock(queue_mutex_);
 		const bool was_empty = queue_.empty();
-		queue_.push_back(std::move(timer_evt));
-		std::sort(queue_.begin(), queue_.end(), [](const auto& lhs, const auto& rhs) {
-			return rhs.duration() > lhs.duration();
-		});
-		if (was_empty) {
-			cv_.notify_one();
+		queue_.push(std::move(timer_evt));
+		if (!was_empty) {
+			was_awakened = true;
 		}
+		cv_.notify_one();
 	}
 
 	void execute_next_in_line() {
 		std::unique_lock<std::mutex> lock(queue_mutex_);
-		queue_.back().execute();
-		queue_.pop_back();
+		queue_.top().execute();
+		queue_.pop();
 	}
 
 	[[nodiscard]] auto get_time_until_next() noexcept -> duration_t {
@@ -44,11 +42,24 @@ public:
 		std::unique_lock<std::mutex> lock(queue_mutex_);
 		cv_.wait(lock, [this] { return this->queue_.empty(); });
 	}
+	
+	[[nodiscard]] bool wait_for(duration_t& previous) {
+		std::unique_lock<std::mutex> lock(queue_mutex_);
+		time_point_t before = steady_clock_t::now();
+		cv_.wait_for(lock, queue_.top().duration() - previous);
+		previous = steady_clock_t::now() - before;
+		if(was_awakened) {
+			was_awakened = false;
+			return true;
+		}
+		return false;
+	}
 
 private:
 	std::priority_queue<TimerEventFunction, std::vector<TimerEventFunction>, std::greater<TimerEventFunction>> queue_;
 	std::mutex queue_mutex_;
 	std::condition_variable cv_;
+	bool was_awakened;
 };
 
 }	 // namespace cui

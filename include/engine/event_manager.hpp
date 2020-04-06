@@ -34,7 +34,7 @@ public:
 						cv_.wait(lock, [this] { return !this->queue_.empty(); });
 						evt = std::move(this->queue_.front());
 						this->queue_.pop_back();
-						cv_.notify_one();
+						cv_.notify_all();
 					}
 					evt();
 				}
@@ -45,10 +45,8 @@ public:
 			duration_t prev = duration_t::zero();
 			while (true) {
 				timer_evt_manager_.wait_until_push();
-				const auto time_until_next = timer_evt_manager_.get_time_until_next();
-				std::this_thread::sleep_for(time_until_next - prev);
+				if(timer_evt_manager_.wait_for(prev)) continue;
 				timer_evt_manager_.execute_next_in_line();
-				prev = time_until_next;
 			}
 		});
 	}
