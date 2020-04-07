@@ -12,51 +12,54 @@ public:
 	using type_1 = T1;
 	using type_2 = T2;
 
-	constexpr Variant(type_1 a) : active_{Types::Type1}, type_a_{a} {}
-	constexpr Variant(type_2 b) : active_{Types::Type2}, type_b_{b} {}
+	constexpr Variant(const type_1& a) noexcept : active_{true}, type_a_{a} {}
+	constexpr Variant(const type_2& b) noexcept : active_{false}, type_b_{b} {}
 
-	constexpr Variant& operator=(const type_1& a) {
-		active_ = Types::Type1;
+	constexpr Variant& operator=(const Variant& x) noexcept {
+		active_ = x.active_;
+		if(active_) type_a_ = x.type_a_;
+		else type_b_ = x.type_b_;
+		return *this;
+	}
+
+	constexpr Variant& operator=(const type_1& a) noexcept {
+		active_ = true;
 		type_a_ = a;
 		return *this;
 	}
 
-	constexpr Variant& operator=(const type_2& b) {
-		active_ = Types::Type2;
+	constexpr Variant& operator=(const type_2& b) noexcept {
+		active_ = false;
 		type_b_ = b;
 		return *this;
 	}
 
 	[[nodiscard]] constexpr bool is_type_a() const noexcept {
-		return active_ == Types::Type1;
+		return active_;
 	}
 
 	[[nodiscard]] constexpr bool is_type_b() const noexcept {
-		return active_ == Types::Type2;
+		return !active_;
 	}
 
-	constexpr auto type_a() noexcept -> type_1& {
+	[[nodiscard]] constexpr auto type_a() noexcept -> type_1& {
 		return type_a_;
 	}
 
-	constexpr auto type_a() const noexcept -> const type_1& {
+	[[nodiscard]] constexpr auto type_a() const noexcept -> const type_1& {
 		return type_a_;
 	}
 
-	constexpr auto type_b() noexcept -> type_2& {
+	[[nodiscard]] constexpr auto type_b() noexcept -> type_2& {
 		return type_b_;
 	}
 
-	constexpr auto type_b() const noexcept -> const type_2& {
+	[[nodiscard]] constexpr auto type_b() const noexcept -> const type_2& {
 		return type_b_;
 	}
 
 private:
-	enum class Types : byte
-	{
-		Type1,
-		Type2
-	} active_;
+	bool active_;
 
 	union
 	{

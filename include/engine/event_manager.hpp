@@ -28,6 +28,35 @@ public:
 
 	EventManager(SceneState& p_graph, ctx_ref p_ctx, bool& p_running);
 
+	void init() {
+		const auto num_of_event_threads = std::thread::hardware_concurrency() - 1;
+		pool_.reserve(num_of_event_threads);
+		for (u64 i = 0; i < num_of_event_threads; ++i) {
+			pool_.emplace_back([this] {
+				while (true) {
+					EventFunction evt;
+					{
+						std::unique_lock<std::mutex> lock(queue_mutex_);
+						cv_.wait(lock, [this] { return !this->queue_.empty(); });
+						evt = std::move(this->queue_.front());
+						this->queue_.pop_back();
+						cv_.notify_all();
+					}
+					evt();
+				}
+			});
+		}
+
+		timer_thread_ = std::thread([this] {
+			duration_t prev = duration_t::zero();
+			while (true) {
+				timer_evt_manager_.wait_until_push();
+				if (timer_evt_manager_.wait_for(prev)) continue;
+				timer_evt_manager_.execute_next_in_line();
+			}
+		});
+	}
+
 	EventManager(const EventManager&) = delete;
 	EventManager(EventManager&&) = delete;
 	EventManager& operator=(const EventManager&) = delete;
@@ -40,12 +69,12 @@ public:
 
 	void dispatch_event(const std::string& evt_name);
 
-	void dispatch_as_timer_event(const std::string& evt_name, const duration_t nsec);
-	void dispatch_as_timer_event(const std::string& evt_name, const std::chrono::microseconds usec);
-	void dispatch_as_timer_event(const std::string& evt_name, const std::chrono::milliseconds msec);
-	void dispatch_as_timer_event(const std::string& evt_name, const std::chrono::seconds sec);
-	void dispatch_as_timer_event(const std::string& evt_name, const std::chrono::minutes min);
-	void dispatch_as_timer_event(const std::string& evt_name, const std::chrono::hours hr);
+	void dispatch_as_timer_event(const std::string& evt_name, duration_t nsec);
+	void dispatch_as_timer_event(const std::string& evt_name, std::chrono::microseconds usec);
+	void dispatch_as_timer_event(const std::string& evt_name, std::chrono::milliseconds msec);
+	void dispatch_as_timer_event(const std::string& evt_name, std::chrono::seconds sec);
+	void dispatch_as_timer_event(const std::string& evt_name, std::chrono::minutes min);
+	void dispatch_as_timer_event(const std::string& evt_name, std::chrono::hours hr);
 
 	void process_event(sf::Event& evt);
 
@@ -62,34 +91,7 @@ private:
 };
 
 EventManager::EventManager(SceneState& p_graph, ctx_ref p_ctx, bool& p_running)
-	: scene_(p_graph), ctx_(p_ctx), running_(p_running) {
-	const auto num_of_event_threads = std::thread::hardware_concurrency() - 1;
-	pool_.reserve(num_of_event_threads);
-	for (u64 i = 0; i < num_of_event_threads; ++i) {
-		pool_.emplace_back([this] {
-			while (true) {
-				EventFunction evt;
-				{
-					std::unique_lock<std::mutex> lock(queue_mutex_);
-					cv_.wait(lock, [this] { return !this->queue_.empty(); });
-					evt = std::move(this->queue_.front());
-					this->queue_.pop_back();
-					cv_.notify_all();
-				}
-				evt();
-			}
-		});
-	}
-
-	timer_thread_ = std::thread([this] {
-		duration_t prev = duration_t::zero();
-		while (true) {
-			timer_evt_manager_.wait_until_push();
-			if (timer_evt_manager_.wait_for(prev)) continue;
-			timer_evt_manager_.execute_next_in_line();
-		}
-	});
-}
+	: scene_(p_graph), ctx_(p_ctx), running_(p_running) {}
 
 void EventManager::handle_events() {
 	sf::Event evt;
@@ -147,7 +149,7 @@ void EventManager::process_event(sf::Event& evt) {
 
 	switch (evt.type) {
 		case EventType::Closed: {
-			// running_ = false;
+			running_ = false;
 			break;
 		}
 		default: {

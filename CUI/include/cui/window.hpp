@@ -50,6 +50,7 @@ public:
 
 	void init(const WindowOptions& opt) {
 		ctx_.init(opt);
+		event_manager_.init();
 	}
 
 	void render() const noexcept {

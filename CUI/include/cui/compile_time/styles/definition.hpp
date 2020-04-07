@@ -15,7 +15,6 @@ public:
 	using attributes_t = StaticVector<Attribute, 64>;
 
 	constexpr Definition() : identifier_(), events_{}, attributes_{} {}
-	constexpr Definition(const StringView name) : identifier_(name), events_{}, attributes_{} {}
 
 	[[nodiscard]] constexpr auto identifier() noexcept -> StringView& {
 		return identifier_;

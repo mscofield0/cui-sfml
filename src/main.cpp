@@ -175,7 +175,13 @@ std::ostream& operator<<(std::ostream& os, const cui::SceneGraph& sg) {
 		os << "Index: " << node.index() << " | ";
 		os << "Depth: " << node.depth() << "\n\t";
 		os << "Default attributes:\n\t\t";
-		os << node.data().default_schematic();
+		os << node.data().default_schematic() << "\n\t";
+		for (const auto& kvp : node.data().event_schematics()) {
+			os << "Event schematic (" << kvp.first << ")\n\t\t";
+			os << kvp.second << "\n\t";
+		}
+		os << "Active schematic\n\t\t";
+		os << node.data().active_schematic().get();
 		os << "\n}";
 	}
 	return os;
@@ -184,7 +190,10 @@ std::ostream& operator<<(std::ostream& os, const cui::SceneGraph& sg) {
 #include <cui/window.hpp>
 #include <render_context/render_context.hpp>
 #include <render_context/window_options.hpp>
+#include <render_context/render_cache.hpp>
+#include <render_context/render_context.hpp>
 #include <engine/event_manager.hpp>
+#include <engine/test_event_manager.hpp>
 #include <utility>
 
 #define STATIC_STRING_HOLDER(name) static constexpr const char name[] =
@@ -192,7 +201,7 @@ std::ostream& operator<<(std::ostream& os, const cui::SceneGraph& sg) {
 
 int main() {
 	using namespace cui;
-	using win_t = Window<RenderContext, EventManager, WindowOptions>;
+	using win_t = Window<TestRenderContext, TestEventManager, WindowOptions>;
 
 	std::unique_ptr<win_t> window;
 
@@ -209,15 +218,35 @@ int main() {
 	if constexpr (scenes_variant.is_type_b()) {
 		println(scenes_variant.type_b());
 		return 0;
+	}
+
+	constexpr auto styles_variant = ct::styles::parse_styles<style__>();
+	if constexpr (styles_variant.is_type_a()) {
+		StaticVector<ct::Style, styles_variant.type_a().size()> sty;
+		for (const auto& el : styles_variant.type_a()) {
+			const auto parsed_variant = ct::Style::create(el);
+			if (parsed_variant.is_type_b()) {
+				println(parsed_variant.type_b());
+				return 0;
+			}
+			const auto& parsed = parsed_variant.type_a();
+			sty.push_back(parsed);
+		}
+
+		println(SceneGraph{scenes_variant.type_a(), sty});
+
+		window = std::make_unique<win_t>(sty, scenes_variant.type_a());
+		println(window->current_scene().graph()[0].data().active_schematic().get().x());
 	} else {
-		constexpr auto styles_variant = ct::styles::parse_styles<style__>();
-		if constexpr (styles_variant.is_type_b()) {
-			println(styles_variant.type_b());
-			return 0;
-		} else {
-			constexpr auto style_vec = styles_variant.type_a();
-			StaticVector<ct::Style, style_vec.size()> sty;
-			for (const auto& el : style_vec) {
+		println(styles_variant.type_b());
+		return 0;
+	}
+
+	/*
+	constexpr auto styles_variant = ct::styles::parse_styles<style__>();
+		if constexpr (styles_variant.is_type_a()) {
+			StaticVector<ct::Style, styles_variant.type_a().size()> sty;
+			for (const auto& el : styles_variant.type_a()) {
 				const auto parsed_variant = ct::Style::create(el);
 				if (parsed_variant.is_type_b()) {
 					println(parsed_variant.type_b());
@@ -226,21 +255,26 @@ int main() {
 				const auto& parsed = parsed_variant.type_a();
 				sty.push_back(parsed);
 			}
+
+			println(SceneGraph{scenes_variant.type_a(), sty});
+
 			window = std::make_unique<win_t>(sty, scenes_variant.type_a());
+			println(window->current_scene().graph()[0].data().active_schematic().get().x());
+		} else {
+			println(styles_variant.type_b());
+			return 0;
 		}
-	}
+	*/
 
-	println("Creating the renderwindow...");
-	window->init({800, 600, "Title", sf::Style::None, sf::ContextSettings{}});
+	// println("Creating the renderwindow...");
+	// window->init({800, 600, "Title", sf::Style::Default, sf::ContextSettings{}});
 
-	println("Starting the app loop...");
+	// println("Starting the app loop...");
 
-	println("Window is running: ", window->ctx_.window()->isOpen());
+	// println("Window is running: ", window->ctx_.window()->isOpen());
 
-	u64 i = 0;
-	while (window->is_running()) {
-		println(i, ". iteration");
-		window->handle_events();
-		window->render();
-	}
+	// while (window->is_running()) {
+	// 	window->handle_events();
+	// 	window->render();
+	// }
 }

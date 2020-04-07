@@ -1,6 +1,7 @@
 #ifndef CUI_SCENE_GRAPH_HPP
 #define CUI_SCENE_GRAPH_HPP
 
+#include <iostream>
 #include <algorithm>
 #include <optional>
 #include <iterator>
@@ -26,9 +27,9 @@ public:
 	template <u64 AOB, template <typename, u64> typename Container, u64 N>
 	SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& sc);
 
-	auto get_parent_index(const size_type index) const noexcept -> size_type;
+	[[nodiscard]] auto get_parent_index(size_type index) const noexcept -> size_type;
 
-	auto get_parent(const size_type index) const noexcept -> std::optional<const_iterator>;
+	[[nodiscard]] auto get_parent(size_type index) const noexcept -> std::optional<const_iterator>;
 
 	void add_node(const_reference val);
 
@@ -75,6 +76,8 @@ SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& 
 					}
 					continue;
 				}
+
+				std::cout << "Got to here!\n";
 				auto& map_el = node.event_schematics()[t_style.events().front().data()];
 				for (const auto& attr_data : t_style.attributes()) {
 					map_el.assign(attr_data);

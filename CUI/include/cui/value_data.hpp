@@ -182,148 +182,162 @@ public:
 	}
 
 	ValueData& operator=(Color* color) {
-		active_ = DataTypes::Color;
 		delete_current_active();
+		active_ = DataTypes::Color;
 		rgba_ = color;
 		return (*this);
 	}
 
 	ValueData& operator=(float* val) {
-		active_ = DataTypes::Float;
 		delete_current_active();
+		active_ = DataTypes::Float;
 		float_value_ = val;
 		return (*this);
 	}
 
 	ValueData& operator=(int* val) {
-		active_ = DataTypes::Int;
 		delete_current_active();
+		active_ = DataTypes::Int;
 		integer_value_ = val;
 		return (*this);
 	}
 
 	ValueData& operator=(Vec2f* p_vec2) {
-		active_ = DataTypes::Vec2;
 		delete_current_active();
+		active_ = DataTypes::Vec2;
 		vec2_ = p_vec2;
 		return (*this);
 	}
 
 	ValueData& operator=(Vec3f* p_vec3) {
-		active_ = DataTypes::Vec3;
 		delete_current_active();
+		active_ = DataTypes::Vec3;
 		vec3_ = p_vec3;
 		return (*this);
 	}
 
 	ValueData& operator=(Vec4f* p_vec4) {
-		active_ = DataTypes::Vec4;
 		delete_current_active();
+		active_ = DataTypes::Vec4;
 		vec4_ = p_vec4;
 		return (*this);
 	}
 
 	ValueData& operator=(Instruction* instr) {
-		active_ = DataTypes::Instruction;
 		delete_current_active();
+		active_ = DataTypes::Instruction;
 		instruction_ = instr;
 		return (*this);
 	}
 
 	ValueData& operator=(const Color& color) {
+		delete_current_active();
+		active_ = DataTypes::Color;
 		rgba_ = new Color(color);
 		return (*this);
 	}
 
 	ValueData& operator=(const float val) {
+		delete_current_active();
+		active_ = DataTypes::Float;
 		float_value_ = new float(val);
 		return (*this);
 	}
 
 	ValueData& operator=(const int val) {
+		delete_current_active();
+		active_ = DataTypes::Int;
 		integer_value_ = new int(val);
 		return (*this);
 	}
 
 	ValueData& operator=(const Vec2f& p_vec2) {
+		delete_current_active();
+		active_ = DataTypes::Vec2;
 		vec2_ = new Vec2f(p_vec2);
 		return (*this);
 	}
 
 	ValueData& operator=(const Vec3f& p_vec3) {
+		delete_current_active();
+		active_ = DataTypes::Vec3;
 		vec3_ = new Vec3f(p_vec3);
 		return (*this);
 	}
 
 	ValueData& operator=(const Vec4f& p_vec4) {
+		delete_current_active();
+		active_ = DataTypes::Vec4;
 		vec4_ = new Vec4f(p_vec4);
 		return (*this);
 	}
 
 	ValueData& operator=(const Instruction& instr) {
+		delete_current_active();
+		active_ = DataTypes::Instruction;
 		instruction_ = new Instruction(instr);
 		return (*this);
 	}
 
 	// Checker functions
-	bool is_none() const noexcept {
+	[[nodiscard]] bool is_none() const noexcept {
 		return active_ == DataTypes::None;
 	}
 
-	bool is_rgba() const noexcept {
+	[[nodiscard]] bool is_rgba() const noexcept {
 		return active_ == DataTypes::Color;
 	}
 
-	bool is_float() const noexcept {
+	[[nodiscard]] bool is_float() const noexcept {
 		return active_ == DataTypes::Float;
 	}
 
-	bool is_int() const noexcept {
+	[[nodiscard]] bool is_int() const noexcept {
 		return active_ == DataTypes::Int;
 	}
 
-	bool is_vec2() const noexcept {
+	[[nodiscard]] bool is_vec2() const noexcept {
 		return active_ == DataTypes::Vec2;
 	}
 
-	bool is_vec3() const noexcept {
+	[[nodiscard]] bool is_vec3() const noexcept {
 		return active_ == DataTypes::Vec3;
 	}
 
-	bool is_vec4() const noexcept {
+	[[nodiscard]] bool is_vec4() const noexcept {
 		return active_ == DataTypes::Vec4;
 	}
 
-	bool is_instruction() const noexcept {
+	[[nodiscard]] bool is_instruction() const noexcept {
 		return active_ == DataTypes::Instruction;
 	}
 
 	// Getters
-	[[nodiscard]] auto rgba() const noexcept -> Color& {
+	[[nodiscard]] auto rgba() const noexcept -> const Color& {
 		return *rgba_;
 	}
 
-	[[nodiscard]] auto float_value() const noexcept -> float& {
+	[[nodiscard]] auto float_value() const noexcept -> float {
 		return *float_value_;
 	}
 
-	[[nodiscard]] auto integer_value() const noexcept -> int& {
+	[[nodiscard]] auto integer_value() const noexcept -> int {
 		return *integer_value_;
 	}
 
-	[[nodiscard]] auto vec2() const noexcept -> Vec2f& {
+	[[nodiscard]] auto vec2() const noexcept -> const Vec2f& {
 		return *vec2_;
 	}
 
-	[[nodiscard]] auto vec3() const noexcept -> Vec3f& {
+	[[nodiscard]] auto vec3() const noexcept -> const Vec3f& {
 		return *vec3_;
 	}
 
-	[[nodiscard]] auto vec4() const noexcept -> Vec4f& {
+	[[nodiscard]] auto vec4() const noexcept -> const Vec4f& {
 		return *vec4_;
 	}
 
-	[[nodiscard]] auto instruction() const noexcept -> Instruction& {
+	[[nodiscard]] auto instruction() const noexcept -> const Instruction& {
 		return *instruction_;
 	}
 
@@ -332,8 +346,6 @@ public:
 	}
 
 private:
-	DataTypes active_;
-
 	void delete_current_active() {
 		switch (active_) {
 			case DataTypes::None: {
@@ -370,6 +382,8 @@ private:
 			}
 		}
 	}
+
+	DataTypes active_;
 
 	union
 	{

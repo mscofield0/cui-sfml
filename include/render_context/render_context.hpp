@@ -19,7 +19,7 @@ public:
 	using node_iterator_t = typename SceneGraph::const_iterator;
 	using window_ptr_t = std::unique_ptr<sf::RenderWindow>;
 	RenderContext(SceneGraph& p_graph)
-		: graph_(std::ref(p_graph)), cache_(RenderCache::populate(graph_)), window_(nullptr) {}
+		: graph_(std::ref(p_graph)), cache_(RenderCache::populate(graph_.get())), window_(nullptr) {}
 
 	RenderContext(const RenderContext&) = delete;
 	RenderContext(RenderContext&&) = delete;
@@ -75,7 +75,6 @@ void RenderContext::init(const WindowOptions& options) {
 		sg.root().default_schematic().height() = static_cast<int>(h);
 	}
 
-	std::cout << "Creating uptr to window_!\n";
 	window_ = std::make_unique<sf::RenderWindow>(sf::VideoMode(width, height), title, style, ctx_settings);
 }
 

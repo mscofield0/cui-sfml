@@ -15,15 +15,15 @@ class RenderCache : public Vector<VisualElement>
 {
 public:
 	static RenderCache populate(const SceneGraph& graph);
-	void update_ve(const SceneGraph& graph, const Node& node, const u64 index);
+	void update_ve(const SceneGraph& graph, const Node& node, u64 index);
 	void update_root(const SceneGraph& graph);
 	void update_cache(const SceneGraph& graph);
 
-	void handle_x(const Schematic& node, VisualElement& ve);
-	void handle_y(const Schematic& node, VisualElement& ve);
+	static void handle_x(const Schematic& scheme, VisualElement& ve);
+	static void handle_y(const Schematic& scheme, VisualElement& ve);
 
-	void handle_rule_x(const SceneGraph& graph, const Schematic& scheme, VisualElement& ve, const u64 index);
-	void handle_rule_y(const SceneGraph& graph, const Schematic& scheme, VisualElement& ve, const u64 index);
+	void handle_rule_x(const SceneGraph& graph, const Schematic& scheme, VisualElement& ve, u64 index);
+	void handle_rule_y(const SceneGraph& graph, const Schematic& scheme, VisualElement& ve, u64 index);
 };
 
 RenderCache RenderCache::populate(const SceneGraph& graph) {
@@ -39,7 +39,7 @@ void RenderCache::update_cache(const SceneGraph& graph) {
 	update_root(graph);
 
 	for (const auto& node_it : graph) {
-		if (node_it.index() >= graph.length()) this->emplace_back();
+		if (node_it.index() > size()) this->emplace_back();
 		update_ve(graph, node_it.data(), node_it.index());
 	}
 }
@@ -90,10 +90,10 @@ void RenderCache::handle_rule_x(const SceneGraph& graph, const Schematic& scheme
 		const auto parent_index = graph.get_parent_index(index);
 		float x, y, w;
 		if (parent_index == graph.length()) {
-			const auto& scheme = graph.root().active_schematic().get();
-			x = scheme.x().integer_value();
+			const auto& root_scheme = graph.root().active_schematic().get();
+			x = root_scheme.x().integer_value();
 			y = ve.getPosition().y;
-			w = scheme.width().integer_value();
+			w = root_scheme.width().integer_value();
 		} else {
 			const auto& parent_ve = this->operator[](parent_index + 1);
 			x = parent_ve.getPosition().x;
@@ -133,10 +133,10 @@ void RenderCache::handle_rule_y(const SceneGraph& graph, const Schematic& scheme
 		const auto parent_index = graph.get_parent_index(index);
 		float x, y, h;
 		if (parent_index == graph.length()) {
-			const auto& scheme = graph.root().active_schematic().get();
+			const auto& root_scheme = graph.root().active_schematic().get();
 			x = ve.getPosition().x;
-			y = scheme.y().integer_value();
-			h = scheme.height().integer_value();
+			y = root_scheme.y().integer_value();
+			h = root_scheme.height().integer_value();
 		} else {
 			const auto& parent_ve = this->operator[](parent_index + 1);
 			x = ve.getPosition().y;
