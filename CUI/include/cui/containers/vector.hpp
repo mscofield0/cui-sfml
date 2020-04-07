@@ -50,7 +50,7 @@ public:
 	explicit Vector(InputIt first, InputIt last) : vec_(first, last) {}
 	Vector(std::initializer_list<T> init) : vec_(init) {}
 	template <typename... Args>
-	Vector(Args&&... args) : vec_{cui::forward<Args>(cui::move(args))...} {}
+	Vector(Args&&... args) : vec_{cui::forward<Args>(args)...} {}
 
 	auto empty() const noexcept {
 		return vec_.empty();

@@ -42,9 +42,33 @@ public:
 		return duration_;
 	}
 
+	[[nodiscard]] bool operator>(const TimerEventFunction& rhs) const noexcept {
+		return duration_ > rhs.duration_;
+	}
+
+	[[nodiscard]] bool operator<(const TimerEventFunction& rhs) const noexcept {
+		return duration_ < rhs.duration_;
+	}
+
+	[[nodiscard]] bool operator>=(const TimerEventFunction& rhs) const noexcept {
+		return duration_ >= rhs.duration_;
+	}
+
+	[[nodiscard]] bool operator<=(const TimerEventFunction& rhs) const noexcept {
+		return duration_ <= rhs.duration_;
+	}
+
+	[[nodiscard]] bool operator==(const TimerEventFunction& rhs) const noexcept {
+		return duration_ == rhs.duration_;
+	}
+
+	[[nodiscard]] bool operator!=(const TimerEventFunction& rhs) const noexcept {
+		return duration_ != rhs.duration_;
+	}
+
 private:
-	const std::function<void()> func_;
-	const duration_t duration_;
+	std::function<void()> func_;
+	duration_t duration_;
 };
 
 }	 // namespace cui

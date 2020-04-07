@@ -67,7 +67,7 @@ SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& 
 		for (const auto style_name : block.style_list()) {
 			bool style_name_exists = false;
 			for (const auto& t_style : sc) {
-				if (style_name != t_style.name() || t_style.name() == "root") continue;
+				if (style_name != t_style.name() || t_style.name().compare("root")) continue;
 				if (style_name_exists == false) style_name_exists = true;
 				if (t_style.events().empty()) {
 					for (const auto& attr_data : t_style.attributes()) {

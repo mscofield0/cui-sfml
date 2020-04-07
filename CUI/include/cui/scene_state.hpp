@@ -15,7 +15,8 @@ class SceneState
 {
 public:
 	using event_map_t = tsl::hopscotch_map<std::string, event_predicate>;
-	SceneState(SceneGraph& p_graph) : graph_(p_graph) {}
+	SceneState(const SceneGraph& p_graph) : graph_(p_graph) {}
+	SceneState(SceneGraph&& p_graph) : graph_(std::move(p_graph)) {}
 
 	[[nodiscard]] auto graph() noexcept -> SceneGraph& {
 		return graph_;
@@ -24,7 +25,7 @@ public:
 	[[nodiscard]] auto graph() const noexcept -> const SceneGraph& {
 		return graph_;
 	}
-	
+
 	[[nodiscard]] auto registered_events() noexcept -> event_map_t& {
 		return registered_events_;
 	}

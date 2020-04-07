@@ -13,7 +13,7 @@
 #include <render_context/render_context.hpp>
 #include <engine/event_function.hpp>
 #include <engine/timer_event_manager.hpp>
-#include <engine/scene_state.hpp>
+#include <cui/scene_state.hpp>
 
 namespace cui {
 
@@ -33,7 +33,7 @@ public:
 	EventManager& operator=(const EventManager&) = delete;
 	EventManager& operator=(EventManager&&) = delete;
 
-	bool poll_event();
+	void handle_events();
 
 	void register_event(const std::string& name, std::function<void()>&& p_func);
 	void register_event(std::string&& name, std::function<void()>&& p_func);
@@ -91,11 +91,11 @@ EventManager::EventManager(SceneState& p_graph, ctx_ref p_ctx, bool& p_running)
 	});
 }
 
-bool EventManager::poll_event() {
+void EventManager::handle_events() {
 	sf::Event evt;
-	if (ctx_.window()->pollEvent(evt)) return false;
-	process_event(evt);
-	return true;
+	while (ctx_.window()->pollEvent(evt)) {
+		process_event(evt);
+	}
 }
 
 void EventManager::register_event(const std::string& name, std::function<void()>&& p_func) {
@@ -147,7 +147,7 @@ void EventManager::process_event(sf::Event& evt) {
 
 	switch (evt.type) {
 		case EventType::Closed: {
-			running_ = false;
+			// running_ = false;
 			break;
 		}
 		default: {

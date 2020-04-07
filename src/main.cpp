@@ -62,24 +62,24 @@ std::ostream& operator<<(std::ostream& os, const cui::ct::styles::Definition& va
 
 std::ostream& operator<<(std::ostream& os, const cui::ValueData& val) {
 	switch (val.active()) {
-		case cui::ct::data_types::DataTypes::None: {
+		case cui::data_types::DataTypes::None: {
 			os << "Nothing";
 			break;
 		}
-		case cui::ct::data_types::DataTypes::Color: {
+		case cui::data_types::DataTypes::Color: {
 			os << "rgba(" << val.rgba().red() << "," << val.rgba().green() << "," << val.rgba().blue() << ','
 			   << val.rgba().alpha() << ')';
 			break;
 		}
-		case cui::ct::data_types::DataTypes::Float: {
+		case cui::data_types::DataTypes::Float: {
 			os << val.float_value();
 			break;
 		}
-		case cui::ct::data_types::DataTypes::Int: {
+		case cui::data_types::DataTypes::Int: {
 			os << val.integer_value();
 			break;
 		}
-		case cui::ct::data_types::DataTypes::Vec2: {
+		case cui::data_types::DataTypes::Vec2: {
 			os << "vec(";
 			for (size_t i = 0; i < 1; ++i) {
 				os << val.vec2()[i] << ',';
@@ -87,7 +87,7 @@ std::ostream& operator<<(std::ostream& os, const cui::ValueData& val) {
 			os << val.vec2().back() << ')';
 			break;
 		}
-		case cui::ct::data_types::DataTypes::Vec3: {
+		case cui::data_types::DataTypes::Vec3: {
 			os << "vec(";
 			for (size_t i = 0; i < 2; ++i) {
 				os << val.vec3()[i] << ',';
@@ -95,7 +95,7 @@ std::ostream& operator<<(std::ostream& os, const cui::ValueData& val) {
 			os << val.vec3().back() << ')';
 			break;
 		}
-		case cui::ct::data_types::DataTypes::Vec4: {
+		case cui::data_types::DataTypes::Vec4: {
 			os << "vec(";
 			for (size_t i = 0; i < 3; ++i) {
 				os << val.vec4()[i] << ',';
@@ -230,9 +230,17 @@ int main() {
 		}
 	}
 
-	while(window->is_running()) {
-		while(window->poll_event()) {}
+	println("Creating the renderwindow...");
+	window->init({800, 600, "Title", sf::Style::None, sf::ContextSettings{}});
 
+	println("Starting the app loop...");
+
+	println("Window is running: ", window->ctx_.window()->isOpen());
+
+	u64 i = 0;
+	while (window->is_running()) {
+		println(i, ". iteration");
+		window->handle_events();
 		window->render();
 	}
 }

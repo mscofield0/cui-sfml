@@ -20,27 +20,27 @@ class Window
 public:
 	template <template <typename, u64> typename Container, u64 Size, typename... Scenes>
 	Window(const Container<ct::Style, Size>& p_styles, const Scenes&... p_scenes)
-		: running_(true), scenes_{SceneGraph{p_scenes, p_styles}...}, ctx_(scenes_.current_item()),
+		: running_(true), scenes_{SceneGraph{p_scenes, p_styles}...}, ctx_(scenes_.current_item().graph()),
 		  event_manager_(scenes_.current_item(), ctx_, running_) {}
 
 	template <template <typename> typename Container, u64 Size, typename... Scenes>
 	Window(const Container<ct::Style>& p_styles, const Scenes&... p_scenes)
-		: running_(true), scenes_{SceneGraph{p_scenes, p_styles}...}, ctx_(scenes_.current_item()),
+		: running_(true), scenes_{SceneGraph{p_scenes, p_styles}...}, ctx_(scenes_.current_item().graph()),
 		  event_manager_(scenes_.current_item(), ctx_, running_) {}
 
-	[[nodiscard]] auto current_scene() noexcept -> SceneGraph& {
+	[[nodiscard]] auto current_scene() noexcept -> SceneState& {
 		return scenes_.current_item();
 	}
 
-	[[nodiscard]] auto current_scene() const noexcept -> const SceneGraph& {
+	[[nodiscard]] auto current_scene() const noexcept -> const SceneState& {
 		return scenes_.current_item();
 	}
 
-	[[nodiscard]] auto scenes() noexcept -> TrackedVector<SceneGraph>& {
+	[[nodiscard]] auto scenes() noexcept -> TrackedVector<SceneState>& {
 		return scenes_;
 	}
 
-	[[nodiscard]] auto scenes() const noexcept -> const TrackedVector<SceneGraph>& {
+	[[nodiscard]] auto scenes() const noexcept -> const TrackedVector<SceneState>& {
 		return scenes_;
 	}
 
@@ -57,11 +57,11 @@ public:
 	}
 
 	// Event manager interface
-	bool poll_event() {
-		return event_manager_.poll_event();
+	void handle_events() {
+		event_manager_.handle_events();
 	}
 
-private:
+public:
 	bool running_;
 	TrackedVector<SceneState> scenes_;
 	RenderContext ctx_;

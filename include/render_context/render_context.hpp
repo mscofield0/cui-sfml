@@ -75,6 +75,7 @@ void RenderContext::init(const WindowOptions& options) {
 		sg.root().default_schematic().height() = static_cast<int>(h);
 	}
 
+	std::cout << "Creating uptr to window_!\n";
 	window_ = std::make_unique<sf::RenderWindow>(sf::VideoMode(width, height), title, style, ctx_settings);
 }
 
