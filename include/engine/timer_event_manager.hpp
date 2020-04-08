@@ -17,6 +17,12 @@ public:
 	using time_point_t = steady_clock_t::time_point;
 	using duration_t = steady_clock_t::duration;
 
+	TimerEventManager(bool& running) : running_(running) {}
+
+	void notify() {
+		cv_.notify_one();
+	}
+
 	void dispatch_timer_event(TimerEventFunction&& timer_evt) {
 		std::unique_lock<std::mutex> lock(queue_mutex_);
 		const bool was_empty = queue_.empty();
@@ -38,9 +44,10 @@ public:
 		return queue_.top().duration();
 	}
 
-	void wait_until_push() noexcept {
+	bool wait_until_push() noexcept {
 		std::unique_lock<std::mutex> lock(queue_mutex_);
-		cv_.wait(lock, [this] { return this->queue_.empty(); });
+		cv_.wait(lock, [this] { return !running_ || !this->queue_.empty(); });
+		return !running_;
 	}
 
 	[[nodiscard]] bool wait_for(duration_t& previous) {
@@ -60,6 +67,7 @@ private:
 	std::mutex queue_mutex_;
 	std::condition_variable cv_;
 	bool was_awakened;
+	bool& running_;
 };
 
 }	 // namespace cui

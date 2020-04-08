@@ -290,7 +290,7 @@ int main() {
 
 	println("After using the newly initialized window variable!");
 
-	u64 i = 0;
+
 	while (window->is_running()) {
 		window->handle_events();
 		window->render();

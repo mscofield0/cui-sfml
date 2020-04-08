@@ -61,6 +61,14 @@ public:
 		event_manager_.handle_events();
 	}
 
+	void register_event(const std::string& name, std::function<void()>&& p_func) {
+		event_manager_.register_event(name, std::move(p_func));
+	}
+
+	void register_event(std::string&& name, std::function<void()>&& p_func) {
+		event_manager_.register_event(std::move(name), std::move(p_func));
+	}
+
 public:
 	bool running_;
 	std::list<SceneState> scenes_;
