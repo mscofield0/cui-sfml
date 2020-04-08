@@ -42,13 +42,13 @@ public:
 		std::unique_lock<std::mutex> lock(queue_mutex_);
 		cv_.wait(lock, [this] { return this->queue_.empty(); });
 	}
-	
+
 	[[nodiscard]] bool wait_for(duration_t& previous) {
 		std::unique_lock<std::mutex> lock(queue_mutex_);
 		time_point_t before = steady_clock_t::now();
 		cv_.wait_for(lock, queue_.top().duration() - previous);
 		previous = steady_clock_t::now() - before;
-		if(was_awakened) {
+		if (was_awakened) {
 			was_awakened = false;
 			return true;
 		}

@@ -1,6 +1,7 @@
 #ifndef CUI_SFML_EVENT_MANAGER_HPP
 #define CUI_SFML_EVENT_MANAGER_HPP
 
+#include <iostream>
 #include <functional>
 #include <vector>
 #include <chrono>
@@ -149,6 +150,9 @@ void EventManager::process_event(sf::Event& evt) {
 
 	switch (evt.type) {
 		case EventType::Closed: {
+			std::cout << "Called for close\n";
+			for (auto& thr : pool_) thr.join();
+			timer_thread_.join();
 			running_ = false;
 			break;
 		}

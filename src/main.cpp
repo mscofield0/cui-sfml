@@ -201,9 +201,6 @@ std::ostream& operator<<(std::ostream& os, const cui::SceneGraph& sg) {
 
 int main() {
 	using namespace cui;
-	using win_t = Window<TestRenderContext, TestEventManager, WindowOptions>;
-
-	std::unique_ptr<win_t> window;
 
 	STATIC_STRING_HOLDER(style__)
 #include "file.styles"
@@ -212,6 +209,11 @@ int main() {
 	STATIC_STRING_HOLDER(scene__)
 #include "file.scene"
 	END_STATIC_STRING_HOLDER
+
+	/*
+	using win_t = Window<TestRenderContext, TestEventManager, WindowOptions>;
+
+	std::unique_ptr<win_t> window;
 
 	constexpr auto scenes_variant = ct::scenes::parse_scenes<scene__>();
 
@@ -241,40 +243,56 @@ int main() {
 		println(styles_variant.type_b());
 		return 0;
 	}
+*/
+	using win_t = Window<RenderContext, EventManager, WindowOptions>;
 
-	/*
+	std::unique_ptr<win_t> window;
+
+	constexpr auto scenes_variant = ct::scenes::parse_scenes<scene__>();
+
+	if constexpr (scenes_variant.is_type_b()) {
+		println(scenes_variant.type_b());
+		return 0;
+	}
+
 	constexpr auto styles_variant = ct::styles::parse_styles<style__>();
-		if constexpr (styles_variant.is_type_a()) {
-			StaticVector<ct::Style, styles_variant.type_a().size()> sty;
-			for (const auto& el : styles_variant.type_a()) {
-				const auto parsed_variant = ct::Style::create(el);
-				if (parsed_variant.is_type_b()) {
-					println(parsed_variant.type_b());
-					return 0;
-				}
-				const auto& parsed = parsed_variant.type_a();
-				sty.push_back(parsed);
+	if constexpr (styles_variant.is_type_a()) {
+		StaticVector<ct::Style, styles_variant.type_a().size()> sty;
+		for (const auto& el : styles_variant.type_a()) {
+			const auto parsed_variant = ct::Style::create(el);
+			if (parsed_variant.is_type_b()) {
+				println(parsed_variant.type_b());
+				return 0;
 			}
-
-			println(SceneGraph{scenes_variant.type_a(), sty});
-
-			window = std::make_unique<win_t>(sty, scenes_variant.type_a());
-			println(window->current_scene().graph()[0].data().active_schematic().get().x());
-		} else {
-			println(styles_variant.type_b());
-			return 0;
+			const auto& parsed = parsed_variant.type_a();
+			sty.push_back(parsed);
 		}
-	*/
 
-	// println("Creating the renderwindow...");
-	// window->init({800, 600, "Title", sf::Style::Default, sf::ContextSettings{}});
+		println(SceneGraph{scenes_variant.type_a(), sty});
 
-	// println("Starting the app loop...");
+		println("//////////////////////////////////////////////////////////////");
+		println("//////////////////////////////////////////////////////////////");
+		println("//////////////////////////////////////////////////////////////");
 
-	// println("Window is running: ", window->ctx_.window()->isOpen());
+		window = std::make_unique<win_t>(sty, scenes_variant.type_a());
+		println(window->current_scene().graph());
+	} else {
+		println(styles_variant.type_b());
+		return 0;
+	}
 
-	// while (window->is_running()) {
-	// 	window->handle_events();
-	// 	window->render();
-	// }
+	println("Creating the renderwindow...");
+	window->init({800, 600, "Title", sf::Style::Default, sf::ContextSettings{}});
+
+	println("Starting the app loop...");
+
+	println("Window is running: ", window->ctx_.window()->isOpen());
+
+	println("After using the newly initialized window variable!");
+
+	u64 i = 0;
+	while (window->is_running()) {
+		window->handle_events();
+		window->render();
+	}
 }

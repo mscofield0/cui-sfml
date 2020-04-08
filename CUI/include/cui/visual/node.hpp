@@ -19,21 +19,47 @@ public:
 	Node()
 		: default_schematic_(), event_schematics_(), active_(std::ref(default_schematic_)), name_("root"), text_("") {}
 
-	Node(const std::string& p_name, const std::string& p_text) noexcept
+	Node(const std::string& p_name, const std::string& p_text)
 		: default_schematic_(), event_schematics_(), active_(std::ref(default_schematic_)), name_(p_name),
 		  text_(p_text) {}
 
-	Node(const std::string& p_name, const ct::StringView p_text) noexcept
+	Node(const std::string& p_name, const ct::StringView p_text)
 		: default_schematic_(), event_schematics_(), active_(std::ref(default_schematic_)), name_(p_name),
 		  text_(p_text.begin(), p_text.end()) {}
 
-	Node(const ct::StringView p_name, const std::string& p_text) noexcept
+	Node(const ct::StringView p_name, const std::string& p_text)
 		: default_schematic_(), event_schematics_(), active_(std::ref(default_schematic_)),
 		  name_(p_name.begin(), p_name.end()), text_(p_text) {}
 
-	Node(const ct::StringView p_name, const ct::StringView p_text) noexcept
+	Node(const ct::StringView p_name, const ct::StringView p_text)
 		: default_schematic_(), event_schematics_(), active_(std::ref(default_schematic_)),
 		  name_(p_name.begin(), p_name.end()), text_(p_text.begin(), p_text.end()) {}
+
+	Node(const Node& rhs)
+		: default_schematic_(rhs.default_schematic_), event_schematics_(rhs.event_schematics_),
+		  active_(std::ref(default_schematic_)), name_(rhs.name_), text_(rhs.text_) {}
+
+	Node(Node&& rhs)
+		: default_schematic_(std::move(rhs.default_schematic_)), event_schematics_(std::move(rhs.event_schematics_)),
+		  active_(std::ref(default_schematic_)), name_(std::move(rhs.name_)), text_(std::move(rhs.text_)) {}
+
+	Node& operator=(const Node& rhs) {
+		default_schematic_ = rhs.default_schematic_;
+		event_schematics_ = rhs.event_schematics_;
+		active_ = default_schematic_;
+		name_ = rhs.name_;
+		text_ = rhs.text_;
+		return *this;
+	}
+
+	Node& operator=(Node&& rhs) {
+		default_schematic_ = std::move(rhs.default_schematic_);
+		event_schematics_ = std::move(rhs.event_schematics_);
+		active_ = default_schematic_;
+		name_ = std::move(rhs.name_);
+		text_ = std::move(rhs.text_);
+		return *this;
+	}
 
 	[[nodiscard]] auto default_schematic() noexcept -> Schematic& {
 		return default_schematic_;

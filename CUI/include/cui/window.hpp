@@ -1,9 +1,8 @@
 #ifndef CUI_WINDOW_HPP
 #define CUI_WINDOW_HPP
 
-#include <array>
+#include <list>
 
-#include <containers/tracked_vector.hpp>
 #include <compile_time/style.hpp>
 #include <compile_time/scene.hpp>
 #include <scene_state.hpp>
@@ -20,27 +19,27 @@ class Window
 public:
 	template <template <typename, u64> typename Container, u64 Size, typename... Scenes>
 	Window(const Container<ct::Style, Size>& p_styles, const Scenes&... p_scenes)
-		: running_(true), scenes_{SceneGraph{p_scenes, p_styles}...}, ctx_(scenes_.current_item().graph()),
-		  event_manager_(scenes_.current_item(), ctx_, running_) {}
+		: running_(true), scenes_{SceneGraph{p_scenes, p_styles}...}, ctx_(scenes_.front().graph()),
+		  event_manager_(scenes_.front(), ctx_, running_) {}
 
 	template <template <typename> typename Container, u64 Size, typename... Scenes>
 	Window(const Container<ct::Style>& p_styles, const Scenes&... p_scenes)
-		: running_(true), scenes_{SceneGraph{p_scenes, p_styles}...}, ctx_(scenes_.current_item().graph()),
-		  event_manager_(scenes_.current_item(), ctx_, running_) {}
+		: running_(true), scenes_{SceneGraph{p_scenes, p_styles}...}, ctx_(scenes_.front().graph()),
+		  event_manager_(scenes_.front(), ctx_, running_) {}
 
 	[[nodiscard]] auto current_scene() noexcept -> SceneState& {
-		return scenes_.current_item();
+		return scenes_.front();
 	}
 
 	[[nodiscard]] auto current_scene() const noexcept -> const SceneState& {
-		return scenes_.current_item();
+		return scenes_.front();
 	}
 
-	[[nodiscard]] auto scenes() noexcept -> TrackedVector<SceneState>& {
+	[[nodiscard]] auto scenes() noexcept -> std::list<SceneState>& {
 		return scenes_;
 	}
 
-	[[nodiscard]] auto scenes() const noexcept -> const TrackedVector<SceneState>& {
+	[[nodiscard]] auto scenes() const noexcept -> const std::list<SceneState>& {
 		return scenes_;
 	}
 
@@ -64,7 +63,7 @@ public:
 
 public:
 	bool running_;
-	TrackedVector<SceneState> scenes_;
+	std::list<SceneState> scenes_;
 	RenderContext ctx_;
 	EventManager event_manager_;
 };
