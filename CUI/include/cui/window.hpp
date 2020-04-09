@@ -22,7 +22,7 @@ public:
 		: running_(true), scenes_{SceneGraph{p_scenes, p_styles}...}, ctx_(scenes_.front().graph()),
 		  event_manager_(scenes_.front(), ctx_, running_) {}
 
-	template <template <typename> typename Container, u64 Size, typename... Scenes>
+	template <template <typename> typename Container, typename... Scenes>
 	Window(const Container<ct::Style>& p_styles, const Scenes&... p_scenes)
 		: running_(true), scenes_{SceneGraph{p_scenes, p_styles}...}, ctx_(scenes_.front().graph()),
 		  event_manager_(scenes_.front(), ctx_, running_) {}

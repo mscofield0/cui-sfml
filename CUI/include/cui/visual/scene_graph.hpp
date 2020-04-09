@@ -26,6 +26,9 @@ public:
 	template <u64 AOB, template <typename, u64> typename Container, u64 N>
 	SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& sc);
 
+	template <u64 AOB, template <typename> typename Container>
+	SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style>& sc);
+
 	[[nodiscard]] auto get_parent_index(size_type index) const noexcept -> size_type;
 
 	[[nodiscard]] auto get_parent(size_type index) const noexcept -> std::optional<const_iterator>;
@@ -57,6 +60,55 @@ private:
 
 template <u64 AOB, template <typename, u64> typename Container, u64 N>
 SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& sc) : tree_t{}, root_() {
+	this->nodes().reserve(AOB);
+	this->depths().reserve(AOB);
+	this->children().reserve(AOB);
+
+	for (const auto& block : sr.blocks()) {
+		this->nodes().emplace_back(block.name(), block.text());
+		auto& node = this->nodes().back();
+		for (const auto style_name : block.style_list()) {
+			bool style_name_exists = false;
+			for (const auto& t_style : sc) {
+				if (style_name != t_style.name() || t_style.name().compare("root") == 0) continue;
+				if (style_name_exists == false) style_name_exists = true;
+				if (t_style.events().empty()) {
+					for (const auto& attr_data : t_style.attributes()) {
+						node.default_schematic().assign(attr_data);
+					}
+					continue;
+				}
+
+				auto sv = t_style.events().front();
+				auto& map_el = node.event_schematics()[std::string{sv.begin(), sv.end()}];
+				for (const auto& attr_data : t_style.attributes()) {
+					map_el.assign(attr_data);
+				}
+				for (auto it = t_style.events().begin() + 1; it != t_style.events().end(); ++it) {
+					node.event_schematics()[std::string{it->begin(), it->end()}] = map_el;
+				}
+			}
+			// Maybe add a global logging buffer/system?
+		}
+	}
+
+	for (const auto& depth : sr.depths()) {
+		this->depths().push_back(depth);
+	}
+
+	for (const auto& c : sr.children()) {
+		this->children().emplace_back();
+
+		for (const auto& item : c) {
+			this->children().back().push_back(item);
+		}
+	}
+
+	sort();
+}
+
+template <u64 AOB, template <typename> typename Container>
+SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style>& sc) {
 	this->nodes().reserve(AOB);
 	this->depths().reserve(AOB);
 	this->children().reserve(AOB);
