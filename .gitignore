@@ -1,6 +1,6 @@
-bin/
+./bin/
 CMakeFiles/
-lib/
+./lib/
 .gitmodules
 *.CMakeFiles
 CMakeCache.txt
