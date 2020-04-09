@@ -35,6 +35,14 @@ constexpr auto operator|(const ValidAttributeType& a, const ValidAttributeType& 
 	return static_cast<u64>(a) | static_cast<u64>(b);
 }
 
+constexpr auto operator|(const u64 a, const ValidAttributeType& b) -> u64 {
+	return a | static_cast<u64>(b);
+}
+
+constexpr auto operator|(const ValidAttributeType& a, const u64 b) -> u64 {
+	return static_cast<u64>(a) | b;
+}
+
 }	 // namespace cui::ct::styles
 
 #endif	  // CUI_CT_STYLES_VALID_ATTRIBUTE_TYPES_HPP

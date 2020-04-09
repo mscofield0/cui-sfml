@@ -24,6 +24,7 @@ public:
 	using difference_type = i64;
 
 	constexpr StaticVector() : size_{0}, data_{} {}
+
 	template <typename... Args>
 	constexpr StaticVector(Args... args) : size_{sizeof...(Args)}, data_{args...} {}
 

@@ -9,7 +9,11 @@ namespace cui::ct::styles::detail {
 
 enum class AttributeIndexes : u64
 {
-	Color = 0
+	Color = 0,
+	X,
+	Y,
+	Width,
+	Height
 };
 
 constexpr auto get_attribute_index(const StringView name) -> u64 {

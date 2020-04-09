@@ -28,7 +28,6 @@ std::ostream& operator<<(std::ostream& os, const cui::ct::Format<Size>& format) 
 	os << format.data().data();
 	return os;
 }
-
 template <typename... Args>
 void print(Args... args) {
 	((std::cout << args << ' '), ...);
@@ -257,7 +256,8 @@ int main() {
 
 	constexpr auto styles_variant = ct::styles::parse_styles<style__>();
 	if constexpr (styles_variant.is_type_a()) {
-		StaticVector<ct::Style, styles_variant.type_a().size()> sty;
+		std::vector<ct::Style> sty;
+		sty.reserve(styles_variant.type_a().size());
 		for (const auto& el : styles_variant.type_a()) {
 			const auto parsed_variant = ct::Style::create(el);
 			if (parsed_variant.is_type_b()) {
@@ -267,8 +267,6 @@ int main() {
 			const auto& parsed = parsed_variant.type_a();
 			sty.push_back(parsed);
 		}
-
-		println(SceneGraph{scenes_variant.type_a(), sty});
 
 		println("//////////////////////////////////////////////////////////////");
 		println("//////////////////////////////////////////////////////////////");
@@ -289,7 +287,6 @@ int main() {
 	println("Window is running: ", window->ctx_.window()->isOpen());
 
 	println("After using the newly initialized window variable!");
-
 
 	while (window->is_running()) {
 		window->handle_events();

@@ -1,17 +1,23 @@
 R"(
 square {
     color: red;
+    x: 120;
 }
 
 square [abc] {
     color: red;
+    y: 420;
 }
 
 triangle {
     color: green;
+    width: 20;
+    height: 20;
 }
 
 circle {
     color: blue;
+    width: 50;
+    height: 50;
 }
 )"

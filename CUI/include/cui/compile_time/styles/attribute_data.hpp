@@ -10,7 +10,7 @@ namespace cui::ct::styles {
 class AttributeData
 {
 public:
-	constexpr AttributeData() : type_(), value_(), preprocessed_type_(ValueType::Color) {}
+	constexpr AttributeData() : type_(), value_(), preprocessed_type_() {}
 	constexpr AttributeData(const StringView p_type, const ValueData& p_data, const ValueType p_pptype)
 		: type_(p_type), value_(p_data), preprocessed_type_(p_pptype) {}
 

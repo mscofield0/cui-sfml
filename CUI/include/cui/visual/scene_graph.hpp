@@ -1,7 +1,6 @@
 #ifndef CUI_SCENE_GRAPH_HPP
 #define CUI_SCENE_GRAPH_HPP
 
-#include <iostream>
 #include <algorithm>
 #include <optional>
 #include <iterator>
@@ -68,7 +67,7 @@ SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& 
 		for (const auto style_name : block.style_list()) {
 			bool style_name_exists = false;
 			for (const auto& t_style : sc) {
-				if (style_name != t_style.name() || t_style.name().compare("root")) continue;
+				if (style_name != t_style.name() || t_style.name().compare("root") == 0) continue;
 				if (style_name_exists == false) style_name_exists = true;
 				if (t_style.events().empty()) {
 					for (const auto& attr_data : t_style.attributes()) {
@@ -77,13 +76,13 @@ SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& 
 					continue;
 				}
 
-				std::cout << "Got to here!\n";
-				auto& map_el = node.event_schematics()[t_style.events().front().data()];
+				auto sv = t_style.events().front();
+				auto& map_el = node.event_schematics()[std::string{sv.begin(), sv.end()}];
 				for (const auto& attr_data : t_style.attributes()) {
 					map_el.assign(attr_data);
 				}
 				for (auto it = t_style.events().begin() + 1; it != t_style.events().end(); ++it) {
-					node.event_schematics()[it->data()] = map_el;
+					node.event_schematics()[std::string{it->begin(), it->end()}] = map_el;
 				}
 			}
 			// Maybe add a global logging buffer/system?

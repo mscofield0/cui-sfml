@@ -36,12 +36,20 @@ enum class FunctionId : byte
 
 constexpr auto attribute_names =
     make_sv_array(
-        "color"
+        "color",
+        "x",
+        "y",
+        "width",
+        "height"
     );
 
 constexpr auto attribute_types = 
     make_array<u64>(
-        ValidAttributeType::RGBA
+        ValidAttributeType::RGBA,
+        ValidAttributeType::Int | ValidAttributeType::Float | ValidAttributeType::Instruction,
+        ValidAttributeType::Int | ValidAttributeType::Float | ValidAttributeType::Instruction,
+        ValidAttributeType::Int | ValidAttributeType::Float | ValidAttributeType::Instruction,
+        ValidAttributeType::Int | ValidAttributeType::Float | ValidAttributeType::Instruction
     );
 
 
