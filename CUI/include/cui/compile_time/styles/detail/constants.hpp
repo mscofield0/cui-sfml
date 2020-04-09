@@ -78,7 +78,7 @@ constexpr auto string_names =
         "transparent",
 		"white",
 		"black",
-        "left",
+    	"left",
         "right"
     );
 
