@@ -10,7 +10,7 @@ class Attributes
 {
 public:
 	Attributes() noexcept
-		: x_(0), y_(0), width_(0), height_(0), background_(cui::Color(0)), text_color_(cui::Color(0, 0, 0)),
+		: x_(0), y_(0), width_(0), height_(0), background_(data_types::Color(0)), text_color_(data_types::Color(0, 0, 0)),
 		  font_size_(0) {}
 
 	[[nodiscard]] auto x() noexcept -> ValueData& {

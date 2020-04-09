@@ -1,22 +1,26 @@
-#include <compile_time/styles/detail/constants.hpp>
-#include <compile_time/style.hpp>
-#include <compile_time/scene.hpp>
-#include <compile_time/value_data.hpp>
-#include <compile_time/styles/parse_styles.hpp>
-#include <compile_time/scenes/parse_scenes.hpp>
-#include <compile_time/string/string_view.hpp>
+#include <cui/compile_time/styles/detail/constants.hpp>
+#include <cui/compile_time/style.hpp>
+#include <cui/compile_time/scene.hpp>
+#include <cui/compile_time/value_data.hpp>
+#include <cui/compile_time/styles/parse_styles.hpp>
+#include <cui/compile_time/scenes/parse_scenes.hpp>
+#include <cui/compile_time/string/string_view.hpp>
 
-#include <visual/scene_graph.hpp>
-#include <visual/node.hpp>
-#include <window.hpp>
-
-#include <visual/base_render_context.hpp>
-#include <engine/base_event_manager.hpp>
+#include <cui/visual/scene_graph.hpp>
+#include <cui/visual/node.hpp>
+#include <cui/window.hpp>
 
 #include <aliases.hpp>
 #include <iostream>
 #include <type_traits>
 #include <utility>
+
+#include <render_context/render_context.hpp>
+#include <render_context/window_options.hpp>
+#include <render_context/render_cache.hpp>
+#include <render_context/render_context.hpp>
+#include <render_context/detail/intermediaries/color.hpp>
+#include <engine/event_manager.hpp>
 
 std::ostream& operator<<(std::ostream& os, const cui::ct::StringView str) {
 	for (const auto ch : str) os << ch;
@@ -168,6 +172,18 @@ std::ostream& operator<<(std::ostream& os, const cui::Schematic& sg) {
 }
 
 std::ostream& operator<<(std::ostream& os, const cui::SceneGraph& sg) {
+	os << sg.root().name() << "{\n\t";
+	os << "Text: " << sg.root().text() << "\n\t";
+	os << "Default attributes:\n\t\t";
+	os << sg.root().default_schematic() << "\n\t";
+	for (const auto& kvp : sg.root().event_schematics()) {
+		os << "Event schematic (" << kvp.first << ")\n\t\t";
+		os << kvp.second << "\n\t";
+	}
+	os << "Active schematic\n\t\t";
+	os << sg.root().active_schematic().get();
+	os << "\n}";
+
 	for (const auto& node : sg) {
 		os << node.data().name() << "{\n\t";
 		os << "Text: " << node.data().text() << "\n\t";
@@ -186,14 +202,18 @@ std::ostream& operator<<(std::ostream& os, const cui::SceneGraph& sg) {
 	return os;
 }
 
-#include <cui/window.hpp>
-#include <render_context/render_context.hpp>
-#include <render_context/window_options.hpp>
-#include <render_context/render_cache.hpp>
-#include <render_context/render_context.hpp>
-#include <engine/event_manager.hpp>
-#include <engine/test_event_manager.hpp>
-#include <utility>
+std::ostream& operator<<(std::ostream& os, const cui::VisualElement& ve) {
+	const auto [x, y] = ve.getPosition();
+	const auto [w, h] = ve.getSize();
+	const cui::data_types::Color bg = cui::intermediary::Color{ve.getFillColor()};
+
+	os << "VE:";
+	os << "\n\tX:" << x << ',' << "Y:" << y;
+	os << "\n\tW:" << w << ',' << "H:" << h;
+	os << "\n\trgba(" << bg.red() << "," << bg.green() << "," << bg.blue() << ',' << bg.alpha() << ')';
+
+	return os;
+}
 
 #define STATIC_STRING_HOLDER(name) static constexpr const char name[] =
 #define END_STATIC_STRING_HOLDER ;
@@ -279,8 +299,16 @@ int main() {
 		return 0;
 	}
 
+	for (const auto& ve : window->ctx_.cache()) {
+		println(ve, "\n///////////////////////////////////////////////////\n");
+	}
+
 	println("Creating the renderwindow...");
 	window->init({800, 600, "Title", sf::Style::Default, sf::ContextSettings{}});
+
+	for (const auto& ve : window->ctx_.cache()) {
+		println(ve, "\n///////////////////////////////////////////////////\n");
+	}
 
 	println("Starting the app loop...");
 

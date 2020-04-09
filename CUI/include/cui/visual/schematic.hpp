@@ -23,8 +23,8 @@ public:
 		const auto& value = attr_data.value();
 
 		switch (static_cast<AttributeIndexes>(i)) {
-			case AttributeIndexes::Color: {
-				this->text_color_ = value;
+			case AttributeIndexes::Background: {
+				this->background_ = value;
 				break;
 			}
 			case AttributeIndexes::X: {
@@ -52,8 +52,7 @@ public:
 			case AttributeIndexes::Width: {
 				this->width_ = value;
 				switch (pp_type) {
-					case ValueType::Percentage:
-					case ValueType::Instruction: {
+					case ValueType::Percentage:{
 						this->set_width_rule(true);
 						break;
 					}
@@ -63,8 +62,7 @@ public:
 			case AttributeIndexes::Height: {
 				this->height_ = value;
 				switch (pp_type) {
-					case ValueType::Percentage:
-					case ValueType::Instruction: {
+					case ValueType::Percentage:{
 						this->set_height_rule(true);
 						break;
 					}

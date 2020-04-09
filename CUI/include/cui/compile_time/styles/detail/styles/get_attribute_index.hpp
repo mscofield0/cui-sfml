@@ -9,7 +9,7 @@ namespace cui::ct::styles::detail {
 
 enum class AttributeIndexes : u64
 {
-	Color = 0,
+	Background = 0,
 	X,
 	Y,
 	Width,

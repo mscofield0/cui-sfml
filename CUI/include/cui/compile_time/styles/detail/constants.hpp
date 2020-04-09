@@ -36,7 +36,7 @@ enum class FunctionId : byte
 
 constexpr auto attribute_names =
     make_sv_array(
-        "color",
+        "background",
         "x",
         "y",
         "width",
@@ -48,8 +48,8 @@ constexpr auto attribute_types =
         ValidAttributeType::RGBA,
         ValidAttributeType::Int | ValidAttributeType::Float | ValidAttributeType::Instruction,
         ValidAttributeType::Int | ValidAttributeType::Float | ValidAttributeType::Instruction,
-        ValidAttributeType::Int | ValidAttributeType::Float | ValidAttributeType::Instruction,
-        ValidAttributeType::Int | ValidAttributeType::Float | ValidAttributeType::Instruction
+        ValidAttributeType::Int | ValidAttributeType::Float,
+        ValidAttributeType::Int | ValidAttributeType::Float
     );
 
 
@@ -76,6 +76,8 @@ constexpr auto string_names =
         "green",
         "blue",
         "transparent",
+		"white",
+		"black",
         "left",
         "right"
     );
@@ -86,6 +88,8 @@ constexpr auto string_values =
         ValueData{Color(0, 255, 0 )},
         ValueData{Color(0, 0, 255 )},
         ValueData{Color(0, 0, 0, 0)},
+        ValueData{Color::white},
+        ValueData{Color::black},
         ValueData{Instruction(Functions::Left)},
         ValueData{Instruction(Functions::Right)}
     );

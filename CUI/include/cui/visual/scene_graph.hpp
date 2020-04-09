@@ -43,6 +43,8 @@ public:
 
 	void sort();
 
+	void apply_style(value_type& node, const ct::Style& style);
+
 	[[nodiscard]] auto root() noexcept -> value_type& {
 		return root_;
 	}
@@ -119,23 +121,12 @@ SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style>& sc)
 		for (const auto style_name : block.style_list()) {
 			bool style_name_exists = false;
 			for (const auto& t_style : sc) {
-				if (style_name != t_style.name() || t_style.name().compare("root") == 0) continue;
+				if (t_style.name().compare("root") == 0) {
+					apply_style(root_, t_style);
+				}
+				if (style_name != t_style.name()) continue;
 				if (style_name_exists == false) style_name_exists = true;
-				if (t_style.events().empty()) {
-					for (const auto& attr_data : t_style.attributes()) {
-						node.default_schematic().assign(attr_data);
-					}
-					continue;
-				}
-
-				auto sv = t_style.events().front();
-				auto& map_el = node.event_schematics()[std::string{sv.begin(), sv.end()}];
-				for (const auto& attr_data : t_style.attributes()) {
-					map_el.assign(attr_data);
-				}
-				for (auto it = t_style.events().begin() + 1; it != t_style.events().end(); ++it) {
-					node.event_schematics()[std::string{it->begin(), it->end()}] = map_el;
-				}
+				apply_style(node, t_style);
 			}
 			// Maybe add a global logging buffer/system?
 		}
@@ -258,6 +249,24 @@ auto SceneGraph::get_parent(const size_type index) const noexcept -> std::option
 	const auto idx = get_parent_index(index);
 	if (idx == length()) return std::nullopt;
 	return tree_t::operator[](idx);
+}
+
+void SceneGraph::apply_style(value_type& node, const ct::Style& style) {
+	if (style.events().empty()) {
+		for (const auto& attr_data : style.attributes()) {
+			node.default_schematic().assign(attr_data);
+		}
+		return;
+	}
+
+	auto sv = style.events().front();
+	auto& map_el = node.event_schematics()[std::string{sv.begin(), sv.end()}];
+	for (const auto& attr_data : style.attributes()) {
+		map_el.assign(attr_data);
+	}
+	for (auto it = style.events().begin() + 1; it != style.events().end(); ++it) {
+		node.event_schematics()[std::string{it->begin(), it->end()}] = map_el;
+	}
 }
 
 }	 // namespace cui

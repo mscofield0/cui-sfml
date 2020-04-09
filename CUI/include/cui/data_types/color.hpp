@@ -52,7 +52,7 @@ private:
 	color_type data_;
 };
 
-constexpr const Color transparent = Color(0), black = Color(0, 0, 0), white = Color(255, 255, 255);
+constexpr Color Color::transparent = Color(0), Color::black = Color(0, 0, 0), Color::white = Color(255, 255, 255);
 
 }	 // namespace cui::data_types
 

@@ -1,6 +1,8 @@
 #ifndef CUI_SFML_RENDER_CONTEXT_HPP
 #define CUI_SFML_RENDER_CONTEXT_HPP
 
+#include <iostream>
+
 #include <functional>
 #include <utility>
 
@@ -65,17 +67,16 @@ private:
 void RenderContext::init(const WindowOptions& options) {
 	const auto& [w, h, title, style, ctx_settings] = options;
 	auto& sg = graph().get();
-	i32 width = w;
-	i32 height = h;
-	if (w == 0 && h == 0) {
-		width = sg.root().default_schematic().width().integer_value();
-		height = sg.root().default_schematic().height().integer_value();
-	} else {
-		sg.root().default_schematic().width() = static_cast<int>(w);
-		sg.root().default_schematic().height() = static_cast<int>(h);
+	sg.root().default_schematic().width() = static_cast<int>(w);
+	sg.root().default_schematic().height() = static_cast<int>(h);
+	auto& e_schemes = sg.root().event_schematics();
+	for (auto it = e_schemes.begin(); it != e_schemes.end(); ++it) {
+		it.value().width() = static_cast<int>(w);
+		it.value().height() = static_cast<int>(h);
 	}
+	cache_.update_root(graph_);
 
-	window_ = std::make_unique<sf::RenderWindow>(sf::VideoMode(width, height), title, style, ctx_settings);
+	window_ = std::make_unique<sf::RenderWindow>(sf::VideoMode(w, h), title, style, ctx_settings);
 }
 
 void RenderContext::update() {

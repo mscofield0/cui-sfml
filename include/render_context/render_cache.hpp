@@ -1,12 +1,16 @@
 #ifndef CUI_SFML_RENDER_CACHE_HPP
 #define CUI_SFML_RENDER_CACHE_HPP
 
+#include <iostream>
+
 #include <cui/containers/vector.hpp>
 #include <cui/visual/node.hpp>
 #include <cui/visual/scene_graph.hpp>
 #include <render_context/visual_element.hpp>
 #include <render_context/detail/set_x.hpp>
 #include <render_context/detail/set_y.hpp>
+
+#include <render_context/detail/intermediaries/color.hpp>
 #include <aliases.hpp>
 
 namespace cui {
@@ -14,16 +18,25 @@ namespace cui {
 class RenderCache : public Vector<VisualElement>
 {
 public:
+	[[nodiscard]] auto len() const noexcept -> u64 {
+		return this->size() - 1;
+	}
+
 	static RenderCache populate(const SceneGraph& graph);
 	void update_ve(const SceneGraph& graph, const Node& node, u64 index);
 	void update_root(const SceneGraph& graph);
 	void update_cache(const SceneGraph& graph);
 
+	static void handle_background(const Schematic& scheme, VisualElement& ve);
 	static void handle_x(const Schematic& scheme, VisualElement& ve);
 	static void handle_y(const Schematic& scheme, VisualElement& ve);
+	static void handle_width(const Schematic& scheme, VisualElement& ve);
+	static void handle_height(const Schematic& scheme, VisualElement& ve);
 
 	void handle_rule_x(const SceneGraph& graph, const Schematic& scheme, VisualElement& ve, u64 index);
 	void handle_rule_y(const SceneGraph& graph, const Schematic& scheme, VisualElement& ve, u64 index);
+	void handle_rule_width(const SceneGraph& graph, const Schematic& scheme, VisualElement& ve, u64 index);
+	void handle_rule_height(const SceneGraph& graph, const Schematic& scheme, VisualElement& ve, u64 index);
 };
 
 RenderCache RenderCache::populate(const SceneGraph& graph) {
@@ -39,7 +52,7 @@ void RenderCache::update_cache(const SceneGraph& graph) {
 	update_root(graph);
 
 	for (const auto& node_it : graph) {
-		if (node_it.index() > size()) this->emplace_back();
+		if (node_it.index() >= len()) this->emplace_back();
 		update_ve(graph, node_it.data(), node_it.index());
 	}
 }
@@ -59,18 +72,58 @@ void RenderCache::update_ve(const SceneGraph& graph, const Node& node, const u64
 	} else {
 		handle_x(scheme, ve);
 	}
+
+	if (scheme.y_rule()) {
+		handle_rule_y(graph, scheme, ve, index);
+	} else {
+		handle_y(scheme, ve);
+	}
+
+	if (scheme.width_rule()) {
+		handle_rule_width(graph, scheme, ve, index);
+	} else {
+		handle_width(scheme, ve);
+	}
+
+	if (scheme.height_rule()) {
+		handle_rule_height(graph, scheme, ve, index);
+	} else {
+		handle_height(scheme, ve);
+	}
+
+	handle_background(scheme, ve);
+}
+
+void RenderCache::handle_background(const Schematic& scheme, VisualElement& ve) {
+	const auto& val = scheme.background().rgba();
+	// Add support for images later
+	ve.setFillColor(intermediary::Color{val});
 }
 
 void RenderCache::handle_x(const Schematic& scheme, VisualElement& ve) {
 	const auto& val = scheme.x().integer_value();
 	const auto y = ve.getPosition().y;
+	std::cout << "HANDLE_X | X:" << val << ",Y:" << y << '\n';
 	ve.setPosition(val, y);
 }
 
 void RenderCache::handle_y(const Schematic& scheme, VisualElement& ve) {
 	const auto& val = scheme.y().integer_value();
 	const auto x = ve.getPosition().x;
+	std::cout << "HANDLE_Y | X:" << x << ",Y:" << val << '\n';
 	ve.setPosition(x, val);
+}
+
+void RenderCache::handle_width(const Schematic& scheme, VisualElement& ve) {
+	const auto& val = scheme.width().integer_value();
+	const auto h = ve.getSize().y;
+	ve.setSize(sf::Vector2f(val, h));
+}
+
+void RenderCache::handle_height(const Schematic& scheme, VisualElement& ve) {
+	const auto& val = scheme.height().integer_value();
+	const auto w = ve.getSize().x;
+	ve.setSize(sf::Vector2f(w, val));
 }
 
 void RenderCache::handle_rule_x(const SceneGraph& graph, const Schematic& scheme, VisualElement& ve, const u64 index) {
@@ -157,6 +210,26 @@ void RenderCache::handle_rule_y(const SceneGraph& graph, const Schematic& scheme
 			}
 		}
 	}
+}
+
+void RenderCache::handle_rule_width(const SceneGraph& graph,
+									const Schematic& scheme,
+									VisualElement& ve,
+									const u64 index) {
+	const auto& val = scheme.width();
+	const auto [w, h] = ve.getSize();
+
+	ve.setSize(sf::Vector2f(w * val.float_value(), h));
+}
+
+void RenderCache::handle_rule_height(const SceneGraph& graph,
+									const Schematic& scheme,
+									VisualElement& ve,
+									const u64 index) {
+	const auto& val = scheme.height();
+	const auto [w, h] = ve.getSize();
+
+	ve.setSize(sf::Vector2f(w, h * val.float_value()));
 }
 
 }	 // namespace cui
