@@ -47,10 +47,10 @@ RM = D:\Coding\__C_C++\CMake\bin\cmake.exe -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = D:\Coding\__GIT\CUI-SFML
+CMAKE_SOURCE_DIR = C:\Users\zec\CUI-SFML
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = D:\Coding\__GIT\CUI-SFML
+CMAKE_BINARY_DIR = C:\Users\zec\CUI-SFML
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -79,14 +79,14 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /d D:\Coding\__GIT\CUI-SFML && $(CMAKE_COMMAND) -E cmake_progress_start D:\Coding\__GIT\CUI-SFML\CMakeFiles D:\Coding\__GIT\CUI-SFML\CUI\CMakeFiles\progress.marks
-	cd /d D:\Coding\__GIT\CUI-SFML && $(MAKE) -f CMakeFiles\Makefile2 CUI/all
-	$(CMAKE_COMMAND) -E cmake_progress_start D:\Coding\__GIT\CUI-SFML\CMakeFiles 0
+	cd /d C:\Users\zec\CUI-SFML && $(CMAKE_COMMAND) -E cmake_progress_start C:\Users\zec\CUI-SFML\CMakeFiles C:\Users\zec\CUI-SFML\CUI\CMakeFiles\progress.marks
+	cd /d C:\Users\zec\CUI-SFML && $(MAKE) -f CMakeFiles\Makefile2 CUI/all
+	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\zec\CUI-SFML\CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /d D:\Coding\__GIT\CUI-SFML && $(MAKE) -f CMakeFiles\Makefile2 CUI/clean
+	cd /d C:\Users\zec\CUI-SFML && $(MAKE) -f CMakeFiles\Makefile2 CUI/clean
 .PHONY : clean
 
 # The main clean target
@@ -96,17 +96,17 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /d D:\Coding\__GIT\CUI-SFML && $(MAKE) -f CMakeFiles\Makefile2 CUI/preinstall
+	cd /d C:\Users\zec\CUI-SFML && $(MAKE) -f CMakeFiles\Makefile2 CUI/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /d D:\Coding\__GIT\CUI-SFML && $(MAKE) -f CMakeFiles\Makefile2 CUI/preinstall
+	cd /d C:\Users\zec\CUI-SFML && $(MAKE) -f CMakeFiles\Makefile2 CUI/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /d D:\Coding\__GIT\CUI-SFML && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles\Makefile.cmake 1
+	cd /d C:\Users\zec\CUI-SFML && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles\Makefile.cmake 1
 .PHONY : depend
 
 # Help Target
@@ -128,6 +128,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /d D:\Coding\__GIT\CUI-SFML && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles\Makefile.cmake 0
+	cd /d C:\Users\zec\CUI-SFML && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles\Makefile.cmake 0
 .PHONY : cmake_check_build_system
 
