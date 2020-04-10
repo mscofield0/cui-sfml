@@ -6,6 +6,7 @@
 #include <compile_time/styles/definition.hpp>
 #include <compile_time/styles/detail/values/validate_attribute_type.hpp>
 #include <compile_time/styles/detail/values/is_correct_value_for_attr_type.hpp>
+#include <compile_time/styles/detail/values/filter_preprocessed_type.hpp>
 #include <compile_time/styles/detail/helper_macros.hpp>
 #include <compile_time/styles/parse_attribute_value.hpp>
 
@@ -66,9 +67,10 @@ public:
 			if (!styles::detail::is_correct_value_for_attr_type(attribute.type(), attr_value_variant.type_a().data())) {
 				RETURN_ERROR("ERROR: Received wrong value for attribute.");
 			}
-			style.attributes().emplace_back(attribute.type(),
-											attr_value_variant.type_a().data(),
-											attr_value_variant.type_a().preprocessed_type());
+
+			const auto pp_type = attr_value_variant.type_a().preprocessed_type();
+			const auto filtered_type = styles::detail::filter_preprocessed_type(attribute.type(), pp_type);
+			style.attributes().emplace_back(attribute.type(), attr_value_variant.type_a().data(), filtered_type);
 		}
 
 		return style;

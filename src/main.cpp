@@ -21,6 +21,7 @@
 #include <render_context/render_context.hpp>
 #include <render_context/detail/intermediaries/color.hpp>
 #include <engine/event_manager.hpp>
+#include <cui/utils/print.hpp>
 
 std::ostream& operator<<(std::ostream& os, const cui::ct::StringView str) {
 	for (const auto ch : str) os << ch;
@@ -31,16 +32,6 @@ template <cui::u32 Size>
 std::ostream& operator<<(std::ostream& os, const cui::ct::Format<Size>& format) {
 	os << format.data().data();
 	return os;
-}
-template <typename... Args>
-void print(Args... args) {
-	((std::cout << args << ' '), ...);
-}
-
-template <typename... Args>
-void println(Args... args) {
-	((std::cout << args << ' '), ...);
-	std::cout << '\n';
 }
 
 std::ostream& operator<<(std::ostream& os, const cui::ct::styles::Definition& val) {
@@ -106,9 +97,12 @@ std::ostream& operator<<(std::ostream& os, const cui::ValueData& val) {
 			os << val.vec4().back() << ')';
 			break;
 		}
-		default: {
+		case cui::data_types::DataTypes::Instruction: {
 			os << "Instruction";
 			break;
+		}
+		default: {
+			throw std::logic_error("Shouldn't happen!");
 		}
 	}
 	return os;
@@ -304,7 +298,7 @@ int main() {
 	}
 
 	println("Creating the renderwindow...");
-	window->init({800, 600, "Title", sf::Style::Default, sf::ContextSettings{}});
+	window->init({800, 600, "Title", sf::Style::Default, sf::ContextSettings{}, 60});
 
 	for (const auto& ve : window->ctx_.cache()) {
 		println(ve, "\n///////////////////////////////////////////////////\n");

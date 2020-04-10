@@ -1,0 +1,200 @@
+root{
+        Text:
+        Default attributes:
+                x: 0
+                y: 0
+                width: 0
+                height: 0
+                background: rgba(255,255,255,255)
+                text_color: rgba(0,0,0,255)
+                font_size: 0
+
+        Active schematic
+                x: 0
+                y: 0
+                width: 0
+                height: 0
+                background: rgba(255,255,255,255)
+                text_color: rgba(0,0,0,255)
+                font_size: 0
+
+}block1{
+        Text: Yo whaddup
+        Index: 0 | Depth: 0
+        Default attributes:
+                x: 0
+                y: 0
+                width: 4.89[RULE]
+                height: 9.89[RULE]
+                background: rgba(255,0,0,255)
+                text_color: rgba(0,0,0,255)
+                font_size: 0
+
+        Active schematic
+                x: 0
+                y: 0
+                width: 4.89[RULE]
+                height: 9.89[RULE]
+                background: rgba(255,0,0,255)
+                text_color: rgba(0,0,0,255)
+                font_size: 0
+
+}block4{
+        Text: This block has the circle style
+        Index: 1 | Depth: 0
+        Default attributes:
+                x: 4.89[RULE]
+                y: 0
+                width: 4.89[RULE]
+                height: 0
+                background: rgba(0,0,255,255)
+                text_color: rgba(0,0,0,255)
+                font_size: 0
+
+        Active schematic
+                x: 4.89[RULE]
+                y: 0
+                width: 4.89[RULE]
+                height: 0
+                background: rgba(0,0,255,255)
+                text_color: rgba(0,0,0,255)
+                font_size: 0
+
+}block2{
+        Text: This block has the triangle style
+        Index: 2 | Depth: 1
+        Default attributes:
+                x: 0
+                y: 70
+                width: 20
+                height: 20
+                background: rgba(0,255,0,255)
+                text_color: rgba(0,0,0,255)
+                font_size: 0
+
+        Active schematic
+                x: 0
+                y: 70
+                width: 20
+                height: 20
+                background: rgba(0,255,0,255)
+                text_color: rgba(0,0,0,255)
+                font_size: 0
+
+}block5{
+        Text: This one too! "Also this is a check if apostrophies work"
+        Index: 3 | Depth: 1
+        Default attributes:
+                x: 0
+                y: 0
+                width: 50
+                height: 50
+                background: rgba(0,0,255,255)
+                text_color: rgba(0,0,0,255)
+                font_size: 0
+
+        Active schematic
+                x: 0
+                y: 0
+                width: 50
+                height: 50
+                background: rgba(0,0,255,255)
+                text_color: rgba(0,0,0,255)
+                font_size: 0
+
+}block3{
+        Text: This block has no styles
+        Index: 4 | Depth: 2
+        Default attributes:
+                x: 0
+                y: 0
+                width: 0
+                height: 0
+                background: rgba(0,0,0,0)
+                text_color: rgba(0,0,0,255)
+                font_size: 0
+
+        Active schematic
+                x: 0
+                y: 0
+                width: 0
+                height: 0
+                background: rgba(0,0,0,0)
+                text_color: rgba(0,0,0,255)
+                font_size: 0
+
+}
+VE:
+        X:0,Y:0
+        W:0,H:0
+        rgba(255,255,255,255)
+///////////////////////////////////////////////////
+
+VE:
+        X:0,Y:0
+        W:0,H:0
+        rgba(255,0,0,255)
+///////////////////////////////////////////////////
+
+VE:
+        X:0,Y:0
+        W:0,H:0
+        rgba(0,0,255,255)
+///////////////////////////////////////////////////
+
+VE:
+        X:0,Y:70
+        W:20,H:20
+        rgba(0,255,0,255)
+///////////////////////////////////////////////////
+
+VE:
+        X:0,Y:0
+        W:50,H:50
+        rgba(0,0,255,255)
+///////////////////////////////////////////////////
+
+VE:
+        X:0,Y:0
+        W:0,H:0
+        rgba(0,0,0,0)
+///////////////////////////////////////////////////
+
+Creating the renderwindow...
+HANDLE_X | X:0,Y:0
+HANDLE_Y | X:0,Y:0
+VE:
+        X:0,Y:0
+        W:800,H:600
+        rgba(255,255,255,255)
+///////////////////////////////////////////////////
+
+VE:
+        X:0,Y:0
+        W:0,H:0
+        rgba(255,0,0,255)
+///////////////////////////////////////////////////
+
+VE:
+        X:0,Y:0
+        W:0,H:0
+        rgba(0,0,255,255)
+///////////////////////////////////////////////////
+
+VE:
+        X:0,Y:70
+        W:20,H:20
+        rgba(0,255,0,255)
+///////////////////////////////////////////////////
+
+VE:
+        X:0,Y:0
+        W:50,H:50
+        rgba(0,0,255,255)
+///////////////////////////////////////////////////
+
+VE:
+        X:0,Y:0
+        W:0,H:0
+        rgba(0,0,0,0)
+///////////////////////////////////////////////////

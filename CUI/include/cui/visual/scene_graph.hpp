@@ -1,6 +1,8 @@
 #ifndef CUI_SCENE_GRAPH_HPP
 #define CUI_SCENE_GRAPH_HPP
 
+#include <utils/print.hpp>
+
 #include <algorithm>
 #include <optional>
 #include <iterator>
@@ -31,7 +33,7 @@ public:
 
 	[[nodiscard]] auto get_parent_index(size_type index) const noexcept -> size_type;
 
-	[[nodiscard]] auto get_parent(size_type index) const noexcept -> std::optional<const_iterator>;
+	[[nodiscard]] auto get_parent(size_type index) noexcept -> value_type&;
 
 	void add_node(const_reference val);
 
@@ -72,28 +74,16 @@ SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& 
 		for (const auto style_name : block.style_list()) {
 			bool style_name_exists = false;
 			for (const auto& t_style : sc) {
-				if (style_name != t_style.name() || t_style.name().compare("root") == 0) continue;
+				if (t_style.name().compare("root") == 0) {
+					apply_style(root_, t_style);
+				}
+				if (style_name != t_style.name()) continue;
 				if (style_name_exists == false) style_name_exists = true;
-				if (t_style.events().empty()) {
-					for (const auto& attr_data : t_style.attributes()) {
-						node.default_schematic().assign(attr_data);
-					}
-					continue;
-				}
-
-				auto sv = t_style.events().front();
-				auto& map_el = node.event_schematics()[std::string{sv.begin(), sv.end()}];
-				for (const auto& attr_data : t_style.attributes()) {
-					map_el.assign(attr_data);
-				}
-				for (auto it = t_style.events().begin() + 1; it != t_style.events().end(); ++it) {
-					node.event_schematics()[std::string{it->begin(), it->end()}] = map_el;
-				}
+				apply_style(node, t_style);
 			}
 			// Maybe add a global logging buffer/system?
 		}
 	}
-
 	for (const auto& depth : sr.depths()) {
 		this->depths().push_back(depth);
 	}
@@ -245,10 +235,10 @@ auto SceneGraph::get_parent_index(const size_type index) const noexcept -> size_
 	return std::distance(children().begin(), it);
 }
 
-auto SceneGraph::get_parent(const size_type index) const noexcept -> std::optional<const_iterator> {
+auto SceneGraph::get_parent(const size_type index) noexcept -> value_type& {
 	const auto idx = get_parent_index(index);
-	if (idx == length()) return std::nullopt;
-	return tree_t::operator[](idx);
+	if (idx == length()) return root_;
+	return tree_t::operator[](idx).data();
 }
 
 void SceneGraph::apply_style(value_type& node, const ct::Style& style) {

@@ -20,8 +20,7 @@ public:
 	using graph_ref = std::reference_wrapper<SceneGraph>;
 	using node_iterator_t = typename SceneGraph::const_iterator;
 	using window_ptr_t = std::unique_ptr<sf::RenderWindow>;
-	RenderContext(SceneGraph& p_graph)
-		: graph_(std::ref(p_graph)), cache_(RenderCache::populate(graph_.get())), window_(nullptr) {}
+	RenderContext(SceneGraph& p_graph) : graph_(std::ref(p_graph)), cache_(), window_(nullptr) {}
 
 	RenderContext(const RenderContext&) = delete;
 	RenderContext(RenderContext&&) = delete;
@@ -65,7 +64,7 @@ private:
 };
 
 void RenderContext::init(const WindowOptions& options) {
-	const auto& [w, h, title, style, ctx_settings] = options;
+	const auto& [w, h, title, style, ctx_settings, framerate] = options;
 	auto& sg = graph().get();
 	sg.root().default_schematic().width() = static_cast<int>(w);
 	sg.root().default_schematic().height() = static_cast<int>(h);
@@ -74,9 +73,10 @@ void RenderContext::init(const WindowOptions& options) {
 		it.value().width() = static_cast<int>(w);
 		it.value().height() = static_cast<int>(h);
 	}
-	cache_.update_root(graph_);
+	cache_ = RenderCache::populate(graph_.get());
 
 	window_ = std::make_unique<sf::RenderWindow>(sf::VideoMode(w, h), title, style, ctx_settings);
+	window_->setFramerateLimit(framerate);
 }
 
 void RenderContext::update() {

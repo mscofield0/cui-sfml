@@ -1,6 +1,8 @@
 #ifndef CUI_SCHEMATIC_HPP
 #define CUI_SCHEMATIC_HPP
 
+#include <utils/print.hpp>
+
 #include <visual/attributes.hpp>
 #include <visual/rules.hpp>
 #include <compile_time/styles/attribute_data.hpp>
@@ -35,6 +37,9 @@ public:
 						this->set_x_rule(true);
 						break;
 					}
+					default: {
+						break;
+					}
 				}
 				break;
 			}
@@ -46,14 +51,20 @@ public:
 						this->set_y_rule(true);
 						break;
 					}
+					default: {
+						break;
+					}
 				}
 				break;
 			}
 			case AttributeIndexes::Width: {
 				this->width_ = value;
 				switch (pp_type) {
-					case ValueType::Percentage:{
+					case ValueType::Percentage: {
 						this->set_width_rule(true);
+						break;
+					}
+					default: {
 						break;
 					}
 				}
@@ -62,8 +73,11 @@ public:
 			case AttributeIndexes::Height: {
 				this->height_ = value;
 				switch (pp_type) {
-					case ValueType::Percentage:{
+					case ValueType::Percentage: {
 						this->set_height_rule(true);
+						break;
+					}
+					default: {
 						break;
 					}
 				}

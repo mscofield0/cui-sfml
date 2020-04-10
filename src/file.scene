@@ -1,7 +1,7 @@
 R"(
-block1 "square" <Yo whaddup>
+block1 "left_panel" <Yo whaddup>
 	block2 "triangle" <This block has the triangle style>
 		block3 <This block has no styles>
-block4 "circle" <This block has the circle style>
+block4 "right_panel" <This block has the circle style>
 	block5 "circle" <This one too! "Also this is a check if apostrophies work">
 )"

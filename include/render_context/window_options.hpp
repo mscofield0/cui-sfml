@@ -16,6 +16,7 @@ public:
 	std::string title;
 	u32 style;
 	sf::ContextSettings ctx_settings;
+	u32 framerate;
 };
 
 }	 // namespace cui

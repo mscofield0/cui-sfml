@@ -1,5 +1,5 @@
-#ifndef CUI_CT_DATA_TYPES_HPP
-#define CUI_CT_DATA_TYPES_HPP
+#ifndef CUI_DATA_TYPES_HPP
+#define CUI_DATA_TYPES_HPP
 
 #include <aliases.hpp>
 
@@ -19,4 +19,4 @@ enum class DataTypes : byte
 
 }	 // namespace cui::data_types
 
-#endif	  // CUI_CT_DATA_TYPES_HPP
+#endif	  // CUI_DATA_TYPES_HPP

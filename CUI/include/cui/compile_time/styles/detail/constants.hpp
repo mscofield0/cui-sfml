@@ -28,8 +28,8 @@ constexpr auto make_sv_array(T arg, Args... args) -> std::array<StringView, size
 enum class FunctionId : byte
 {
 	RGBA = 0,
-	RGB,
-	Vec
+	Vec,
+	Url
 };
 
 // Group: Attribute name <-> Attribute type
@@ -58,13 +58,15 @@ constexpr auto attribute_types =
 constexpr auto function_names =
     make_sv_array(
         "rgba",
-        "vec"
+        "vec",
+		"url"
     );
 
 constexpr auto function_ids = 
     make_array<FunctionId>(
         FunctionId::RGBA,
-        FunctionId::Vec
+        FunctionId::Vec,
+		FunctionId::Url
     );
 
 
@@ -75,6 +77,7 @@ constexpr auto string_names =
         "red",
         "green",
         "blue",
+		"yellow",
         "transparent",
 		"white",
 		"black",
@@ -87,6 +90,7 @@ constexpr auto string_values =
         ValueData{Color(255, 0, 0 )},
         ValueData{Color(0, 255, 0 )},
         ValueData{Color(0, 0, 255 )},
+        ValueData{Color(0, 255, 255)},
         ValueData{Color(0, 0, 0, 0)},
         ValueData{Color::white},
         ValueData{Color::black},

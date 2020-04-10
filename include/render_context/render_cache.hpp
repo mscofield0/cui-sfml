@@ -1,7 +1,7 @@
 #ifndef CUI_SFML_RENDER_CACHE_HPP
 #define CUI_SFML_RENDER_CACHE_HPP
 
-#include <iostream>
+#include <cui/utils/print.hpp>
 
 #include <cui/containers/vector.hpp>
 #include <cui/visual/node.hpp>
@@ -33,10 +33,10 @@ public:
 	static void handle_width(const Schematic& scheme, VisualElement& ve);
 	static void handle_height(const Schematic& scheme, VisualElement& ve);
 
-	void handle_rule_x(const SceneGraph& graph, const Schematic& scheme, VisualElement& ve, u64 index);
-	void handle_rule_y(const SceneGraph& graph, const Schematic& scheme, VisualElement& ve, u64 index);
-	void handle_rule_width(const SceneGraph& graph, const Schematic& scheme, VisualElement& ve, u64 index);
-	void handle_rule_height(const SceneGraph& graph, const Schematic& scheme, VisualElement& ve, u64 index);
+	void handle_rule_x(const VisualElement& parent_ve, const Schematic& scheme, VisualElement& ve);
+	void handle_rule_y(const VisualElement& parent_ve, const Schematic& scheme, VisualElement& ve);
+	void handle_rule_width(const VisualElement& parent_ve, const Schematic& scheme, VisualElement& ve);
+	void handle_rule_height(const VisualElement& parent_ve, const Schematic& scheme, VisualElement& ve);
 };
 
 RenderCache RenderCache::populate(const SceneGraph& graph) {
@@ -66,29 +66,32 @@ void RenderCache::update_root(const SceneGraph& graph) {
 void RenderCache::update_ve(const SceneGraph& graph, const Node& node, const u64 index) {
 	auto& ve = this->operator[](index + 1);
 	const auto& scheme = node.active_schematic().get();
-
-	if (scheme.x_rule()) {
-		handle_rule_x(graph, scheme, ve, index);
-	} else {
-		handle_x(scheme, ve);
-	}
-
-	if (scheme.y_rule()) {
-		handle_rule_y(graph, scheme, ve, index);
-	} else {
-		handle_y(scheme, ve);
-	}
+	auto parent_index = graph.get_parent_index(index);
+	parent_index = parent_index == graph.length() ? 0 : parent_index + 1;
+	const auto& parent_ve = this->operator[](parent_index);
 
 	if (scheme.width_rule()) {
-		handle_rule_width(graph, scheme, ve, index);
+		handle_rule_width(parent_ve, scheme, ve);
 	} else {
 		handle_width(scheme, ve);
 	}
 
 	if (scheme.height_rule()) {
-		handle_rule_height(graph, scheme, ve, index);
+		handle_rule_height(parent_ve, scheme, ve);
 	} else {
 		handle_height(scheme, ve);
+	}
+
+	if (scheme.x_rule()) {
+		handle_rule_x(parent_ve, scheme, ve);
+	} else {
+		handle_x(scheme, ve);
+	}
+
+	if (scheme.y_rule()) {
+		handle_rule_y(parent_ve, scheme, ve);
+	} else {
+		handle_y(scheme, ve);
 	}
 
 	handle_background(scheme, ve);
@@ -103,14 +106,12 @@ void RenderCache::handle_background(const Schematic& scheme, VisualElement& ve) 
 void RenderCache::handle_x(const Schematic& scheme, VisualElement& ve) {
 	const auto& val = scheme.x().integer_value();
 	const auto y = ve.getPosition().y;
-	std::cout << "HANDLE_X | X:" << val << ",Y:" << y << '\n';
 	ve.setPosition(val, y);
 }
 
 void RenderCache::handle_y(const Schematic& scheme, VisualElement& ve) {
 	const auto& val = scheme.y().integer_value();
 	const auto x = ve.getPosition().x;
-	std::cout << "HANDLE_Y | X:" << x << ",Y:" << val << '\n';
 	ve.setPosition(x, val);
 }
 
@@ -126,11 +127,15 @@ void RenderCache::handle_height(const Schematic& scheme, VisualElement& ve) {
 	ve.setSize(sf::Vector2f(w, val));
 }
 
-void RenderCache::handle_rule_x(const SceneGraph& graph, const Schematic& scheme, VisualElement& ve, const u64 index) {
+void RenderCache::handle_rule_x(const VisualElement& parent_ve, const Schematic& scheme, VisualElement& ve) {
 	const auto& val = scheme.x();
+
+	println("IS IT AN INSTRUCTION? ", val.is_instruction());
+
 	if (val.is_float()) {
 		const auto [x, y] = ve.getPosition();
-		const auto w = ve.getSize().x;
+		const auto w = parent_ve.getSize().x;
+
 		// Relative position in the box
 		const float rel_pos = static_cast<i32>(w * val.float_value());
 		// Absolute position on the window
@@ -140,19 +145,13 @@ void RenderCache::handle_rule_x(const SceneGraph& graph, const Schematic& scheme
 	} else if (val.is_instruction()) {
 		using namespace data_types;
 
-		const auto parent_index = graph.get_parent_index(index);
-		float x, y, w;
-		if (parent_index == graph.length()) {
-			const auto& root_scheme = graph.root().active_schematic().get();
-			x = root_scheme.x().integer_value();
-			y = ve.getPosition().y;
-			w = root_scheme.width().integer_value();
-		} else {
-			const auto& parent_ve = this->operator[](parent_index + 1);
-			x = parent_ve.getPosition().x;
-			y = ve.getPosition().y;
-			w = parent_ve.getSize().x;
-		}
+		const auto x = parent_ve.getPosition().x;
+		const auto y = ve.getPosition().y;
+		const auto w = parent_ve.getSize().x;
+
+		println("X instruction | Parent position x:", x);
+		println("X instruction | Current position y:", y);
+		println("X instruction | Parent width:", w);
 
 		switch (val.instruction().active()) {
 			case Functions::Left: {
@@ -169,11 +168,12 @@ void RenderCache::handle_rule_x(const SceneGraph& graph, const Schematic& scheme
 	}
 }
 
-void RenderCache::handle_rule_y(const SceneGraph& graph, const Schematic& scheme, VisualElement& ve, const u64 index) {
+void RenderCache::handle_rule_y(const VisualElement& parent_ve, const Schematic& scheme, VisualElement& ve) {
 	const auto& val = scheme.y();
 	if (val.is_float()) {
 		const auto [x, y] = ve.getPosition();
-		const auto h = ve.getSize().y;
+		const auto h = parent_ve.getSize().y;
+
 		// Relative position in the box
 		const float rel_pos = static_cast<i32>(h * val.float_value());
 		// Absolute position on the window
@@ -183,19 +183,13 @@ void RenderCache::handle_rule_y(const SceneGraph& graph, const Schematic& scheme
 	} else if (val.is_instruction()) {
 		using namespace data_types;
 
-		const auto parent_index = graph.get_parent_index(index);
-		float x, y, h;
-		if (parent_index == graph.length()) {
-			const auto& root_scheme = graph.root().active_schematic().get();
-			x = ve.getPosition().x;
-			y = root_scheme.y().integer_value();
-			h = root_scheme.height().integer_value();
-		} else {
-			const auto& parent_ve = this->operator[](parent_index + 1);
-			x = ve.getPosition().y;
-			y = parent_ve.getPosition().x;
-			h = parent_ve.getSize().y;
-		}
+		const auto x = ve.getPosition().x;
+		const auto y = parent_ve.getPosition().y;
+		const auto h = parent_ve.getSize().y;
+
+		println("Y instruction | Parent position y:", y);
+		println("Y instruction | Current position x:", x);
+		println("Y instruction | Parent height:", h);
 
 		switch (val.instruction().active()) {
 			case Functions::Top: {
@@ -212,22 +206,18 @@ void RenderCache::handle_rule_y(const SceneGraph& graph, const Schematic& scheme
 	}
 }
 
-void RenderCache::handle_rule_width(const SceneGraph& graph,
-									const Schematic& scheme,
-									VisualElement& ve,
-									const u64 index) {
+void RenderCache::handle_rule_width(const VisualElement& parent_ve, const Schematic& scheme, VisualElement& ve) {
 	const auto& val = scheme.width();
-	const auto [w, h] = ve.getSize();
+	const auto w = parent_ve.getSize().x;
+	const auto h = ve.getSize().y;
 
 	ve.setSize(sf::Vector2f(w * val.float_value(), h));
 }
 
-void RenderCache::handle_rule_height(const SceneGraph& graph,
-									const Schematic& scheme,
-									VisualElement& ve,
-									const u64 index) {
+void RenderCache::handle_rule_height(const VisualElement& parent_ve, const Schematic& scheme, VisualElement& ve) {
 	const auto& val = scheme.height();
-	const auto [w, h] = ve.getSize();
+	const auto w = ve.getSize().x;
+	const auto h = parent_ve.getSize().y;
 
 	ve.setSize(sf::Vector2f(w, h * val.float_value()));
 }
