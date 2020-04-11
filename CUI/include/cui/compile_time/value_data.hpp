@@ -5,6 +5,7 @@
 #include <data_types/vec.hpp>
 #include <data_types/instruction.hpp>
 #include <data_types/data_types.hpp>
+#include <compile_time/string/string_view.hpp>
 
 namespace cui::ct {
 
@@ -24,6 +25,7 @@ public:
 	constexpr ValueData(const Vec3f& v3) : active_(DataTypes::Vec3), vec3_(v3) {}
 	constexpr ValueData(const Vec4f& v4) : active_(DataTypes::Vec4), vec4_(v4) {}
 	constexpr ValueData(const Instruction& instr) : active_(DataTypes::Instruction), instruction_(instr) {}
+	constexpr ValueData(const StringView str) : active_(DataTypes::String), string_(str) {}
 	constexpr ValueData(const ValueData& other) = default;
 
 	constexpr ValueData& operator=(const ValueData& a) {
@@ -58,6 +60,10 @@ public:
 			}
 			case DataTypes::Instruction: {
 				instruction_ = a.instruction();
+				return (*this);
+			}
+			case DataTypes::String: {
+				string_ = a.string();
 				return (*this);
 			}
 		}
@@ -107,41 +113,51 @@ public:
 		return (*this);
 	}
 
+	constexpr ValueData& operator=(const StringView str) {
+		active_ = DataTypes::String;
+		string_ = str;
+		return (*this);
+	}
+
 	// Checker functions
-	constexpr bool is_none() const noexcept {
+	[[nodiscard]] constexpr bool is_none() const noexcept {
 		return active_ == DataTypes::None;
 	}
 
-	constexpr bool is_rgba() const noexcept {
+	[[nodiscard]] constexpr bool is_rgba() const noexcept {
 		return active_ == DataTypes::Color;
 	}
 
-	constexpr bool is_float() const noexcept {
+	[[nodiscard]] constexpr bool is_float() const noexcept {
 		return active_ == DataTypes::Float;
 	}
 
-	constexpr bool is_int() const noexcept {
+	[[nodiscard]] constexpr bool is_int() const noexcept {
 		return active_ == DataTypes::Int;
 	}
 
-	constexpr bool is_vec2() const noexcept {
+	[[nodiscard]] constexpr bool is_vec2() const noexcept {
 		return active_ == DataTypes::Vec2;
 	}
 
-	constexpr bool is_vec3() const noexcept {
+	[[nodiscard]] constexpr bool is_vec3() const noexcept {
 		return active_ == DataTypes::Vec3;
 	}
 
-	constexpr bool is_vec4() const noexcept {
+	[[nodiscard]] constexpr bool is_vec4() const noexcept {
 		return active_ == DataTypes::Vec4;
 	}
 
-	constexpr bool is_instruction() const noexcept {
+	[[nodiscard]] constexpr bool is_instruction() const noexcept {
 		return active_ == DataTypes::Instruction;
 	}
 
+	[[nodiscard]] constexpr bool is_string() const noexcept {
+		return active_ == DataTypes::String;
+	}
+
 	// Getters
-	[[nodiscard]] constexpr auto rgba() const noexcept -> Color {
+	[[nodiscard]] constexpr auto rgba() const noexcept -> const Color& {
 		return rgba_;
 	}
 
@@ -153,20 +169,24 @@ public:
 		return integer_value_;
 	}
 
-	[[nodiscard]] constexpr auto vec2() const noexcept -> Vec2f {
+	[[nodiscard]] constexpr auto vec2() const noexcept -> const Vec2f& {
 		return vec2_;
 	}
 
-	[[nodiscard]] constexpr auto vec3() const noexcept -> Vec3f {
+	[[nodiscard]] constexpr auto vec3() const noexcept -> const Vec3f& {
 		return vec3_;
 	}
 
-	[[nodiscard]] constexpr auto vec4() const noexcept -> Vec4f {
+	[[nodiscard]] constexpr auto vec4() const noexcept -> const Vec4f& {
 		return vec4_;
 	}
 
-	[[nodiscard]] constexpr auto instruction() const noexcept -> Instruction {
+	[[nodiscard]] constexpr auto instruction() const noexcept -> const Instruction& {
 		return instruction_;
+	}
+
+	[[nodiscard]] constexpr auto string() const noexcept -> const StringView {
+		return string_;
 	}
 
 	[[nodiscard]] constexpr auto active() const noexcept -> DataTypes {
@@ -186,6 +206,7 @@ private:
 		Vec3f vec3_;
 		Vec4f vec4_;
 		Instruction instruction_;
+		StringView string_;
 	};
 };
 

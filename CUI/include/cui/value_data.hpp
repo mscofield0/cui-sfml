@@ -6,6 +6,7 @@
 #include <data_types/instruction.hpp>
 #include <data_types/data_types.hpp>
 #include <compile_time/value_data.hpp>
+#include <string>
 
 namespace cui {
 
@@ -25,13 +26,10 @@ public:
 	ValueData(const Vec3f& v3) : active_(DataTypes::Vec3), vec3_(new Vec3f(v3)) {}
 	ValueData(const Vec4f& v4) : active_(DataTypes::Vec4), vec4_(new Vec4f(v4)) {}
 	ValueData(const Instruction& instr) : active_(DataTypes::Instruction), instruction_(new Instruction(instr)) {}
+	ValueData(const std::string& instr) : active_(DataTypes::String), string_(new std::string(instr)) {}
 	ValueData(const ValueData& other) {
 		active_ = other.active_;
 		switch (other.active_) {
-			case DataTypes::None: {
-				// Do nothing
-				break;
-			}
 			case DataTypes::Color: {
 				rgba_ = new Color(other.rgba());
 				break;
@@ -58,6 +56,13 @@ public:
 			}
 			case DataTypes::Instruction: {
 				instruction_ = new Instruction(other.instruction());
+				break;
+			}
+			case DataTypes::String: {
+				string_ = new std::string(other.string());
+				break;
+			}
+			default: {
 				break;
 			}
 		}
@@ -66,10 +71,6 @@ public:
 	ValueData(const ct::ValueData& other) {
 		active_ = other.active();
 		switch (active_) {
-			case DataTypes::None: {
-				// Do nothing
-				break;
-			}
 			case DataTypes::Color: {
 				rgba_ = new Color(other.rgba());
 				break;
@@ -96,6 +97,14 @@ public:
 			}
 			case DataTypes::Instruction: {
 				instruction_ = new Instruction(other.instruction());
+				break;
+			}
+			case DataTypes::String: {
+				string_ = new std::string(other.string().begin(), other.string().end());
+				break;
+			}
+			default: {
+				// Do nothing
 				break;
 			}
 		}
@@ -105,9 +114,6 @@ public:
 		delete_current_active();
 		active_ = a.active_;
 		switch (a.active_) {
-			case DataTypes::None: {
-				return (*this);
-			}
 			case DataTypes::Color: {
 				rgba_ = new Color(a.rgba());
 				return (*this);
@@ -136,18 +142,20 @@ public:
 				instruction_ = new Instruction(a.instruction());
 				return (*this);
 			}
+			case DataTypes::String: {
+				string_ = new std::string(a.string());
+				return (*this);
+			}
+			default: {
+				return (*this);
+			}
 		}
-		// Wtf?
-		return (*this);
 	}
 
 	ValueData& operator=(const ct::ValueData& a) {
 		delete_current_active();
 		active_ = a.active();
 		switch (active_) {
-			case DataTypes::None: {
-				return (*this);
-			}
 			case DataTypes::Color: {
 				rgba_ = new Color(a.rgba());
 				return (*this);
@@ -176,9 +184,14 @@ public:
 				instruction_ = new Instruction(a.instruction());
 				return (*this);
 			}
+			case DataTypes::String: {
+				string_ = new std::string(a.string().begin(), a.string().end());
+				return (*this);
+			}
+			default: {
+				return (*this);
+			}
 		}
-		// Wtf?
-		return (*this);
 	}
 
 	ValueData& operator=(Color* color) {
@@ -227,6 +240,13 @@ public:
 		delete_current_active();
 		active_ = DataTypes::Instruction;
 		instruction_ = instr;
+		return (*this);
+	}
+
+	ValueData& operator=(std::string* str) {
+		delete_current_active();
+		active_ = DataTypes::String;
+		string_ = str;
 		return (*this);
 	}
 
@@ -279,6 +299,13 @@ public:
 		return (*this);
 	}
 
+	ValueData& operator=(const std::string& str) {
+		delete_current_active();
+		active_ = DataTypes::String;
+		string_ = new std::string(str);
+		return (*this);
+	}
+
 	// Checker functions
 	[[nodiscard]] bool is_none() const noexcept {
 		return active_ == DataTypes::None;
@@ -312,6 +339,10 @@ public:
 		return active_ == DataTypes::Instruction;
 	}
 
+	[[nodiscard]] bool is_string() const noexcept {
+		return active_ == DataTypes::String;
+	}
+
 	// Getters
 	[[nodiscard]] auto rgba() const noexcept -> const Color& {
 		return *rgba_;
@@ -341,6 +372,10 @@ public:
 		return *instruction_;
 	}
 
+	[[nodiscard]] auto string() const noexcept -> const std::string& {
+		return *string_;
+	}
+
 	[[nodiscard]] auto active() const noexcept -> DataTypes {
 		return active_;
 	}
@@ -348,10 +383,6 @@ public:
 private:
 	void delete_current_active() {
 		switch (active_) {
-			case DataTypes::None: {
-				// Do nothing
-				break;
-			}
 			case DataTypes::Color: {
 				delete rgba_;
 				break;
@@ -380,6 +411,14 @@ private:
 				delete instruction_;
 				break;
 			}
+			case DataTypes::String: {
+				delete string_;
+				break;
+			}
+			default: {
+				// Do nothing
+				break;
+			}
 		}
 	}
 
@@ -395,6 +434,7 @@ private:
 		Vec3f* vec3_;
 		Vec4f* vec4_;
 		Instruction* instruction_;
+		std::string* string_;
 	};
 };
 

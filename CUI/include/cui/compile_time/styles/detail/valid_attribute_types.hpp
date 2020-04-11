@@ -14,7 +14,7 @@ public:
 		return x;
 	}
 
-	static const ValidAttributeType Invalid, RGBA, Vec2, Vec3, Vec4, Float, Int, Instruction;
+	static const ValidAttributeType Invalid, RGBA, Vec2, Vec3, Vec4, Float, Int, Instruction, String;
 
 private:
 	u64 x;
@@ -28,7 +28,8 @@ constexpr const ValidAttributeType ValidAttributeType::Invalid    {1 << 0},
                                    ValidAttributeType::Vec4       {1 << 4},
                                    ValidAttributeType::Float      {1 << 5},
                                    ValidAttributeType::Int        {1 << 6},
-                                   ValidAttributeType::Instruction{1 << 7};
+                                   ValidAttributeType::Instruction{1 << 7},
+                                   ValidAttributeType::String	  {1 << 8};
 // clang-format on
 
 constexpr auto operator|(const ValidAttributeType& a, const ValidAttributeType& b) -> u64 {

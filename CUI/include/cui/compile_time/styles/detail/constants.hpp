@@ -45,7 +45,7 @@ constexpr auto attribute_names =
 
 constexpr auto attribute_types = 
     make_array<u64>(
-        ValidAttributeType::RGBA,
+        ValidAttributeType::RGBA | ValidAttributeType::String,
         ValidAttributeType::Int | ValidAttributeType::Float | ValidAttributeType::Instruction,
         ValidAttributeType::Int | ValidAttributeType::Float | ValidAttributeType::Instruction,
         ValidAttributeType::Int | ValidAttributeType::Float,

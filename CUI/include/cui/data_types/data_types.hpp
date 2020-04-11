@@ -14,7 +14,8 @@ enum class DataTypes : byte
 	Vec2,
 	Vec3,
 	Vec4,
-	Instruction
+	Instruction,
+	String
 };
 
 }	 // namespace cui::data_types

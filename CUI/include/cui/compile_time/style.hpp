@@ -7,6 +7,8 @@
 #include <compile_time/styles/detail/values/validate_attribute_type.hpp>
 #include <compile_time/styles/detail/values/is_correct_value_for_attr_type.hpp>
 #include <compile_time/styles/detail/values/filter_preprocessed_type.hpp>
+#include <compile_time/styles/detail/values/parse_url.hpp>
+#include <compile_time/styles/detail/values/value_type.hpp>
 #include <compile_time/styles/detail/helper_macros.hpp>
 #include <compile_time/styles/parse_attribute_value.hpp>
 
@@ -59,13 +61,26 @@ public:
 				RETURN_ERROR("ERROR: Attribute type is invalid.\nProvided: {}", attribute.type());
 			}
 
+			if (attribute.value().substr(0, attribute.value().find_first_of('(')).compare("url") == 0) {
+				const auto parsed_url = styles::detail::parse_url(attribute.value().trim());
+				if (parsed_url.is_none()) {
+					RETURN_ERROR("ERROR: Invalid syntax while parsing URL function. Received: {}\nFunction signature "
+								 "must be in this pattern: func_name(args, ...)",
+								 attribute.value());
+				}
+				style.attributes().emplace_back(attribute.type(), parsed_url.string(), styles::ValueType::String);
+				continue;
+			}
+
 			const auto attr_value_variant = styles::detail::parse_attribute_value(attribute.value());
 			if (attr_value_variant.is_type_b()) {
 				return attr_value_variant.type_b();
 			}
 
 			if (!styles::detail::is_correct_value_for_attr_type(attribute.type(), attr_value_variant.type_a().data())) {
-				RETURN_ERROR("ERROR: Received wrong value for attribute.");
+				RETURN_ERROR("ERROR: Received wrong value for attribute. Attribute type was: {}\nReceived: {}",
+							 attribute.type(),
+							 attribute.value());
 			}
 
 			const auto pp_type = attr_value_variant.type_a().preprocessed_type();

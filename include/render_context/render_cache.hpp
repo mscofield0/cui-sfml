@@ -2,8 +2,11 @@
 #define CUI_SFML_RENDER_CACHE_HPP
 
 #include <cui/utils/print.hpp>
+#include <string>
 
+#include <tsl/hopscotch_map.h>
 #include <cui/containers/vector.hpp>
+#include <cui/utils/get_path_head.hpp>
 #include <cui/visual/node.hpp>
 #include <cui/visual/scene_graph.hpp>
 #include <render_context/visual_element.hpp>
@@ -22,12 +25,12 @@ public:
 		return this->size() - 1;
 	}
 
-	static RenderCache populate(const SceneGraph& graph);
+	static RenderCache populate(SceneGraph& graph);
 	void update_ve(const SceneGraph& graph, const Node& node, u64 index);
 	void update_root(const SceneGraph& graph);
 	void update_cache(const SceneGraph& graph);
 
-	static void handle_background(const Schematic& scheme, VisualElement& ve);
+	void handle_background(const Schematic& scheme, VisualElement& ve);
 	static void handle_x(const Schematic& scheme, VisualElement& ve);
 	static void handle_y(const Schematic& scheme, VisualElement& ve);
 	static void handle_width(const Schematic& scheme, VisualElement& ve);
@@ -37,10 +40,34 @@ public:
 	void handle_rule_y(const VisualElement& parent_ve, const Schematic& scheme, VisualElement& ve);
 	void handle_rule_width(const VisualElement& parent_ve, const Schematic& scheme, VisualElement& ve);
 	void handle_rule_height(const VisualElement& parent_ve, const Schematic& scheme, VisualElement& ve);
+
+private:
+	tsl::hopscotch_map<std::string, sf::Texture> textures_;
 };
 
-RenderCache RenderCache::populate(const SceneGraph& graph) {
+RenderCache RenderCache::populate(SceneGraph& graph) {
 	RenderCache cache;
+
+	for (auto& node : graph.nodes()) {
+		auto& d_scheme = node.default_schematic();
+		auto& e_schemes = node.event_schematics();
+		if (d_scheme.background().is_string()) {
+			const auto& path_head = get_path_head(d_scheme.background().string());
+			if (!cache.textures_.contains(path_head)) {
+				cache.textures_[path_head].loadFromFile(d_scheme.background().string());
+				d_scheme.background() = path_head;
+			}
+		}
+		for (auto it = e_schemes.begin(); it != e_schemes.end(); ++it) {
+			if (it.value().background().is_string()) {
+				const auto& path_head = get_path_head(it.value().background().string());
+				if (cache.textures_.contains(path_head)) continue;
+				cache.textures_[path_head].loadFromFile(it.value().background().string());
+				it.value().background() = path_head;
+			}
+		}
+	}
+
 	cache.reserve(graph.length() + 1);
 	cache.emplace_back();
 	cache.update_cache(graph);
@@ -98,9 +125,13 @@ void RenderCache::update_ve(const SceneGraph& graph, const Node& node, const u64
 }
 
 void RenderCache::handle_background(const Schematic& scheme, VisualElement& ve) {
-	const auto& val = scheme.background().rgba();
+	const auto& val = scheme.background();
 	// Add support for images later
-	ve.setFillColor(intermediary::Color{val});
+	if (val.is_string()) {
+		ve.setTexture(&textures_.at(val.string()));
+		return;
+	}
+	ve.setFillColor(intermediary::Color{val.rgba()});
 }
 
 void RenderCache::handle_x(const Schematic& scheme, VisualElement& ve) {
