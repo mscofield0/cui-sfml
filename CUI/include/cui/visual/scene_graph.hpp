@@ -68,15 +68,19 @@ SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& 
 	this->depths().reserve(AOB);
 	this->children().reserve(AOB);
 
+	for (const auto& t_style : sc) {
+		if (t_style.name().compare("root") == 0) {
+			apply_style(root_, t_style);
+		}
+	}
+
 	for (const auto& block : sr.blocks()) {
 		this->nodes().emplace_back(block.name(), block.text());
 		auto& node = this->nodes().back();
 		for (const auto style_name : block.style_list()) {
 			bool style_name_exists = false;
 			for (const auto& t_style : sc) {
-				if (t_style.name().compare("root") == 0) {
-					apply_style(root_, t_style);
-				}
+				if (t_style.name().compare("root") == 0) continue;
 				if (style_name != t_style.name()) continue;
 				if (style_name_exists == false) style_name_exists = true;
 				apply_style(node, t_style);
@@ -84,6 +88,8 @@ SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& 
 			// Maybe add a global logging buffer/system?
 		}
 	}
+
+
 	for (const auto& depth : sr.depths()) {
 		this->depths().push_back(depth);
 	}
@@ -105,15 +111,19 @@ SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style>& sc)
 	this->depths().reserve(AOB);
 	this->children().reserve(AOB);
 
+	for (const auto& t_style : sc) {
+		if (t_style.name().compare("root") == 0) {
+			apply_style(root_, t_style);
+		}
+	}
+
 	for (const auto& block : sr.blocks()) {
 		this->nodes().emplace_back(block.name(), block.text());
 		auto& node = this->nodes().back();
 		for (const auto style_name : block.style_list()) {
 			bool style_name_exists = false;
 			for (const auto& t_style : sc) {
-				if (t_style.name().compare("root") == 0) {
-					apply_style(root_, t_style);
-				}
+				if (t_style.name().compare("root") == 0) continue;
 				if (style_name != t_style.name()) continue;
 				if (style_name_exists == false) style_name_exists = true;
 				apply_style(node, t_style);
@@ -126,6 +136,8 @@ SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style>& sc)
 		this->depths().push_back(depth);
 	}
 
+	println("After depths");
+
 	for (const auto& c : sr.children()) {
 		this->children().emplace_back();
 
@@ -134,36 +146,23 @@ SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style>& sc)
 		}
 	}
 
+	println("After children");
+	for(const auto& node : this->nodes()) {
+		const auto& val = node.default_schematic().background();
+		if(val.is_string()) {
+			println("Size of string:", val.string().size());
+		}
+	}
+
 	sort();
+
+	println("After sort");
 }
 
 void SceneGraph::sort() {
-	int l = 0;
-	int h = this->length() - 1;
-
-	int* stack = new int[h - l + 1];
-	int top = 1;
-
-	stack[0] = l;
-	stack[1] = h;
-
-	while (top >= 0) {
-		h = stack[top--];
-		l = stack[top--];
-
-		int p = partition(l, h);
-
-		if (p - 1 > l) {
-			stack[++top] = l;
-			stack[++top] = p - 1;
-		}
-
-		if (p + 1 < h) {
-			stack[++top] = p + 1;
-			stack[++top] = h;
-		}
-	}
-	delete[] stack;
+	std::sort(this->begin(), this->end(), [](const auto& lhs, const auto& rhs) {
+		return lhs.depth() > rhs.depth();
+	});
 }
 
 void SceneGraph::add_node(const_reference val) {

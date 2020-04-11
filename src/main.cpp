@@ -101,6 +101,10 @@ std::ostream& operator<<(std::ostream& os, const cui::ValueData& val) {
 			os << "Instruction";
 			break;
 		}
+		case cui::data_types::DataTypes::String: {
+			os << val.string();
+			break;
+		}
 		default: {
 			throw std::logic_error("Shouldn't happen!");
 		}

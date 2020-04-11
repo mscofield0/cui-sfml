@@ -4,8 +4,7 @@
 #include <vector>
 #include <functional>
 
-#include <containers/detail/nary_tree/node_iterator.hpp>
-#include <containers/detail/nary_tree/const_node_iterator.hpp>
+#include <containers/detail/nary_tree/node.hpp>
 #include <aliases.hpp>
 
 namespace cui {
@@ -13,74 +12,60 @@ namespace cui {
 template <typename T>
 class NaryTree
 {
-	friend class NodeIterator<T>;
-	friend class ConstNodeIterator<T>;
-
 public:
-	using value_type = T;
+	using node_type = Node<T>;
+	using data_type = node_type::data_type;
 	using size_type = u64;
 	using difference_type = i64;
-	using reference = value_type&;
-	using const_reference = const value_type&;
-	using pointer = value_type*;
-	using const_pointer = const value_type*;
-	using iterator = NodeIterator<T>;
-	using const_iterator = ConstNodeIterator<T>;
-
-	using node_vec = std::vector<value_type>;
-	using child_vec = std::vector<std::vector<size_type>>;
-	using depth_vec = std::vector<size_type>;
+	using iterator = std::vector<node_type>::iterator;
+	using const_iterator = std::vector<node_type>::const_iterator;
 
 	[[nodiscard]] auto length() const noexcept -> size_type {
-		return nodes_.size();
+		return vec_.size();
 	}
 
 	[[nodiscard]] auto begin() noexcept -> iterator {
-		return iterator(*this, 0);
+		return vec_.begin();
 	}
 
 	[[nodiscard]] auto begin() const noexcept -> const_iterator {
-		return const_iterator(*this, 0);
+		return vec_.cbegin();
 	}
 
 	[[nodiscard]] auto cbegin() const noexcept -> const_iterator {
-		return const_iterator(*this, 0);
+		return vec_.cbegin();
 	}
 
 	[[nodiscard]] auto end() noexcept -> iterator {
-		return iterator(*this, length());
+		return vec_.end();
 	}
 
 	[[nodiscard]] auto end() const noexcept -> const_iterator {
-		return const_iterator(*this, length());
+		return vec_.cend();
 	}
 
 	[[nodiscard]] auto cend() const noexcept -> const_iterator {
-		return const_iterator(*this, length());
+		return vec_.cend();
 	}
 
 	[[nodiscard]] auto operator[](size_type idx) noexcept -> iterator {
-		return iterator(*this, idx);
+		return vec_[idx];
 	}
 
 	[[nodiscard]] auto operator[](size_type idx) const noexcept -> const_iterator {
-		return const_iterator(*this, idx);
+		return vec_[idx];
 	}
 
 	auto at(size_type idx) noexcept -> iterator {
-		if (idx >= length()) throw "Out of range";
-		return iterator(*this, idx);
+		return vec_.at(idx);
 	}
 
 	auto at(size_type idx) const noexcept -> const_iterator {
-		if (idx >= length()) throw "Out of range";
-		return const_iterator(*this, idx);
+		return vec_.at(idx);
 	}
 
 	void add_node(const_reference val) {
-		nodes_.push_back(val);
-		children_.emplace_back();
-		depths_.push_back(0);
+		vec_.push_back()
 	}
 
 	void add_node(value_type&& val) {
@@ -157,9 +142,7 @@ public:
 	}
 
 protected:
-	node_vec nodes_;
-	child_vec children_;
-	depth_vec depths_;
+	std::vector<node_type> vec_;
 };
 
 }	 // namespace cui
