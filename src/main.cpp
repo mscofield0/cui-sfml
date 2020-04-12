@@ -182,10 +182,12 @@ std::ostream& operator<<(std::ostream& os, const cui::SceneGraph& sg) {
 	os << sg.root().active_schematic().get();
 	os << "\n}";
 
-	for (const auto& node : sg) {
+	for (std::size_t i = 0; i < sg.length(); ++i) {
+		const auto& node = sg[i];
+
 		os << node.data().name() << "{\n\t";
 		os << "Text: " << node.data().text() << "\n\t";
-		os << "Index: " << node.index() << " | ";
+		os << "Index: " << i << " | ";
 		os << "Depth: " << node.depth() << "\n\t";
 		os << "Default attributes:\n\t\t";
 		os << node.data().default_schematic() << "\n\t";

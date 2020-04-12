@@ -19,7 +19,7 @@ class SceneGraph : public NaryTree<Node>
 {
 public:
 	using tree_t = NaryTree<Node>;
-	using value_type = typename tree_t::value_type;
+	using data_type = typename tree_t::data_type;
 	using size_type = typename tree_t::size_type;
 	static constexpr u64 root_index = -1;
 
@@ -33,214 +33,101 @@ public:
 
 	[[nodiscard]] auto get_parent_index(size_type index) const noexcept -> size_type;
 
-	[[nodiscard]] auto get_parent(size_type index) noexcept -> value_type&;
+	[[nodiscard]] auto get_parent(size_type index) noexcept -> data_type&;
 
-	void add_node(const_reference val);
+	void apply_style(data_type& node, const ct::Style& style);
 
-	void add_node(value_type&& val);
-
-	void add_node(const_reference val, size_type idx);
-
-	void add_node(value_type&& val, size_type idx);
-
-	void sort();
-
-	void apply_style(value_type& node, const ct::Style& style);
-
-	[[nodiscard]] auto root() noexcept -> value_type& {
+	[[nodiscard]] auto root() noexcept -> data_type& {
 		return root_;
 	}
 
-	[[nodiscard]] auto root() const noexcept -> const value_type& {
+	[[nodiscard]] auto root() const noexcept -> const data_type& {
 		return root_;
 	}
 
 private:
-	void swap_node_details(size_type a_idx, size_type b_idx);
-	auto partition(int l, int h) -> int;
-
-	value_type root_;
+	data_type root_;
 };
 
 template <u64 AOB, template <typename, u64> typename Container, u64 N>
 SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& sc) : tree_t{}, root_() {
-	this->nodes().reserve(AOB);
-	this->depths().reserve(AOB);
-	this->children().reserve(AOB);
+	this->vec_.reserve(AOB);
 
-	for (const auto& t_style : sc) {
-		if (t_style.name().compare("root") == 0) {
-			apply_style(root_, t_style);
+	for (const auto& style : sc) {
+		if (style.name().compare("root") == 0) {
+			apply_style(root_, style);
 		}
 	}
 
-	for (const auto& block : sr.blocks()) {
-		this->nodes().emplace_back(block.name(), block.text());
-		auto& node = this->nodes().back();
-		for (const auto style_name : block.style_list()) {
-			bool style_name_exists = false;
-			for (const auto& t_style : sc) {
-				if (t_style.name().compare("root") == 0) continue;
-				if (style_name != t_style.name()) continue;
-				if (style_name_exists == false) style_name_exists = true;
-				apply_style(node, t_style);
+	for (std::size_t i = 0; i < sr.length(); ++i) {
+		using children_t = typename tree_t::node_type::vec_t;
+
+		const auto& [t_block, t_children, t_depth] = sr.get(i);
+		this->emplace_back(Node(t_block.name(), t_block.text()), children_t{}, t_depth);
+		auto& node = this->back();
+		for (const auto idx : t_children) node.children().push_back(idx);
+
+		auto& node_data = node.data();
+
+		for (const auto style_name : t_block.style_list()) {
+			for (const auto& style : sc) {
+				if (style.name().compare("root") == 0) continue;
+				if (style_name != style.name()) continue;
+				apply_style(node_data, style);
 			}
-			// Maybe add a global logging buffer/system?
 		}
 	}
-
-
-	for (const auto& depth : sr.depths()) {
-		this->depths().push_back(depth);
-	}
-
-	for (const auto& c : sr.children()) {
-		this->children().emplace_back();
-
-		for (const auto& item : c) {
-			this->children().back().push_back(item);
-		}
-	}
-
-	sort();
 }
 
 template <u64 AOB, template <typename> typename Container>
 SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style>& sc) {
-	this->nodes().reserve(AOB);
-	this->depths().reserve(AOB);
-	this->children().reserve(AOB);
+	this->vec_.reserve(AOB);
 
-	for (const auto& t_style : sc) {
-		if (t_style.name().compare("root") == 0) {
-			apply_style(root_, t_style);
+	for (const auto& style : sc) {
+		if (style.name().compare("root") == 0) {
+			apply_style(root_, style);
 		}
 	}
 
-	for (const auto& block : sr.blocks()) {
-		this->nodes().emplace_back(block.name(), block.text());
-		auto& node = this->nodes().back();
-		for (const auto style_name : block.style_list()) {
-			bool style_name_exists = false;
-			for (const auto& t_style : sc) {
-				if (t_style.name().compare("root") == 0) continue;
-				if (style_name != t_style.name()) continue;
-				if (style_name_exists == false) style_name_exists = true;
-				apply_style(node, t_style);
-			}
-			// Maybe add a global logging buffer/system?
-		}
-	}
+	for (std::size_t i = 0; i < sr.length(); ++i) {
+		using children_t = typename tree_t::node_type::vec_t;
 
-	for (const auto& depth : sr.depths()) {
-		this->depths().push_back(depth);
-	}
+		const auto& [t_block, t_children, t_depth] = sr.get(i);
+		this->emplace_back(Node(t_block.name(), t_block.text()), children_t{}, t_depth);
+		auto& node = this->back();
+		for (const auto idx : t_children) node.children().push_back(idx);
 
-	println("After depths");
+		auto& node_data = node.data();
 
-	for (const auto& c : sr.children()) {
-		this->children().emplace_back();
-
-		for (const auto& item : c) {
-			this->children().back().push_back(item);
-		}
-	}
-
-	println("After children");
-	for(const auto& node : this->nodes()) {
-		const auto& val = node.default_schematic().background();
-		if(val.is_string()) {
-			println("Size of string:", val.string().size());
-		}
-	}
-
-	sort();
-
-	println("After sort");
-}
-
-void SceneGraph::sort() {
-	std::sort(this->begin(), this->end(), [](const auto& lhs, const auto& rhs) {
-		return lhs.depth() > rhs.depth();
-	});
-}
-
-void SceneGraph::add_node(const_reference val) {
-	tree_t::add_node(val);
-}
-
-void SceneGraph::add_node(value_type&& val) {
-	tree_t::add_node(std::move(val));
-}
-
-void SceneGraph::add_node(const_reference val, size_type idx) {
-	tree_t::add_node(val, idx);
-}
-
-void SceneGraph::add_node(value_type&& val, size_type idx) {
-	tree_t::add_node(std::move(val), idx);
-}
-
-void SceneGraph::swap_node_details(size_type a_idx, size_type b_idx) {
-	for (auto& v1 : this->children()) {
-		for (auto& el : v1) {
-			if (el == a_idx) {
-				el = b_idx;
-				break;
-			} else if (el == b_idx) {
-				el = a_idx;
-				break;
+		for (const auto style_name : t_block.style_list()) {
+			for (const auto& style : sc) {
+				if (style.name().compare("root") == 0) continue;
+				if (style_name != style.name()) continue;
+				apply_style(node_data, style);
 			}
 		}
 	}
-
-	this->children()[a_idx].swap(this->children()[b_idx]);
-
-	{
-		const auto t_node = this->nodes()[a_idx];
-		this->nodes()[a_idx] = this->nodes()[b_idx];
-		this->nodes()[b_idx] = t_node;
-	}
-
-	{
-		const auto t_depth = this->depths()[a_idx];
-		this->depths()[a_idx] = this->depths()[b_idx];
-		this->depths()[b_idx] = t_depth;
-	}
-}
-
-auto SceneGraph::partition(int l, int h) -> int {
-	const auto pivot = this->depths()[h];
-	int i = l - 1;
-
-	for (int j = l; j < h; ++j) {
-		if (this->depths()[j] <= pivot) {
-			++i;
-
-			swap_node_details(i, j);
-		}
-	}
-
-	swap_node_details(i + 1, h);
-	return i + 1;
 }
 
 auto SceneGraph::get_parent_index(const size_type index) const noexcept -> size_type {
-	if (index == root_index) return length();
-	const auto it = std::find_if(children().begin(), children().end(), [index](const auto& v) {
-		return std::find(v.begin(), v.end(), index) != v.end();
+	if (index == root_index) return root_index;
+	const auto it = std::find_if(this->begin(), this->end(), [index](const auto& node) {
+		const auto& children = node.children();
+		return std::find(children.begin(), children.end(), index) != children.end();
 	});
+	if (it == this->end()) return root_index;
 
-	return std::distance(children().begin(), it);
+	return std::distance(this->begin(), it);
 }
 
-auto SceneGraph::get_parent(const size_type index) noexcept -> value_type& {
+auto SceneGraph::get_parent(const size_type index) noexcept -> data_type& {
 	const auto idx = get_parent_index(index);
-	if (idx == length()) return root_;
-	return tree_t::operator[](idx).data();
+	if (idx == root_index) return root_;
+
+	return this->operator[](idx).data();
 }
 
-void SceneGraph::apply_style(value_type& node, const ct::Style& style) {
+void SceneGraph::apply_style(data_type& node, const ct::Style& style) {
 	if (style.events().empty()) {
 		for (const auto& attr_data : style.attributes()) {
 			node.default_schematic().assign(attr_data);

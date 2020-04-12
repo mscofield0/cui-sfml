@@ -3,6 +3,7 @@
 
 #include <cui/utils/print.hpp>
 #include <string>
+#include <algorithm>
 
 #include <tsl/hopscotch_map.h>
 #include <cui/containers/vector.hpp>
@@ -12,6 +13,7 @@
 #include <render_context/visual_element.hpp>
 #include <render_context/detail/set_x.hpp>
 #include <render_context/detail/set_y.hpp>
+#include <render_context/detail/iterator_pair.hpp>
 
 #include <render_context/detail/intermediaries/color.hpp>
 #include <aliases.hpp>
@@ -23,6 +25,12 @@ class RenderCache : public Vector<VisualElement>
 public:
 	[[nodiscard]] auto len() const noexcept -> u64 {
 		return this->size() - 1;
+	}
+
+	void sort(const SceneGraph& graph) {
+		auto begin = IteratorPair{graph.begin(), this->begin()};
+		auto end = IteratorPair{graph.end(), this->end()};
+		std::sort(begin, end, [&graph](const auto& lhs, const auto& rhs) { return lhs.depth() > rhs.depth(); });
 	}
 
 	static RenderCache populate(SceneGraph& graph);
@@ -48,9 +56,10 @@ private:
 RenderCache RenderCache::populate(SceneGraph& graph) {
 	RenderCache cache;
 
-	for (auto& node : graph.nodes()) {
-		auto& d_scheme = node.default_schematic();
-		auto& e_schemes = node.event_schematics();
+	for (auto& node : graph) {
+		auto& node_data = node.data();
+		auto& d_scheme = node_data.default_schematic();
+		auto& e_schemes = node_data.event_schematics();
 		if (d_scheme.background().is_string()) {
 			const auto& path_head = get_path_head(d_scheme.background().string());
 			if (!cache.textures_.contains(path_head)) {
@@ -78,10 +87,13 @@ RenderCache RenderCache::populate(SceneGraph& graph) {
 void RenderCache::update_cache(const SceneGraph& graph) {
 	update_root(graph);
 
-	for (const auto& node_it : graph) {
-		if (node_it.index() >= len()) this->emplace_back();
-		update_ve(graph, node_it.data(), node_it.index());
+	for (std::size_t i = 0; i < graph.length(); ++i) {
+		if (i >= len()) this->emplace_back();
+		const auto& node_data = graph[i].data();
+		update_ve(graph, node_data, i);
 	}
+
+	sort(graph);
 }
 
 void RenderCache::update_root(const SceneGraph& graph) {
@@ -96,6 +108,10 @@ void RenderCache::update_ve(const SceneGraph& graph, const Node& node, const u64
 	auto parent_index = graph.get_parent_index(index);
 	parent_index = parent_index == graph.length() ? 0 : parent_index + 1;
 	const auto& parent_ve = this->operator[](parent_index);
+
+	println("Node name:", node.name());
+	println("Parent index:", parent_index);
+	println();
 
 	if (scheme.width_rule()) {
 		handle_rule_width(parent_ve, scheme, ve);
@@ -161,8 +177,6 @@ void RenderCache::handle_height(const Schematic& scheme, VisualElement& ve) {
 void RenderCache::handle_rule_x(const VisualElement& parent_ve, const Schematic& scheme, VisualElement& ve) {
 	const auto& val = scheme.x();
 
-	println("IS IT AN INSTRUCTION? ", val.is_instruction());
-
 	if (val.is_float()) {
 		const auto [x, y] = ve.getPosition();
 		const auto w = parent_ve.getSize().x;
@@ -179,10 +193,6 @@ void RenderCache::handle_rule_x(const VisualElement& parent_ve, const Schematic&
 		const auto x = parent_ve.getPosition().x;
 		const auto y = ve.getPosition().y;
 		const auto w = parent_ve.getSize().x;
-
-		println("X instruction | Parent position x:", x);
-		println("X instruction | Current position y:", y);
-		println("X instruction | Parent width:", w);
 
 		switch (val.instruction().active()) {
 			case Functions::Left: {
@@ -217,10 +227,6 @@ void RenderCache::handle_rule_y(const VisualElement& parent_ve, const Schematic&
 		const auto x = ve.getPosition().x;
 		const auto y = parent_ve.getPosition().y;
 		const auto h = parent_ve.getSize().y;
-
-		println("Y instruction | Parent position y:", y);
-		println("Y instruction | Current position x:", x);
-		println("Y instruction | Parent height:", h);
 
 		switch (val.instruction().active()) {
 			case Functions::Top: {

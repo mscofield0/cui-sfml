@@ -3,8 +3,10 @@
 
 #include <vector>
 #include <functional>
+#include <algorithm>
 
 #include <containers/detail/nary_tree/node.hpp>
+#include <utils/move.hpp>
 #include <aliases.hpp>
 
 namespace cui {
@@ -13,12 +15,11 @@ template <typename T>
 class NaryTree
 {
 public:
-	using node_type = Node<T>;
-	using data_type = node_type::data_type;
-	using size_type = u64;
-	using difference_type = i64;
-	using iterator = std::vector<node_type>::iterator;
-	using const_iterator = std::vector<node_type>::const_iterator;
+	using node_type = nary::Node<T>;
+	using size_type = std::size_t;
+	using data_type = typename node_type::data_type;
+	using iterator = typename std::vector<node_type>::iterator;
+	using const_iterator = typename std::vector<node_type>::const_iterator;
 
 	[[nodiscard]] auto length() const noexcept -> size_type {
 		return vec_.size();
@@ -48,97 +49,74 @@ public:
 		return vec_.cend();
 	}
 
-	[[nodiscard]] auto operator[](size_type idx) noexcept -> iterator {
+	[[nodiscard]] auto front() noexcept -> node_type& {
+		return vec_.front();
+	}
+
+	[[nodiscard]] auto front() const noexcept -> const node_type& {
+		return vec_.front();
+	}
+
+	[[nodiscard]] auto back() noexcept -> node_type& {
+		return vec_.back();
+	}
+
+	[[nodiscard]] auto back() const noexcept -> const node_type& {
+		return vec_.back();
+	}
+
+	[[nodiscard]] auto operator[](const size_type idx) noexcept -> node_type& {
 		return vec_[idx];
 	}
 
-	[[nodiscard]] auto operator[](size_type idx) const noexcept -> const_iterator {
+	[[nodiscard]] auto operator[](const size_type idx) const noexcept -> const node_type& {
 		return vec_[idx];
 	}
 
-	auto at(size_type idx) noexcept -> iterator {
+	auto at(const size_type idx) noexcept -> node_type& {
 		return vec_.at(idx);
 	}
 
-	auto at(size_type idx) const noexcept -> const_iterator {
+	auto at(const size_type idx) const noexcept -> const node_type& {
 		return vec_.at(idx);
 	}
 
-	void add_node(const_reference val) {
-		vec_.push_back()
+	template <typename... Args>
+	void emplace_back(Args&&... args) {
+		vec_.emplace_back(cui::move(args)...);
 	}
 
-	void add_node(value_type&& val) {
-		nodes_.push_back(std::move(val));
-		children_.emplace_back();
-		depths_.push_back(0);
+	void add_node(const data_type& val) {
+		vec_.emplace_back(val);
 	}
 
-	void add_node(const_reference val, size_type idx) {
-		children_[idx].push_back(length());
-		nodes_.push_back(val);
-		children_.emplace_back();
-		depths_.push_back(depths_[idx] + 1);
+	void add_node(data_type&& val) {
+		vec_.emplace_back(cui::move(val));
 	}
 
-	void add_node(value_type&& val, size_type idx) {
-		children_[idx].push_back(length());
-		nodes_.push_back(std::move(val));
-		children_.emplace_back();
-		depths_.push_back(depths_[idx] + 1);
+	void add_node(const data_type& val, const size_type idx) {
+		vec_[idx].add_child(length());
+		vec_.emplace_back(val, vec_[idx].depth() + 1);
 	}
 
-	void remove_node(size_type idx) {
-		children().erase(children().begin() + idx);
-		for (auto it = children().begin(); it != children().end(); ++it) {
-			for (auto it_ = it->begin(); it_ != it->end(); ++it_) {
-				if (*it_ == idx) {
-					it->erase(it_);
-				}
-			}
+	void add_node(data_type&& val, const size_type idx) {
+		vec_[idx].add_child(length());
+		vec_.emplace_back(std::move(val), vec_[idx].depth() + 1);
+	}
+
+	void remove_node(const size_type idx) {
+		vec_[idx].erase(vec_.begin() + idx);
+		for (auto it = vec_.begin(); it != vec_.end(); ++it) {
+			std::remove(it->begin(), it->end(), idx);
 		}
-
-		depths().erase(idx);
-		nodes().erase(idx);
 	}
 
 	void pop_node() {
-		children().pop_back();
-		const auto idx = children().size();
-		for (auto it = children().begin(); it != children().end(); ++it) {
-			for (auto it_ = it->begin(); it_ != it->end(); ++it_) {
-				if (*it_ == idx) {
-					it->erase(it_);
-				}
-			}
+		vec_.pop_back();
+		const auto idx = length().size();
+		for (auto it = vec_.begin(); it != vec_.end(); ++it) {
+			std::remove(it->begin(), it->end(), idx);
 		}
-
-		depths().pop_back();
-		nodes().pop_back();
-	}
-
-	[[nodiscard]] auto nodes() const noexcept -> const node_vec& {
-		return nodes_;
-	}
-
-	[[nodiscard]] auto children() const noexcept -> const child_vec& {
-		return children_;
-	}
-
-	[[nodiscard]] auto depths() const noexcept -> const depth_vec& {
-		return depths_;
-	}
-
-	[[nodiscard]] auto nodes() noexcept -> node_vec& {
-		return nodes_;
-	}
-
-	[[nodiscard]] auto children() noexcept -> child_vec& {
-		return children_;
-	}
-
-	[[nodiscard]] auto depths() noexcept -> depth_vec& {
-		return depths_;
 	}
 
 protected:

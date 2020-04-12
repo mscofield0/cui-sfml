@@ -1,200 +1,172 @@
-root{
-        Text:
-        Default attributes:
-                x: 0
-                y: 0
-                width: 0
-                height: 0
-                background: rgba(255,255,255,255)
-                text_color: rgba(0,0,0,255)
-                font_size: 0
-
-        Active schematic
-                x: 0
-                y: 0
-                width: 0
-                height: 0
-                background: rgba(255,255,255,255)
-                text_color: rgba(0,0,0,255)
-                font_size: 0
-
-}block1{
-        Text: Yo whaddup
-        Index: 0 | Depth: 0
-        Default attributes:
-                x: 0
-                y: 0
-                width: 4.89[RULE]
-                height: 9.89[RULE]
-                background: rgba(255,0,0,255)
-                text_color: rgba(0,0,0,255)
-                font_size: 0
-
-        Active schematic
-                x: 0
-                y: 0
-                width: 4.89[RULE]
-                height: 9.89[RULE]
-                background: rgba(255,0,0,255)
-                text_color: rgba(0,0,0,255)
-                font_size: 0
-
-}block4{
-        Text: This block has the circle style
-        Index: 1 | Depth: 0
-        Default attributes:
-                x: 4.89[RULE]
-                y: 0
-                width: 4.89[RULE]
-                height: 0
-                background: rgba(0,0,255,255)
-                text_color: rgba(0,0,0,255)
-                font_size: 0
-
-        Active schematic
-                x: 4.89[RULE]
-                y: 0
-                width: 4.89[RULE]
-                height: 0
-                background: rgba(0,0,255,255)
-                text_color: rgba(0,0,0,255)
-                font_size: 0
-
-}block2{
-        Text: This block has the triangle style
-        Index: 2 | Depth: 1
-        Default attributes:
-                x: 0
-                y: 70
-                width: 20
-                height: 20
-                background: rgba(0,255,0,255)
-                text_color: rgba(0,0,0,255)
-                font_size: 0
-
-        Active schematic
-                x: 0
-                y: 70
-                width: 20
-                height: 20
-                background: rgba(0,255,0,255)
-                text_color: rgba(0,0,0,255)
-                font_size: 0
-
-}block5{
-        Text: This one too! "Also this is a check if apostrophies work"
-        Index: 3 | Depth: 1
-        Default attributes:
-                x: 0
-                y: 0
-                width: 50
-                height: 50
-                background: rgba(0,0,255,255)
-                text_color: rgba(0,0,0,255)
-                font_size: 0
-
-        Active schematic
-                x: 0
-                y: 0
-                width: 50
-                height: 50
-                background: rgba(0,0,255,255)
-                text_color: rgba(0,0,0,255)
-                font_size: 0
-
-}block3{
-        Text: This block has no styles
-        Index: 4 | Depth: 2
-        Default attributes:
-                x: 0
-                y: 0
-                width: 0
-                height: 0
-                background: rgba(0,0,0,0)
-                text_color: rgba(0,0,0,255)
-                font_size: 0
-
-        Active schematic
-                x: 0
-                y: 0
-                width: 0
-                height: 0
-                background: rgba(0,0,0,0)
-                text_color: rgba(0,0,0,255)
-                font_size: 0
-
-}
-VE:
-        X:0,Y:0
-        W:0,H:0
-        rgba(255,255,255,255)
-///////////////////////////////////////////////////
-
-VE:
-        X:0,Y:0
-        W:0,H:0
-        rgba(255,0,0,255)
-///////////////////////////////////////////////////
-
-VE:
-        X:0,Y:0
-        W:0,H:0
-        rgba(0,0,255,255)
-///////////////////////////////////////////////////
-
-VE:
-        X:0,Y:70
-        W:20,H:20
-        rgba(0,255,0,255)
-///////////////////////////////////////////////////
-
-VE:
-        X:0,Y:0
-        W:50,H:50
-        rgba(0,0,255,255)
-///////////////////////////////////////////////////
-
-VE:
-        X:0,Y:0
-        W:0,H:0
-        rgba(0,0,0,0)
-///////////////////////////////////////////////////
-
-Creating the renderwindow...
-HANDLE_X | X:0,Y:0
-HANDLE_Y | X:0,Y:0
-VE:
-        X:0,Y:0
-        W:800,H:600
-        rgba(255,255,255,255)
-///////////////////////////////////////////////////
-
-VE:
-        X:0,Y:0
-        W:0,H:0
-        rgba(255,0,0,255)
-///////////////////////////////////////////////////
-
-VE:
-        X:0,Y:0
-        W:0,H:0
-        rgba(0,0,255,255)
-///////////////////////////////////////////////////
-
-VE:
-        X:0,Y:70
-        W:20,H:20
-        rgba(0,255,0,255)
-///////////////////////////////////////////////////
-
-VE:
-        X:0,Y:0
-        W:50,H:50
-        rgba(0,0,255,255)
-///////////////////////////////////////////////////
-
-VE:
-        X:0,Y:0
-        W:0,H:0
-        rgba(0,0,0,0)
-///////////////////////////////////////////////////
+root{                                               
+        Text:                                       
+        Default attributes:                         
+                x: 0                                
+                y: 0                                
+                width: 0                            
+                height: 0                           
+                background: rgba(255,255,255,255)   
+                text_color: rgba(0,0,0,255)         
+                font_size: 0                        
+                                                    
+        Active schematic                            
+                x: 0                                
+                y: 0                                
+                width: 0                            
+                height: 0                           
+                background: rgba(255,255,255,255)   
+                text_color: rgba(0,0,0,255)         
+                font_size: 0                        
+                                                    
+}block1{                                            
+        Text: Yo whaddup                            
+        Index: 0 | Depth: 0                         
+        Default attributes:                         
+                x: 0                                
+                y: 0                                
+                width: 0.5[RULE]                    
+                height: 1[RULE]                     
+                background: sunset_field.jpg        
+                text_color: rgba(0,0,0,255)         
+                font_size: 0                        
+                                                    
+        Active schematic                            
+                x: 0                                
+                y: 0                                
+                width: 0.5[RULE]                    
+                height: 1[RULE]                     
+                background: sunset_field.jpg        
+                text_color: rgba(0,0,0,255)         
+                font_size: 0                        
+                                                    
+}block4{                                            
+        Text: This block has the circle style       
+        Index: 1 | Depth: 0                         
+        Default attributes:                         
+                x: 0.5[RULE]                        
+                y: 0                                
+                width: 0.5[RULE]                    
+                height: 1[RULE]                     
+                background: rgba(0,0,255,255)       
+                text_color: rgba(0,0,0,255)         
+                font_size: 0                        
+                                                    
+        Active schematic                            
+                x: 0.5[RULE]                        
+                y: 0                                
+                width: 0.5[RULE]                    
+                height: 1[RULE]                     
+                background: rgba(0,0,255,255)       
+                text_color: rgba(0,0,0,255)         
+                font_size: 0                        
+                                                    
+}block2{                                            
+        Text: This block has the triangle style     
+        Index: 2 | Depth: 1                         
+        Default attributes:                         
+                x: Instruction[RULE]                
+                y: 0                                
+                width: 0.4[RULE]                    
+                height: 100                         
+                background: rgba(0,255,0,255)       
+                text_color: rgba(0,0,0,255)         
+                font_size: 0                        
+                                                    
+        Active schematic                            
+                x: Instruction[RULE]                
+                y: 0                                
+                width: 0.4[RULE]                    
+                height: 100                         
+                background: rgba(0,255,0,255)       
+                text_color: rgba(0,0,0,255)         
+                font_size: 0                        
+                                                    
+}block5{                                            
+        Text: This one too! "Also this is a check if
+        Index: 3 | Depth: 1                         
+        Default attributes:                         
+                x: Instruction[RULE]                
+                y: 0                                
+                width: 0.2[RULE]                    
+                height: 100                         
+                background: rgba(0,255,255,255)     
+                text_color: rgba(0,0,0,255)         
+                font_size: 0                        
+                                                    
+        Active schematic                            
+                x: Instruction[RULE]                
+                y: 0                                
+                width: 0.2[RULE]                    
+                height: 100                         
+                background: rgba(0,255,255,255)     
+                text_color: rgba(0,0,0,255)         
+                font_size: 0                        
+                                                    
+}block3{                                            
+        Text: This block has no styles              
+        Index: 4 | Depth: 2                         
+        Default attributes:                         
+                x: 0                                
+                y: 0                                
+                width: 0                            
+                height: 0                           
+                background: rgba(0,0,0,0)           
+                text_color: rgba(0,0,0,255)         
+                font_size: 0                        
+                                                    
+        Active schematic                            
+                x: 0                                
+                y: 0                                
+                width: 0                            
+                height: 0                           
+                background: rgba(0,0,0,0)           
+                text_color: rgba(0,0,0,255)         
+                font_size: 0                        
+                                                    
+}                                                   
+Creating the renderwindow...                        
+Failed to load image "sunset_field.jpg". Reason: Una
+IS IT AN INSTRUCTION?  0                            
+IS IT AN INSTRUCTION?  1                            
+X instruction | Parent position x: 0                
+X instruction | Current position y: 0               
+X instruction | Parent width: 0                     
+IS IT AN INSTRUCTION?  1                            
+X instruction | Parent position x: 0                
+X instruction | Current position y: 0               
+X instruction | Parent width: 800                   
+VE:                                                 
+        X:0,Y:0                                     
+        W:800,H:600                                 
+        rgba(255,255,255,255)                       
+/////////////////////////////////////////////////// 
+                                                    
+VE:                                                 
+        X:0,Y:0                                     
+        W:400,H:600                                 
+        rgba(255,255,255,255)                       
+/////////////////////////////////////////////////// 
+                                                    
+VE:                                                 
+        X:200,Y:0                                   
+        W:200,H:600                                 
+        rgba(0,0,255,255)                           
+/////////////////////////////////////////////////// 
+                                                    
+VE:                                                 
+        X:0,Y:0                                     
+        W:0,H:100                                   
+        rgba(0,255,0,255)                           
+/////////////////////////////////////////////////// 
+                                                    
+VE:                                                 
+        X:0,Y:0                                     
+        W:160,H:100                                 
+        rgba(0,255,255,255)                         
+/////////////////////////////////////////////////// 
+                                                    
+VE:                                                 
+        X:0,Y:0                                     
+        W:0,H:0                                     
+        rgba(0,0,0,0)                               
+/////////////////////////////////////////////////// 

@@ -4,7 +4,7 @@ root {
 }
 
 left_panel {
-    background: url(./sunset_field.jpg);
+    background: url(sunset_field.jpg);
 	width: 50%;
 	height: 100%;
 }

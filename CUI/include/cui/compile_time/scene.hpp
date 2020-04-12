@@ -1,9 +1,12 @@
 #ifndef CUI_CT_SCENE_HPP
 #define CUI_CT_SCENE_HPP
 
+#include <tuple>
+
 #include <compile_time/string/string_view.hpp>
 #include <compile_time/scenes/block.hpp>
 #include <containers/static_vector.hpp>
+#include <utils/as_const.hpp>
 #include <aliases.hpp>
 
 namespace cui::ct {
@@ -12,11 +15,23 @@ template <u64 BlockAmount>
 class Scene
 {
 public:
-	using blocks_t = StaticVector<scenes::Block, BlockAmount>;
-	using children_t = StaticVector<StaticVector<u64, BlockAmount>, BlockAmount>;
-	using depths_t = StaticVector<u64, BlockAmount>;
+	using size_type = std::size_t;
+	using block_t = scenes::Block;
+	using children_t = StaticVector<u64, BlockAmount>;
+	using depth_t = size_type;
+
+	using blocks_t = StaticVector<block_t, BlockAmount>;
+	using family_t = StaticVector<children_t, BlockAmount>;
+	using depths_t = StaticVector<depth_t, BlockAmount>;
+
+	using tuple_t = std::tuple<block_t&, children_t&, depth_t&>;
+	using const_tuple_t = std::tuple<const block_t&, const children_t&, const depth_t&>;
 
 	constexpr Scene() : blocks_{}, children_{}, depths_{} {}
+
+	[[nodiscard]] constexpr auto length() const noexcept -> size_type {
+		return blocks_.size();
+	}
 
 	[[nodiscard]] constexpr auto blocks() noexcept -> blocks_t& {
 		return blocks_;
@@ -26,11 +41,11 @@ public:
 		return blocks_;
 	}
 
-	[[nodiscard]] constexpr auto children() noexcept -> children_t& {
+	[[nodiscard]] constexpr auto children() noexcept -> family_t& {
 		return children_;
 	}
 
-	[[nodiscard]] constexpr auto children() const noexcept -> const children_t& {
+	[[nodiscard]] constexpr auto children() const noexcept -> const family_t& {
 		return children_;
 	}
 
@@ -42,17 +57,25 @@ public:
 		return depths_;
 	}
 
-	[[nodiscard]] constexpr auto index_of_last() const noexcept -> u64 {
-		return blocks().size() - 1;
+	[[nodiscard]] constexpr auto index_of_last() const noexcept -> size_type {
+		return length() - 1;
 	}
 
-	constexpr void add_child_to(u64 to, u64 child_idx) {
+	[[nodiscard]] constexpr auto get(const size_type idx) noexcept -> tuple_t {
+		return std::tie(blocks_[idx], children_[idx], depths_[idx]);
+	}
+
+	[[nodiscard]] constexpr auto get(const size_type idx) const noexcept -> const_tuple_t {
+		return std::tie(as_const(blocks_[idx]), as_const(children_[idx]), as_const(depths_[idx]));
+	}
+
+	constexpr void add_child_to(const size_type to, const size_type child_idx) {
 		children_[to].push_back(child_idx);
 	}
 
 private:
 	blocks_t blocks_;
-	children_t children_;
+	family_t children_;
 	depths_t depths_;
 };
 
