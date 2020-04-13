@@ -1,8 +1,6 @@
 #ifndef CUI_SFML_RENDER_CONTEXT_HPP
 #define CUI_SFML_RENDER_CONTEXT_HPP
 
-#include <iostream>
-
 #include <functional>
 #include <utility>
 
@@ -86,7 +84,9 @@ void RenderContext::update() {
 void RenderContext::render() const noexcept {
 	window_->clear();
 	for (const auto& el : cache_) {
+		window_->setView(el);
 		window_->draw(el);
+		window_->draw(el.text());
 	}
 	window_->display();
 }

@@ -13,7 +13,7 @@ DEFINE_FUNCTION(vec) {
 		  args.size());
 	}
 
-	if (validate_args(args, args.size(), all_int)) {
+	if (!validate_args(args, args.size(), all_int)) {
 		switch (args.size()) {
 			case 2: {
 				const float a = args[0].integer_value();
@@ -34,7 +34,7 @@ DEFINE_FUNCTION(vec) {
 				RETURN_VALUE((Vec4f{a, b, c, d}), ValueType::VectorInt);
 			}
 		}
-	} else if (validate_args(args, args.size(), all_float)) {
+	} else if (!validate_args(args, args.size(), all_float)) {
 		switch (args.size()) {
 			case 2: {
 				const float a = args[0].float_value();

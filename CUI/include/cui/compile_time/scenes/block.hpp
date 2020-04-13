@@ -50,7 +50,7 @@ public:
 		while (pos != StringView::npos) {
 			if (pos == prev) return false;
 			const auto extracted = str.substr(prev, pos - prev);
-			const auto trimmed = (extracted.substr(0, extracted.size() - 1)).trim();
+			const auto trimmed = (extracted.substr(0, extracted.size())).trim();
 			if (trimmed.empty()) return false;
 			if (!detail::is_valid_block_name(trimmed)) return false;
 			add_style(trimmed);

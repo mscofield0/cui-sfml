@@ -7,8 +7,8 @@
 namespace cui::ct::styles::detail {
 
 auto filter_preprocessed_type(const StringView name, const ValueType type) -> ValueType {
-	if (name.compare("x") == 0) return ValueType::Instruction;
-	if (name.compare("y") == 0) return ValueType::Instruction;
+	if (name.compare("x") == 0 && type == ValueType::String) return ValueType::Instruction;
+	if (name.compare("y") == 0 && type == ValueType::String) return ValueType::Instruction;
 
 	return type;
 }

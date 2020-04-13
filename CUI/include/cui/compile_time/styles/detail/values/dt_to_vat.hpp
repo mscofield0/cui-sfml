@@ -31,6 +31,9 @@ constexpr auto dt_to_vat(data_types::DataTypes data_type) -> ValidAttributeType 
 		case DataTypes::Vec4: {
 			return ValidAttributeType::Vec4;
 		}
+		case DataTypes::String: {
+			return ValidAttributeType::String;
+		}
 		default: {
 			// Impossible
 			return ValidAttributeType::Invalid;

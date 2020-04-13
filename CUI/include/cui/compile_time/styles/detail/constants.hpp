@@ -25,9 +25,10 @@ constexpr auto make_sv_array(T arg, Args... args) -> std::array<StringView, size
 }
 
 // Enum class representing function names
-enum class FunctionId : byte
+enum class FunctionId : u8
 {
-	RGBA = 0,
+	RGB = 0,
+	RGBA,
 	Vec,
 	Url
 };
@@ -40,7 +41,11 @@ constexpr auto attribute_names =
         "x",
         "y",
         "width",
-        "height"
+        "height",
+        "font",
+        "font_size",
+        "text_color",
+        "text_position"
     );
 
 constexpr auto attribute_types = 
@@ -49,7 +54,11 @@ constexpr auto attribute_types =
         ValidAttributeType::Int | ValidAttributeType::Float | ValidAttributeType::Instruction,
         ValidAttributeType::Int | ValidAttributeType::Float | ValidAttributeType::Instruction,
         ValidAttributeType::Int | ValidAttributeType::Float,
-        ValidAttributeType::Int | ValidAttributeType::Float
+        ValidAttributeType::Int | ValidAttributeType::Float,
+        ValidAttributeType::String,
+        ValidAttributeType::Int,
+        ValidAttributeType::RGBA,
+        ValidAttributeType::Instruction
     );
 
 
@@ -57,6 +66,7 @@ constexpr auto attribute_types =
 
 constexpr auto function_names =
     make_sv_array(
+        "rgb",
         "rgba",
         "vec",
 		"url"
@@ -64,6 +74,7 @@ constexpr auto function_names =
 
 constexpr auto function_ids = 
     make_array<FunctionId>(
+        FunctionId::RGB,
         FunctionId::RGBA,
         FunctionId::Vec,
 		FunctionId::Url
@@ -81,8 +92,15 @@ constexpr auto string_names =
         "transparent",
 		"white",
 		"black",
-    	"left",
-        "right"
+        "top_left",
+        "top",
+        "top_right",
+        "left",
+        "center",
+        "right",
+        "bottom_left",
+        "bottom",
+        "bottom_right"
     );
 
 constexpr auto string_values = 
@@ -94,8 +112,15 @@ constexpr auto string_values =
         ValueData{Color(0, 0, 0, 0)},
         ValueData{Color::white},
         ValueData{Color::black},
-        ValueData{Instruction(Functions::Left)},
-        ValueData{Instruction(Functions::Right)}
+		ValueData{Instruction{Functions::TopLeft}},
+		ValueData{Instruction{Functions::Top}},
+		ValueData{Instruction{Functions::TopRight}},
+		ValueData{Instruction{Functions::Left}},
+		ValueData{Instruction{Functions::Center}},
+		ValueData{Instruction{Functions::Right}},
+		ValueData{Instruction{Functions::BottomLeft}},
+		ValueData{Instruction{Functions::Bottom}},
+		ValueData{Instruction{Functions::BottomRight}}
     );
 
 

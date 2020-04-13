@@ -14,9 +14,9 @@ struct SizeInformation
 };
 
 template <typename T>
-struct SizeInformation<T, std::enable_if_t<std::is_arithmetic_v<T>>>
+struct SizeInformation<T, std::enable_if_t<std::is_integral_v<T>>>
 {
-	static constexpr u32 size = std::numeric_limits<T>::digits10;
+	static constexpr u32 size = std::numeric_limits<T>::digits10 + 1;
 };
 
 template <u32 N>

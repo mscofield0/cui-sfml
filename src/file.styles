@@ -1,32 +1,21 @@
 R"(
 root {
-	background: white;
+	background: rgb(116, 109, 105);
 }
 
-left_panel {
-    background: url(sunset_field.jpg);
-	width: 50%;
-	height: 100%;
+button {
+	background: url(bin/button_with_shadow.png);
 }
 
-right_panel {
-	background: blue;
-	x: 50%;
-	width: 50%;
-	height: 100%;
+font {
+	font: url(bin/sansation.ttf);
 }
 
-triangle {
-    background: green;
-	x: left;
-    width: 40%;
-    height: 100;
+btn1 {
+	x: center;
+	y: 70%;
+	width: 200;
+	height: 80;
 }
 
-circle {
-    background: yellow;
-	x: left;
-    width: 20%;
-	height: 100;
-}
 )"

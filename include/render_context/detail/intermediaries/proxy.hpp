@@ -1,7 +1,6 @@
 #ifndef CUI_SFML_INTERMEDIARY_PROXY_HPP
 #define CUI_SFML_INTERMEDIARY_PROXY_HPP
 
-
 #include <SFML/Graphics/Color.hpp>
 #include <cui/data_types/color.hpp>
 #include <exceptions/conversion_error.hpp>
@@ -9,7 +8,8 @@
 
 namespace cui::intermediary {
 
-enum class ObjectTypes : byte{
+enum class ObjectTypes : u8
+{
 	SF_Color,
 	Color
 };
@@ -21,13 +21,14 @@ public:
 	Proxy(const data_types::Color& val) : active_(ObjectTypes::Color), color(&val) {}
 
 	[[nodiscard]] auto get_sf_color() const -> const sf::Color* {
-		if(active_ != ObjectTypes::SF_Color) throw cui::ConversionError{"Proxy active is not set to ObjectTypes::SF_Color"};
+		if (active_ != ObjectTypes::SF_Color)
+			throw cui::ConversionError{"Proxy active is not set to ObjectTypes::SF_Color"};
 
 		return sf_color;
 	}
-	
+
 	[[nodiscard]] auto get_color() const -> const data_types::Color* {
-		if(active_ != ObjectTypes::Color) throw cui::ConversionError{"Proxy active is not set to ObjectTypes::Color"};
+		if (active_ != ObjectTypes::Color) throw cui::ConversionError{"Proxy active is not set to ObjectTypes::Color"};
 
 		return color;
 	}
@@ -35,7 +36,8 @@ public:
 private:
 	ObjectTypes active_;
 
-	union {
+	union
+	{
 		const sf::Color* sf_color;
 		const data_types::Color* color;
 	};

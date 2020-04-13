@@ -68,6 +68,11 @@ public:
 								 "must be in this pattern: func_name(args, ...)",
 								 attribute.value());
 				}
+				if (!styles::detail::is_correct_value_for_attr_type(attribute.type(), parsed_url)) {
+					RETURN_ERROR("ERROR: Received wrong value for attribute. Attribute type was: {}\nReceived: {}",
+								 attribute.type(),
+								 attribute.value());
+				}
 				style.attributes().emplace_back(attribute.type(), parsed_url.string(), styles::ValueType::String);
 				continue;
 			}

@@ -2,6 +2,7 @@
 #define CUI_SCHEMATIC_HPP
 
 #include <utils/print.hpp>
+#include <exception>
 
 #include <visual/attributes.hpp>
 #include <visual/rules.hpp>
@@ -17,7 +18,7 @@ class Schematic : public Attributes, public Rules
 public:
 	Schematic() noexcept = default;
 
-	void assign(const ct::styles::AttributeData& attr_data) noexcept {
+	void assign(const ct::styles::AttributeData& attr_data) {
 		using namespace ct::styles;
 		using namespace ct::styles::detail;
 		const auto i = get_attribute_index(attr_data.type());
@@ -33,6 +34,7 @@ public:
 				this->x_ = value;
 				switch (pp_type) {
 					case ValueType::Percentage:
+					case ValueType::String:
 					case ValueType::Instruction: {
 						this->set_x_rule(true);
 						break;
@@ -47,6 +49,7 @@ public:
 				this->y_ = value;
 				switch (pp_type) {
 					case ValueType::Percentage:
+					case ValueType::String:
 					case ValueType::Instruction: {
 						this->set_y_rule(true);
 						break;
@@ -83,8 +86,28 @@ public:
 				}
 				break;
 			}
+			case AttributeIndexes::Font: {
+				this->font_ = value;
+
+				break;
+			}
+			case AttributeIndexes::FontSize: {
+				this->font_size_ = value;
+
+				break;
+			}
+			case AttributeIndexes::TextColor: {
+				this->text_color_ = value;
+
+				break;
+			}
+			case AttributeIndexes::TextPosition: {
+				this->text_position_ = value;
+
+				break;
+			}
 			default: {
-				throw "Shouldn't happen";
+				throw std::logic_error("Shouldn't happen");
 			}
 		}
 	}

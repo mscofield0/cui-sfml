@@ -5,7 +5,7 @@
 
 namespace cui::data_types {
 
-enum class DataTypes : byte
+enum class DataTypes : u8
 {
 	None = 0,
 	Color,

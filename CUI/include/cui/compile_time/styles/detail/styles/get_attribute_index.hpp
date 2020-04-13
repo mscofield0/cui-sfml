@@ -13,7 +13,11 @@ enum class AttributeIndexes : u64
 	X,
 	Y,
 	Width,
-	Height
+	Height,
+	Font,
+	FontSize,
+	TextColor,
+	TextPosition
 };
 
 constexpr auto get_attribute_index(const StringView name) -> u64 {

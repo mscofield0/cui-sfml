@@ -166,6 +166,7 @@ std::ostream& operator<<(std::ostream& os, const cui::Schematic& sg) {
 	os << "background: " << sg.background() << "\n\t\t";
 	os << "text_color: " << sg.text_color() << "\n\t\t";
 	os << "font_size: " << sg.font_size() << "\n\t\t";
+	os << "font: " << sg.font() << "\n\t\t";
 	return os;
 }
 

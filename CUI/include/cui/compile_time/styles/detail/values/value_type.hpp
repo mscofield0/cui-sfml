@@ -5,7 +5,7 @@
 
 namespace cui::ct::styles {
 
-enum class ValueType : byte
+enum class ValueType : u8
 {
 	Int,
 	Float,

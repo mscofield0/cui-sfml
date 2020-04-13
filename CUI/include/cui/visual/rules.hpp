@@ -26,6 +26,10 @@ public:
 		set_nth_bit(val, ID::Height);
 	}
 
+	void set_text_position_rule(bool val) noexcept {
+		set_nth_bit(val, ID::TextPosition);
+	}
+
 	[[nodiscard]] bool x_rule() const noexcept {
 		return get_nth_bit(ID::X);
 	}
@@ -40,6 +44,10 @@ public:
 
 	[[nodiscard]] bool height_rule() const noexcept {
 		return get_nth_bit(ID::Height);
+	}
+
+	[[nodiscard]] bool text_position_rule() const noexcept {
+		return get_nth_bit(ID::TextPosition);
 	}
 
 protected:
@@ -60,7 +68,8 @@ protected:
 		X = 0,
 		Y,
 		Width,
-		Height
+		Height,
+		TextPosition
 	};
 
 	u32 enabled_rules_;

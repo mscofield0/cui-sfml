@@ -18,6 +18,9 @@ namespace cui::ct::styles::detail {
 constexpr auto lookup_function(size_t fn_name_idx, const detail::FunctionArgumentList& fal)
   -> Variant<DataWithRule, Format<256>> {
 	switch (function_ids[fn_name_idx]) {
+		case FunctionId::RGB: {
+			return rgb(fal);
+		}
 		case FunctionId::RGBA: {
 			return rgba(fal);
 		}

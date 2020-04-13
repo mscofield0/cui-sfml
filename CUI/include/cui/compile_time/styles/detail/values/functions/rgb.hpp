@@ -10,7 +10,7 @@ DEFINE_FUNCTION(rgb) {
 	IF_NOT_IN_SET(3) {
 		RETURN_ERROR("ERROR: Invalid amount of arguments;\n\tSupplied {} arguments", args.size());
 	}
-	if (validate_args(args, 3, all_int)) {
+	if (!validate_args(args, 3, all_int)) {
 		RETURN_ERROR("ERROR: Expected a set of int RGBA value.");
 	}
 	const auto& r = args[0].integer_value();

@@ -2,6 +2,8 @@
 #define CUI_SFML_ITERATOR_PAIR_HPP
 
 #include <vector>
+#include <utility>
+#include <functional>
 #include <cui/containers/vector.hpp>
 #include <cui/containers/detail/nary_tree/node.hpp>
 #include <cui/visual/node.hpp>
@@ -9,27 +11,73 @@
 
 namespace cui {
 
+class ProxyObject
+{
+public:
+	using size_type = std::size_t;
+	using T1 = size_type;
+	using T2 = VisualElement;
+	using ref1_t = std::reference_wrapper<T1>;
+	using ref2_t = std::reference_wrapper<T2>;
+
+	ProxyObject(T1& p_ref1, T2& p_ref2) : ref1_(std::ref(p_ref1)), ref2_(std::ref(p_ref2)) {}
+
+	ProxyObject& operator=(const ProxyObject& obj) {
+		ref1_ = obj.ref1_;
+		ref2_ = obj.ref2_;
+		return *this;
+	}
+
+	[[nodiscard]] bool operator==(const ProxyObject& obj) const noexcept {
+		return ref1_ == obj.ref1_;
+	}
+
+	[[nodiscard]] bool operator!=(const ProxyObject& obj) const noexcept {
+		return !this->operator==(obj);
+	}
+
+	[[nodiscard]] bool operator>(const ProxyObject& obj) const noexcept {
+		return ref1_ > obj.ref1_;
+	}
+
+	[[nodiscard]] bool operator<(const ProxyObject& obj) const noexcept {
+		return ref1_ < obj.ref1_;
+	}
+
+	[[nodiscard]] bool operator>=(const ProxyObject& obj) const noexcept {
+		return ref1_ >= obj.ref1_;
+	}
+
+	[[nodiscard]] bool operator<=(const ProxyObject& obj) const noexcept {
+		return ref1_ <= obj.ref1_;
+	}
+
+private:
+	ref1_t ref1_;
+	ref2_t ref2_;
+};
+
 class IteratorPair
 {
 public:
-	using T1 = nary::Node<Node>;
+	using size_type = std::size_t;
+	using value_type = ProxyObject;
+	using difference_type = std::ptrdiff_t;
+	using pointer = ProxyObject*;
+	using reference = ProxyObject&;
+	using iterator_category = std::random_access_iterator_tag;
+	using T1 = size_type;
 	using T2 = VisualElement;
 	using iterator1_t = typename std::vector<T1>::iterator;
 	using const_iterator1_t = typename std::vector<T1>::const_iterator;
 	using iterator2_t = typename Vector<T2>::iterator;
 	using const_iterator2_t = typename Vector<T2>::const_iterator;
-	using size_type = std::size_t;
 
-	IteratorPair(const_iterator1_t it1, iterator2_t it2) : it1_(it1), it2_(it2) {}
+	IteratorPair(iterator1_t it1, iterator2_t it2) : it1_(it1), it2_(it2), proxy_(*it1_, *it2_) {}
 
-	void operator=(IteratorPair& it) {
-		T2 t = *it2_;
-		*it2_ = *it.it2_;
-		*it.it2_ = t;
-	}
-
-	auto operator*() const noexcept -> const T1& {
-		return *it1_;
+	auto operator*() noexcept -> ProxyObject& {
+		proxy_ = ProxyObject(*it1_, *it2_);
+		return proxy_;
 	}
 
 	auto operator++() noexcept -> IteratorPair& {
@@ -68,17 +116,46 @@ public:
 		return (*this);
 	}
 
+	[[nodiscard]] auto operator-(const IteratorPair& it) const noexcept -> std::ptrdiff_t {
+		return it1_ - it.it1_;
+	}
+
+	[[nodiscard]] auto operator-(int n) noexcept -> IteratorPair {
+		return IteratorPair(it1_ - n, it2_ - n);
+	}
+
+	[[nodiscard]] auto operator+(int n) noexcept -> IteratorPair {
+		return IteratorPair(it1_ + n, it2_ + n);
+	}
+
 	[[nodiscard]] bool operator==(const IteratorPair& it) const noexcept {
-		return it1_ == it.it1_ && it2_ == it.it2_;
+		return it1_ == it.it1_;
 	}
 
 	[[nodiscard]] bool operator!=(const IteratorPair& it) const noexcept {
 		return !this->operator==(it);
 	}
 
+	[[nodiscard]] bool operator>(const IteratorPair& it) const noexcept {
+		return it1_ > it.it1_;
+	}
+
+	[[nodiscard]] bool operator<(const IteratorPair& it) const noexcept {
+		return it1_ < it.it1_;
+	}
+
+	[[nodiscard]] bool operator>=(const IteratorPair& it) const noexcept {
+		return it1_ >= it.it1_;
+	}
+
+	[[nodiscard]] bool operator<=(const IteratorPair& it) const noexcept {
+		return it1_ <= it.it1_;
+	}
+
 private:
-	const_iterator1_t it1_;
+	iterator1_t it1_;
 	iterator2_t it2_;
+	ProxyObject proxy_;
 };
 
 }	 // namespace cui

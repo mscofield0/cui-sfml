@@ -5,12 +5,17 @@
 
 namespace cui::data_types {
 
-enum class Functions : byte
+enum class Functions : u8
 {
-	Left,
-	Right,
+	TopLeft = 0,
 	Top,
-	Bottom
+	TopRight,
+	Left,
+	Center,
+	Right,
+	BottomLeft,
+	Bottom,
+	BottomRight
 };
 
 class Instruction

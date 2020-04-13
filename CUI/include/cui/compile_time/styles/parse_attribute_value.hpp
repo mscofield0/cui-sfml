@@ -27,7 +27,7 @@
 namespace cui::ct::styles::detail {
 
 constexpr auto parse_attribute_value(const StringView str) -> Variant<DataWithRule, Format<256>> {
-	enum class States : byte
+	enum class States : u8
 	{
 		None = 0,
 		Int,

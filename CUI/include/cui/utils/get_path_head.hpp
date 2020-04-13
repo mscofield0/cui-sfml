@@ -6,7 +6,7 @@
 
 namespace cui {
 
-auto get_path_head(const std::string& path) {
+auto get_path_head(const std::string& path) -> std::string {
 	const auto _1 = path.find_last_of('/');
 	const auto _2 = path.find_last_of('\\');
 	const auto idx = min(_1, _2);

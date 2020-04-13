@@ -2,6 +2,8 @@
 #define CUI_SFML_RENDER_CACHE_HPP
 
 #include <cui/utils/print.hpp>
+#include <cui/compile_time/format/fmt.hpp>
+
 #include <string>
 #include <algorithm>
 
@@ -11,8 +13,6 @@
 #include <cui/visual/node.hpp>
 #include <cui/visual/scene_graph.hpp>
 #include <render_context/visual_element.hpp>
-#include <render_context/detail/set_x.hpp>
-#include <render_context/detail/set_y.hpp>
 #include <render_context/detail/iterator_pair.hpp>
 
 #include <render_context/detail/intermediaries/color.hpp>
@@ -27,22 +27,22 @@ public:
 		return this->size() - 1;
 	}
 
-	void sort(const SceneGraph& graph) {
-		auto begin = IteratorPair{graph.begin(), this->begin()};
-		auto end = IteratorPair{graph.end(), this->end()};
-		std::sort(begin, end, [&graph](const auto& lhs, const auto& rhs) { return lhs.depth() > rhs.depth(); });
-	}
+	void sort(const SceneGraph& graph);
 
 	static RenderCache populate(SceneGraph& graph);
 	void update_ve(const SceneGraph& graph, const Node& node, u64 index);
 	void update_root(const SceneGraph& graph);
 	void update_cache(const SceneGraph& graph);
 
-	void handle_background(const Schematic& scheme, VisualElement& ve);
-	static void handle_x(const Schematic& scheme, VisualElement& ve);
-	static void handle_y(const Schematic& scheme, VisualElement& ve);
-	static void handle_width(const Schematic& scheme, VisualElement& ve);
-	static void handle_height(const Schematic& scheme, VisualElement& ve);
+	void handle_background(Schematic& scheme, VisualElement& ve);
+	void handle_font(Schematic& scheme, VisualElement& ve);
+	void handle_x(const Schematic& scheme, VisualElement& ve);
+	void handle_y(const Schematic& scheme, VisualElement& ve);
+	void handle_width(const Schematic& scheme, VisualElement& ve);
+	void handle_height(const Schematic& scheme, VisualElement& ve);
+	void handle_font_size(const Schematic& scheme, VisualElement& ve);
+	void handle_text_color(const Schematic& scheme, VisualElement& ve);
+	void handle_text_position(const Schematic& scheme, VisualElement& ve);
 
 	void handle_rule_x(const VisualElement& parent_ve, const Schematic& scheme, VisualElement& ve);
 	void handle_rule_y(const VisualElement& parent_ve, const Schematic& scheme, VisualElement& ve);
@@ -51,31 +51,11 @@ public:
 
 private:
 	tsl::hopscotch_map<std::string, sf::Texture> textures_;
+	tsl::hopscotch_map<std::string, sf::Font> fonts_;
 };
 
 RenderCache RenderCache::populate(SceneGraph& graph) {
 	RenderCache cache;
-
-	for (auto& node : graph) {
-		auto& node_data = node.data();
-		auto& d_scheme = node_data.default_schematic();
-		auto& e_schemes = node_data.event_schematics();
-		if (d_scheme.background().is_string()) {
-			const auto& path_head = get_path_head(d_scheme.background().string());
-			if (!cache.textures_.contains(path_head)) {
-				cache.textures_[path_head].loadFromFile(d_scheme.background().string());
-				d_scheme.background() = path_head;
-			}
-		}
-		for (auto it = e_schemes.begin(); it != e_schemes.end(); ++it) {
-			if (it.value().background().is_string()) {
-				const auto& path_head = get_path_head(it.value().background().string());
-				if (cache.textures_.contains(path_head)) continue;
-				cache.textures_[path_head].loadFromFile(it.value().background().string());
-				it.value().background() = path_head;
-			}
-		}
-	}
 
 	cache.reserve(graph.length() + 1);
 	cache.emplace_back();
@@ -102,16 +82,26 @@ void RenderCache::update_root(const SceneGraph& graph) {
 	update_ve(graph, root, SceneGraph::root_index);
 }
 
+void RenderCache::sort(const SceneGraph& graph) {
+	std::vector<std::size_t> v;
+	v.reserve(graph.length());
+	for (const auto& node : graph) {
+		v.push_back(node.depth());
+	}
+
+	auto begin = IteratorPair{v.begin(), this->begin()};
+	auto end = IteratorPair{v.end(), this->end()};
+	std::sort(begin, end, [&graph](const auto& lhs, const auto& rhs) { return lhs > rhs; });
+}
+
 void RenderCache::update_ve(const SceneGraph& graph, const Node& node, const u64 index) {
 	auto& ve = this->operator[](index + 1);
-	const auto& scheme = node.active_schematic().get();
+	auto& scheme = node.active_schematic().get();
 	auto parent_index = graph.get_parent_index(index);
 	parent_index = parent_index == graph.length() ? 0 : parent_index + 1;
 	const auto& parent_ve = this->operator[](parent_index);
 
-	println("Node name:", node.name());
-	println("Parent index:", parent_index);
-	println();
+	ve.text().setString(node.text());
 
 	if (scheme.width_rule()) {
 		handle_rule_width(parent_ve, scheme, ve);
@@ -138,47 +128,71 @@ void RenderCache::update_ve(const SceneGraph& graph, const Node& node, const u64
 	}
 
 	handle_background(scheme, ve);
+	if (!scheme.font().is_none()) {
+		handle_font(scheme, ve);
+	}
+	handle_font_size(scheme, ve);
+	handle_text_color(scheme, ve);
+	handle_text_position(scheme, ve);
 }
 
-void RenderCache::handle_background(const Schematic& scheme, VisualElement& ve) {
-	const auto& val = scheme.background();
+void RenderCache::handle_background(Schematic& scheme, VisualElement& ve) {
+	auto& val = scheme.background();
 	// Add support for images later
 	if (val.is_string()) {
+		const auto& path_head = get_path_head(val.string());
+		if (!textures_.contains(path_head)) {
+			textures_[path_head].loadFromFile(val.string());
+			val = path_head;
+		}
 		ve.setTexture(&textures_.at(val.string()));
 		return;
 	}
 	ve.setFillColor(intermediary::Color{val.rgba()});
 }
 
+void RenderCache::handle_font(Schematic& scheme, VisualElement& ve) {
+	auto& val = scheme.font();
+
+	const auto& path_head = get_path_head(val.string());
+	if (!fonts_.contains(path_head)) {
+		fonts_[path_head].loadFromFile(val.string());
+		val = path_head;
+	}
+	ve.text().setFont(fonts_[path_head]);
+	return;
+}
+
 void RenderCache::handle_x(const Schematic& scheme, VisualElement& ve) {
 	const auto& val = scheme.x().integer_value();
 	const auto y = ve.getPosition().y;
-	ve.setPosition(val, y);
+	ve.setPosition(val, y, this->front());
 }
 
 void RenderCache::handle_y(const Schematic& scheme, VisualElement& ve) {
 	const auto& val = scheme.y().integer_value();
 	const auto x = ve.getPosition().x;
-	ve.setPosition(x, val);
+	ve.setPosition(x, val, this->front());
 }
 
 void RenderCache::handle_width(const Schematic& scheme, VisualElement& ve) {
 	const auto& val = scheme.width().integer_value();
 	const auto h = ve.getSize().y;
-	ve.setSize(sf::Vector2f(val, h));
+	ve.setSize(sf::Vector2f(val, h), this->front());
 }
 
 void RenderCache::handle_height(const Schematic& scheme, VisualElement& ve) {
 	const auto& val = scheme.height().integer_value();
 	const auto w = ve.getSize().x;
-	ve.setSize(sf::Vector2f(w, val));
+	ve.setSize(sf::Vector2f(w, val), this->front());
 }
 
 void RenderCache::handle_rule_x(const VisualElement& parent_ve, const Schematic& scheme, VisualElement& ve) {
 	const auto& val = scheme.x();
 
 	if (val.is_float()) {
-		const auto [x, y] = ve.getPosition();
+		const auto x = parent_ve.getPosition().x;
+		const auto y = ve.getPosition().y;
 		const auto w = parent_ve.getSize().x;
 
 		// Relative position in the box
@@ -186,21 +200,26 @@ void RenderCache::handle_rule_x(const VisualElement& parent_ve, const Schematic&
 		// Absolute position on the window
 		const float abs_pos = rel_pos + x;
 
-		ve.setPosition(abs_pos, y);
+		ve.setPosition(abs_pos, y, this->front());
 	} else if (val.is_instruction()) {
 		using namespace data_types;
 
-		const auto x = parent_ve.getPosition().x;
-		const auto y = ve.getPosition().y;
-		const auto w = parent_ve.getSize().x;
+		const auto [x, y] = ve.getPosition();
+		const auto [w, h] = ve.getSize();
+		const auto [px, py] = parent_ve.getPosition();
+		const auto [pw, ph] = parent_ve.getSize();
 
 		switch (val.instruction().active()) {
 			case Functions::Left: {
-				ve.setPosition(x, y);
+				ve.setPosition(px, y, this->front());
 				break;
 			}
 			case Functions::Right: {
-				ve.setPosition(x + w, y);
+				ve.setPosition(px + pw - w, y, this->front());
+				break;
+			}
+			case Functions::Center: {
+				ve.setPosition((px + pw) / 2 - w / 2, y, this->front());
 				break;
 			}
 			default: {
@@ -212,7 +231,8 @@ void RenderCache::handle_rule_x(const VisualElement& parent_ve, const Schematic&
 void RenderCache::handle_rule_y(const VisualElement& parent_ve, const Schematic& scheme, VisualElement& ve) {
 	const auto& val = scheme.y();
 	if (val.is_float()) {
-		const auto [x, y] = ve.getPosition();
+		const auto x = ve.getPosition().x;
+		const auto y = parent_ve.getPosition().y;
 		const auto h = parent_ve.getSize().y;
 
 		// Relative position in the box
@@ -220,21 +240,26 @@ void RenderCache::handle_rule_y(const VisualElement& parent_ve, const Schematic&
 		// Absolute position on the window
 		const float abs_pos = rel_pos + y;
 
-		ve.setPosition(x, abs_pos);
+		ve.setPosition(x, abs_pos, this->front());
 	} else if (val.is_instruction()) {
 		using namespace data_types;
 
-		const auto x = ve.getPosition().x;
-		const auto y = parent_ve.getPosition().y;
-		const auto h = parent_ve.getSize().y;
+		const auto [x, y] = ve.getPosition();
+		const auto [w, h] = ve.getSize();
+		const auto [px, py] = parent_ve.getPosition();
+		const auto [pw, ph] = parent_ve.getSize();
 
 		switch (val.instruction().active()) {
 			case Functions::Top: {
-				ve.setPosition(x, y);
+				ve.setPosition(x, py, this->front());
 				break;
 			}
 			case Functions::Bottom: {
-				ve.setPosition(x, y + h);
+				ve.setPosition(x, py + ph - h, this->front());
+				break;
+			}
+			case Functions::Center: {
+				ve.setPosition(x, (py + ph) / 2 - h / 2, this->front());
 				break;
 			}
 			default: {
@@ -248,7 +273,7 @@ void RenderCache::handle_rule_width(const VisualElement& parent_ve, const Schema
 	const auto w = parent_ve.getSize().x;
 	const auto h = ve.getSize().y;
 
-	ve.setSize(sf::Vector2f(w * val.float_value(), h));
+	ve.setSize(sf::Vector2f(w * val.float_value(), h), this->front());
 }
 
 void RenderCache::handle_rule_height(const VisualElement& parent_ve, const Schematic& scheme, VisualElement& ve) {
@@ -256,7 +281,88 @@ void RenderCache::handle_rule_height(const VisualElement& parent_ve, const Schem
 	const auto w = ve.getSize().x;
 	const auto h = parent_ve.getSize().y;
 
-	ve.setSize(sf::Vector2f(w, h * val.float_value()));
+	ve.setSize(sf::Vector2f(w, h * val.float_value()), this->front());
+}
+
+void RenderCache::handle_font_size(const Schematic& scheme, VisualElement& ve) {
+	const auto& val = scheme.font_size();
+
+	ve.text().setCharacterSize(val.integer_value());
+}
+
+void RenderCache::handle_text_color(const Schematic& scheme, VisualElement& ve) {
+	const auto& val = scheme.text_color();
+
+	ve.text().setFillColor(intermediary::Color{val.rgba()});
+}
+
+void RenderCache::handle_text_position(const Schematic& scheme, VisualElement& ve) {
+	const auto& val = scheme.text_position();
+	const auto [x, y] = ve.getPosition();
+	const auto [w, h] = ve.getSize();
+
+	const auto [_0, _1, tw, th] = ve.text().getGlobalBounds();
+	float nx, ny;
+
+	using namespace data_types;
+	switch (val.instruction().active()) {
+		case Functions::TopLeft: {
+			nx = x;
+			ny = y;
+
+			break;
+		}
+		case Functions::Top: {
+			nx = x + w / 2 - tw / 2;
+			ny = y;
+
+			break;
+		}
+		case Functions::TopRight: {
+			nx = x + w - tw;
+			ny = y;
+
+			break;
+		}
+		case Functions::Left: {
+			nx = x;
+			ny = y + h / 2 - th / 2;
+
+			break;
+		}
+		case Functions::Center: {
+			nx = x + w / 2 - tw / 2;
+			ny = y + h / 2 - th / 2;
+
+			break;
+		}
+		case Functions::Right: {
+			nx = x + w - tw;
+			ny = y + h / 2 - th / 2;
+
+			break;
+		}
+		case Functions::BottomLeft: {
+			nx = x;
+			ny = y + h - th;
+
+			break;
+		}
+		case Functions::Bottom: {
+			nx = x + w / 2 - tw / 2;
+			ny = y + h - th;
+
+			break;
+		}
+		case Functions::BottomRight: {
+			nx = x + w - tw;
+			ny = y + h - th;
+
+			break;
+		}
+	}
+
+	ve.text().setPosition(nx, ny);
 }
 
 }	 // namespace cui

@@ -3,6 +3,7 @@
 
 #include <value_data.hpp>
 #include <data_types/color.hpp>
+#include <data_types/instruction.hpp>
 
 namespace cui {
 
@@ -10,8 +11,8 @@ class Attributes
 {
 public:
 	Attributes() noexcept
-		: x_(0), y_(0), width_(0), height_(0), background_(data_types::Color(0)), text_color_(data_types::Color(0, 0, 0)),
-		  font_size_(0) {}
+		: x_(0), y_(0), width_(0), height_(0), background_(data_types::Color(0)),
+		  text_color_(data_types::Color(0, 0, 0)), font_size_(30), font_(), text_position_(Functions::Center) {}
 
 	[[nodiscard]] auto x() noexcept -> ValueData& {
 		return x_;
@@ -69,6 +70,22 @@ public:
 		return font_size_;
 	}
 
+	[[nodiscard]] auto font() noexcept -> ValueData& {
+		return font_;
+	}
+
+	[[nodiscard]] auto font() const noexcept -> const ValueData& {
+		return font_;
+	}
+
+	[[nodiscard]] auto text_position() noexcept -> ValueData& {
+		return text_position_;
+	}
+
+	[[nodiscard]] auto text_position() const noexcept -> const ValueData& {
+		return text_position_;
+	}
+
 protected:
 	ValueData x_;
 	ValueData y_;
@@ -77,6 +94,8 @@ protected:
 	ValueData background_;
 	ValueData text_color_;
 	ValueData font_size_;
+	ValueData font_;
+	ValueData text_position_;
 };
 
 }	 // namespace cui

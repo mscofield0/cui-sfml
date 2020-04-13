@@ -35,7 +35,7 @@ constexpr auto parse_styles() -> Variant<StaticVector<Definition, count_definiti
 	constexpr const char expected_event_list_definition_symbol[] = "Expected a '[' previously";
 	constexpr const char missing_event_list[] = "Expected an event list";
 
-	enum class States : byte
+	enum class States : u8
 	{
 		None = 0,
 		OnOpenSquareBracket = '[',
