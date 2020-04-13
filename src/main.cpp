@@ -8,19 +8,16 @@
 
 #include <cui/visual/scene_graph.hpp>
 #include <cui/visual/node.hpp>
-#include <cui/window.hpp>
+#include <window.hpp>
 
 #include <aliases.hpp>
 #include <iostream>
 #include <type_traits>
 #include <utility>
 
-#include <render_context/render_context.hpp>
-#include <render_context/window_options.hpp>
-#include <render_context/render_cache.hpp>
-#include <render_context/render_context.hpp>
-#include <render_context/detail/intermediaries/color.hpp>
-#include <engine/event_manager.hpp>
+#include <window_options.hpp>
+#include <render_cache.hpp>
+#include <detail/intermediaries/color.hpp>
 #include <cui/utils/print.hpp>
 
 std::ostream& operator<<(std::ostream& os, const cui::ct::StringView str) {
@@ -207,12 +204,13 @@ std::ostream& operator<<(std::ostream& os, const cui::VisualElement& ve) {
 	const auto [x, y] = ve.getPosition();
 	const auto [w, h] = ve.getSize();
 	const cui::data_types::Color bg = cui::intermediary::Color{ve.getFillColor()};
+	const auto is_visible = ve.visible();
 
 	os << "VE:";
 	os << "\n\tX:" << x << ',' << "Y:" << y;
 	os << "\n\tW:" << w << ',' << "H:" << h;
 	os << "\n\trgba(" << bg.red() << "," << bg.green() << "," << bg.blue() << ',' << bg.alpha() << ')';
-
+	os << "\n\tVisible?: " << (is_visible ? "true" : "false");
 	return os;
 }
 
@@ -264,7 +262,7 @@ int main() {
 		return 0;
 	}
 */
-	using win_t = Window<RenderContext, EventManager, WindowOptions>;
+	using win_t = Window;
 
 	std::unique_ptr<win_t> window;
 
@@ -294,26 +292,26 @@ int main() {
 		println("//////////////////////////////////////////////////////////////");
 
 		window = std::make_unique<win_t>(sty, scenes_variant.type_a());
-		println(window->current_scene().graph());
+		println(window->active_scene().graph());
 	} else {
 		println(styles_variant.type_b());
 		return 0;
 	}
-
-	for (const auto& ve : window->ctx_.cache()) {
+	
+	for (const auto& ve : window->cache_) {
 		println(ve, "\n///////////////////////////////////////////////////\n");
 	}
 
 	println("Creating the renderwindow...");
 	window->init({800, 600, "Title", sf::Style::Default, sf::ContextSettings{}, 60});
 
-	for (const auto& ve : window->ctx_.cache()) {
+	for (const auto& ve : window->cache_) {
 		println(ve, "\n///////////////////////////////////////////////////\n");
 	}
 
 	println("Starting the app loop...");
 
-	println("Window is running: ", window->ctx_.window()->isOpen());
+	println("Window is running: ", window->window()->isOpen());
 
 	println("After using the newly initialized window variable!");
 

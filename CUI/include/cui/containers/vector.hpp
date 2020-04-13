@@ -268,22 +268,22 @@ bool operator!=(const Vector<T>& lhs, const Vector<T>& rhs) {
 
 template <typename T>
 bool operator<(const Vector<T>& lhs, const Vector<T>& rhs) {
-	return lhs.vec_ == rhs.vec_;
+	return lhs.vec_ < rhs.vec_;
 }
 
 template <typename T>
 bool operator<=(const Vector<T>& lhs, const Vector<T>& rhs) {
-	return lhs.vec_ == rhs.vec_;
+	return lhs.vec_ <= rhs.vec_;
 }
 
 template <typename T>
 bool operator>(const Vector<T>& lhs, const Vector<T>& rhs) {
-	return lhs.vec_ == rhs.vec_;
+	return lhs.vec_ > rhs.vec_;
 }
 
 template <typename T>
 bool operator>=(const Vector<T>& lhs, const Vector<T>& rhs) {
-	return lhs.vec_ == rhs.vec_;
+	return lhs.vec_ >= rhs.vec_;
 }
 
 }	 // namespace cui

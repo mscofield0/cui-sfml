@@ -2,6 +2,7 @@
 #define CUI_TRACKED_VECTOR_HPP
 
 #include <initializer_list>
+#include <exception>
 
 #include <containers/vector.hpp>
 #include <utils/forward.hpp>
@@ -44,7 +45,7 @@ public:
 	}
 
 	void change_tracked_item(size_type idx) {
-		if (idx >= this->size()) throw "Out of range";
+		if (idx >= this->size()) throw std::length_error("Index larger than size()");
 		tracker_ = idx;
 	}
 
