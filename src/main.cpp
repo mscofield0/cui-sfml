@@ -291,7 +291,7 @@ int main() {
 		println("//////////////////////////////////////////////////////////////");
 		println("//////////////////////////////////////////////////////////////");
 
-		window = std::make_unique<win_t>(sty, scenes_variant.type_a());
+		window = std::make_unique<win_t>(std::move(sty), std::move(scenes_variant.type_a()));
 		println(window->active_scene().graph());
 	} else {
 		println(styles_variant.type_b());

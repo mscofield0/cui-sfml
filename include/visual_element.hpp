@@ -5,8 +5,6 @@
 
 namespace cui {
 
-// using VisualElement = sf::RectangleShape;
-
 class VisualElement : public sf::View, public sf::RectangleShape
 {
 public:

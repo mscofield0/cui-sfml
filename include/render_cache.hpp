@@ -58,6 +58,8 @@ private:
 RenderCache RenderCache::populate(SceneGraph& graph) {
 	RenderCache cache;
 
+	println(graph);
+
 	cache.reserve(graph.length() + 1);
 	cache.emplace_back();
 	cache.update_cache(graph);
@@ -128,6 +130,10 @@ void RenderCache::update_ve(const SceneGraph& graph, const Node& node, const u64
 		handle_y(scheme, ve);
 	}
 
+
+	if(node.active_schematic().get().background().is_string()) {
+		println(node.active_schematic().get().background().string());
+	}
 	handle_background(scheme, ve);
 	if (!scheme.font().is_none()) {
 		handle_font(scheme, ve);
@@ -141,7 +147,7 @@ void RenderCache::handle_background(Schematic& scheme, VisualElement& ve) {
 	auto& val = scheme.background();
 	// Add support for images later
 	if (val.is_string()) {
-		const auto& path_head = get_path_head(val.string());
+		const auto path_head = get_path_head(val.string());
 		if (!textures_.contains(path_head)) {
 			textures_[path_head].loadFromFile(val.string());
 			val = path_head;
@@ -155,7 +161,7 @@ void RenderCache::handle_background(Schematic& scheme, VisualElement& ve) {
 void RenderCache::handle_font(Schematic& scheme, VisualElement& ve) {
 	auto& val = scheme.font();
 
-	const auto& path_head = get_path_head(val.string());
+	const auto path_head = get_path_head(val.string());
 	if (!fonts_.contains(path_head)) {
 		fonts_[path_head].loadFromFile(val.string());
 		val = path_head;

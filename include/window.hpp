@@ -18,6 +18,7 @@
 #include <detail/timer_event.hpp>
 #include <render_cache.hpp>
 #include <window_options.hpp>
+#include <event_function.hpp>
 #include <aliases.hpp>
 
 #include <SFML/Window/Event.hpp>
@@ -34,7 +35,7 @@ public:
 	using time_point_t = std::chrono::time_point<steady_clock_t>;
 	template <typename Period>
 	using duration_t = std::chrono::duration<steady_clock_t::duration::rep, Period>;
-	using event_t = std::function<void()>;
+	using event_t = EventFunction;
 	using timer_event_t = TimerEvent;
 	using window_t = sf::RenderWindow;
 	using window_ptr_t = std::unique_ptr<window_t>;
@@ -45,21 +46,19 @@ public:
 
 	template <template <typename, u64> typename Container, u64 Size, typename... Scenes>
 	Window(const Container<ct::Style, Size>& p_styles, const Scenes&... p_scenes)
-		: scenes_{SceneGraph{p_scenes, p_styles}...}, cache_(RenderCache::populate(this->active_scene().graph())) {}
+		: scenes_{SceneGraph{p_scenes, p_styles}...} {}
 
 	template <template <typename, u64> typename Container, u64 Size, typename... Scenes>
 	Window(Container<ct::Style, Size>&& p_styles, Scenes&&... p_scenes)
-		: scenes_{SceneGraph{std::move(p_scenes), p_styles}...},
-		  cache_(RenderCache::populate(this->active_scene().graph())) {}
+		: scenes_{SceneGraph{std::move(p_scenes), p_styles}...} {}
 
 	template <template <typename> typename Container, typename... Scenes>
 	Window(const Container<ct::Style>& p_styles, const Scenes&... p_scenes)
-		: scenes_{SceneGraph{p_scenes, p_styles}...}, cache_(RenderCache::populate(this->active_scene().graph())) {}
+		: scenes_{SceneGraph{p_scenes, p_styles}...} {}
 
 	template <template <typename> typename Container, typename... Scenes>
 	Window(Container<ct::Style>&& p_styles, Scenes&&... p_scenes)
-		: scenes_{SceneGraph{std::move(p_scenes), p_styles}...},
-		  cache_(RenderCache::populate(this->active_scene().graph())) {}
+		: scenes_{SceneGraph{std::move(p_scenes), p_styles}...} {}
 
 	void init(const WindowOptions& options);
 
@@ -68,9 +67,9 @@ public:
 	void register_event(const std::string& name, event_t&& p_func);
 	void register_event(std::string&& name, event_t&& p_func);
 
-	void attach_event_to_node(std::string_view search_name, const std::string& event_name);
+	void attach_event_to_node(const std::string& search_name, const std::string& event_name);
 
-	void attach_event_to_node(std::string_view search_name, std::string&& event_name);
+	void attach_event_to_node(const std::string& search_name, std::string&& event_name);
 
 	void dispatch_event(const std::string& name);
 
@@ -126,19 +125,26 @@ public:
 	std::unique_ptr<sf::RenderWindow> window_;
 };
 
+/// \brief Initializes the window
+/// \details Creates the \sa sf::RenderWindow with \sa WindowOptions and initializes the
+/// the threads
+/// \param options The options with which to construct the \sa sf::RenderWindow
 void Window::init(const WindowOptions& options) {
 	const auto& [w, h, title, style, ctx_settings, framerate] = options;
 	auto& graph = this->active_scene().graph();
+	{
+		std::unique_lock lock(scene_mutex_);
+		graph.root().default_schematic().width() = static_cast<int>(w);
+		graph.root().default_schematic().height() = static_cast<int>(h);
 
-	graph.root().default_schematic().width() = static_cast<int>(w);
-	graph.root().default_schematic().height() = static_cast<int>(h);
-
-	auto& e_schemes = graph.root().event_schematics();
-	for (auto it = e_schemes.begin(); it != e_schemes.end(); ++it) {
-		it.value().width() = static_cast<int>(w);
-		it.value().height() = static_cast<int>(h);
+		auto& e_schemes = graph.root().event_schematics();
+		for (auto it = e_schemes.begin(); it != e_schemes.end(); ++it) {
+			it.value().width() = static_cast<int>(w);
+			it.value().height() = static_cast<int>(h);
+		}
+		println(graph);
+		cache_ = RenderCache::populate(graph);
 	}
-	cache_ = RenderCache::populate(this->active_scene().graph());
 
 	window_ = std::make_unique<sf::RenderWindow>(sf::VideoMode(w, h), title, style, ctx_settings);
 	window_->setFramerateLimit(framerate);
@@ -204,16 +210,34 @@ void Window::register_event(std::string&& name, event_t&& event) {
 	this->active_scene().register_event(name, std::move(event));
 }
 
-void Window::attach_event_to_node(std::string_view search_name, const std::string& event_name) {
-	/*
+/// \brief Attaches a registered event to a node
+/// \details Searches for the node by name. If no node is found, an exception is thrown
+/// \param search_name The name of the node to search for
+/// \param event_name The name of the event that's being attached
+void Window::attach_event_to_node(const std::string& search_name, const std::string& event_name) {
 	std::unique_lock lock(scene_mutex_);
 	auto& graph = this->active_scene().graph();
 	
-	auto it = std::find(graph.begin(), graph.end(), [search_name](const auto& node_name) {
-		return node_name.name() == search_name;
+	auto it = std::find_if(graph.begin(), graph.end(), [search_name](const auto& node) {
+		return node.data().name() == search_name;
 	});
-	// it->attach_event(event_name);
-	*/
+	if(it == graph.end()) throw std::logic_error("No node found by that name");
+	it->attach_event(event_name);
+}
+
+/// \brief Attaches a registered event to a node
+/// \details Searches for the node by name. If no node is found, an exception is thrown
+/// \param search_name The name of the node to search for
+/// \param event_name The name of the event that's being attached
+void Window::attach_event_to_node(const std::string& search_name, std::string&& event_name) {
+	std::unique_lock lock(scene_mutex_);
+	auto& graph = this->active_scene().graph();
+	
+	auto it = std::find_if(graph.begin(), graph.end(), [search_name](const auto& node) {
+		return node.data().name() == search_name;
+	});
+	if(it == graph.end()) throw std::logic_error("No node found by that name");
+	it->attach_event(std::move(event_name));
 }
 
 /// \brief Dispatches an event
@@ -282,7 +306,7 @@ bool Window::timer_wait_for(standard_duration_t& previous) {
 /// \brief Updates the internal \sa RenderCache
 /// \details Locks the internal scene mutex with a \sa std::shared_lock
 void Window::update_cache() {
-	std::shared_lock lock(scene_mutex_);
+	std::unique_lock lock(scene_mutex_);
 	cache_.update_cache(this->active_scene().graph());
 }
 
@@ -300,10 +324,13 @@ void Window::render() noexcept {
 	window_->display();
 }
 
-void Window::process_event(const sf::Event& evt) {
+/// \brief Processes the polled-for event and dispatches registered events
+/// \details Dispatches the events with the corresponding event marker
+/// \param event The polled-for event
+void Window::process_event(const sf::Event& event) {
 	using EventType = sf::Event::EventType;
 
-	switch (evt.type) {
+	switch (event.type) {
 		case EventType::Closed: {
 			{
 				std::unique_lock lock(window_mutex_);

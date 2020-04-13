@@ -1,12 +1,12 @@
 #ifndef CUI_NODE_HPP
 #define CUI_NODE_HPP
 
+#include <functional>
+#include <string>
+
 #include <compile_time/string/string_view.hpp>
 #include <tsl/hopscotch_map.h>
 #include <visual/schematic.hpp>
-
-#include <functional>
-#include <string>
 
 namespace cui {
 

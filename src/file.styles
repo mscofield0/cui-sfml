@@ -14,6 +14,7 @@ font {
 btn1 {
 	x: center;
 	y: 70%;
+	text_position: top;
 	width: 200;
 	height: 80;
 }
