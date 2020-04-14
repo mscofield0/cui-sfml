@@ -4,6 +4,7 @@
 #include <functional>
 #include <string>
 #include <string_view>
+#include <utility>
 
 #include <visual/scene_graph.hpp>
 #include <tsl/hopscotch_map.h>
@@ -11,31 +12,68 @@
 
 namespace cui {
 
-template <typename EventFunctionType>
+template <typename EventFunctionType, typename EventType>
 class SceneState
 {
 public:
 	using event_t = EventFunctionType;
 	using event_map_t = tsl::hopscotch_map<std::string, event_t>;
+	using event_marker_map_t = tsl::hopscotch_map<EventType, std::pair<event_map_t, event_map_t>>;
 
 	SceneState(const SceneGraph& p_graph) : graph_(p_graph) {}
 
 	SceneState(SceneGraph&& p_graph) : graph_(std::move(p_graph)) {}
 
-	void register_event(const std::string& name, event_t&& p_func) {
-		registered_events_[name] = std::move(p_func);
+	void register_event(const EventType& type, const std::string& name, event_t&& event) {
+		auto& reged_events = marked_sections_[type].first;
+		reged_events[name] = std::move(event);
 	}
 
-	void register_event(std::string&& name, event_t&& p_func) {
-		registered_events_[std::move(name)] = std::move(p_func);
+	void register_event(const EventType& type, std::string&& name, event_t&& event) {
+		auto& reged_events = marked_sections_[type].first;
+		reged_events[std::move(name)] = std::move(event);
+	}
+	
+	void register_global_event(const EventType& type, const std::string& name, event_t&& event) {
+		auto& reged_events = marked_sections_[type].second;
+		reged_events[name] = std::move(event);
 	}
 
-	auto get_event(const std::string& name) const -> const event_t& {
-		return registered_events_.at(name);
+	void register_global_event(const EventType& type, std::string&& name, event_t&& event) {
+		auto& reged_events = marked_sections_[type].second;
+		reged_events[std::move(name)] = std::move(event);
 	}
 
-	auto get_event(std::string&& name) const -> const event_t& {
-		return registered_events_.at(std::move(name));
+	void unregister_event(const EventType& type, const std::string& name) {
+		marked_sections_[type].first.erase(name);
+	}
+
+	void unregister_event(const EventType& type, std::string&& name) {
+		marked_sections_[type].first.erase(std::move(name));
+	}
+	
+	void unregister_global_event(const EventType& type, const std::string& name) {
+		marked_sections_[type].second.erase(name);
+	}
+
+	void unregister_global_event(const EventType& type, std::string&& name) {
+		marked_sections_[type].second.erase(std::move(name));
+	}
+
+	[[nodiscard]] auto get_event(const EventType& type, const std::string& name) const -> const event_t& {
+		return marked_sections_.at(type).first.at(name);
+	}
+
+	[[nodiscard]] auto get_event(const EventType& type, std::string&& name) const -> const event_t& {
+		return marked_sections_.at(type).first.at(std::move(name));
+	}
+
+	[[nodiscard]] auto get_global_event(const EventType& type, const std::string& name) const -> const event_t& {
+		return marked_sections_.at(type).second.at(name);
+	}
+
+	[[nodiscard]] auto get_global_event(const EventType& type, std::string&& name) const -> const event_t& {
+		return marked_sections_.at(type).second.at(std::move(name));
 	}
 
 	[[nodiscard]] auto graph() noexcept -> SceneGraph& {
@@ -46,17 +84,21 @@ public:
 		return graph_;
 	}
 
-	[[nodiscard]] auto registered_events() noexcept -> event_map_t& {
-		return registered_events_;
+	[[nodiscard]] auto marked_sections() const noexcept -> const event_marker_map_t& {
+		return marked_sections_;
 	}
 
-	[[nodiscard]] auto registered_events() const noexcept -> const event_map_t& {
-		return registered_events_;
+	[[nodiscard]] auto registered_events(const EventType& event_type) const noexcept -> const event_map_t& {
+		return marked_sections_.at(event_type).first;
+	}
+	
+	[[nodiscard]] auto registered_global_events(const EventType& event_type) const noexcept -> const event_map_t& {
+		return marked_sections_.at(event_type).second;
 	}
 
 private:
 	SceneGraph graph_;
-	event_map_t registered_events_;
+	event_marker_map_t marked_sections_;
 };
 
 }	 // namespace cui

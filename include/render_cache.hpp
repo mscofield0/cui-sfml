@@ -58,8 +58,6 @@ private:
 RenderCache RenderCache::populate(SceneGraph& graph) {
 	RenderCache cache;
 
-	println(graph);
-
 	cache.reserve(graph.length() + 1);
 	cache.emplace_back();
 	cache.update_cache(graph);

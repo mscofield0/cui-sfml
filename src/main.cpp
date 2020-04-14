@@ -14,6 +14,7 @@
 #include <iostream>
 #include <type_traits>
 #include <utility>
+#include <random>
 
 #include <window_options.hpp>
 #include <render_cache.hpp>
@@ -228,43 +229,13 @@ int main() {
 #include "file.scene"
 	END_STATIC_STRING_HOLDER
 
-	/*
-	using win_t = Window<TestRenderContext, TestEventManager, WindowOptions>;
-
-	std::unique_ptr<win_t> window;
-
-	constexpr auto scenes_variant = ct::scenes::parse_scenes<scene__>();
-
-	if constexpr (scenes_variant.is_type_b()) {
-		println(scenes_variant.type_b());
-		return 0;
-	}
-
-	constexpr auto styles_variant = ct::styles::parse_styles<style__>();
-	if constexpr (styles_variant.is_type_a()) {
-		StaticVector<ct::Style, styles_variant.type_a().size()> sty;
-		for (const auto& el : styles_variant.type_a()) {
-			const auto parsed_variant = ct::Style::create(el);
-			if (parsed_variant.is_type_b()) {
-				println(parsed_variant.type_b());
-				return 0;
-			}
-			const auto& parsed = parsed_variant.type_a();
-			sty.push_back(parsed);
-		}
-
-		println(SceneGraph{scenes_variant.type_a(), sty});
-
-		window = std::make_unique<win_t>(sty, scenes_variant.type_a());
-		println(window->current_scene().graph()[0].data().active_schematic().get().x());
-	} else {
-		println(styles_variant.type_b());
-		return 0;
-	}
-*/
 	using win_t = Window;
 
 	std::unique_ptr<win_t> window;
+
+	std::unique_ptr<std::random_device> device;
+	std::unique_ptr<std::mt19937> gen;
+	std::uniform_int_distribution<int> dist(0, 255);
 
 	constexpr auto scenes_variant = ct::scenes::parse_scenes<scene__>();
 
@@ -287,23 +258,36 @@ int main() {
 			sty.push_back(parsed);
 		}
 
-		println("//////////////////////////////////////////////////////////////");
-		println("//////////////////////////////////////////////////////////////");
-		println("//////////////////////////////////////////////////////////////");
-
 		window = std::make_unique<win_t>(std::move(sty), std::move(scenes_variant.type_a()));
-		println(window->active_scene().graph());
 	} else {
 		println(styles_variant.type_b());
 		return 0;
 	}
-	
+
 	for (const auto& ve : window->cache_) {
 		println(ve, "\n///////////////////////////////////////////////////\n");
 	}
 
+	window->register_event(sf::Event::EventType::Closed, "on_close", [&window] {
+		window->close();
+	});
+	
+	window->register_event(sf::Event::EventType::MouseButtonPressed, "on_click_btn", [&window, &gen, &dist] {
+		const auto r = dist(gen);
+		const auto g = dist(gen);
+		const auto b = dist(gen);
+		auto& graph = window->active_scene().graph();
+		Schematic& scheme = graph.root().active_schematic();
+		scheme.background() = cui::Color{r, g, b};
+		window->update_cache();
+	});
+
+	window->attach_event_to_node("button", "on_click_btn");
+
 	println("Creating the renderwindow...");
 	window->init({800, 600, "Title", sf::Style::Default, sf::ContextSettings{}, 60});
+
+	println(window->active_scene().graph());
 
 	for (const auto& ve : window->cache_) {
 		println(ve, "\n///////////////////////////////////////////////////\n");
