@@ -1,17 +1,37 @@
 #ifndef CUI_SFML_TEMPLATE_BUTTON_HPP
 #define CUI_SFML_TEMPLATE_BUTTON_HPP
 
-#define CUI_BUTTON_ON_CLICK(window, event_data) \
+#include <detail/templates/requirements.hpp>
+
+#define CUI_BUTTON(window, event_data) \
+	bool active_schematic_changed = false; \
 	{ \
-		std::unique_lock lock(window.window_mutex_); \
-		const auto [_, x, y] = std::get<sf::Event::MouseButtonEvent>(event_data.get()); \
+		int x, y; \
+		std::visit( \
+		  [&x, &y](auto& arg) { \
+			  using T = std::decay_t<decltype(arg)>; \
+			  if constexpr (cui::is_any_v<T, sf::Event::MouseButtonEvent, sf::Event::MouseMoveEvent>) { \
+				  x = arg.x; \
+				  y = arg.y; \
+			  } else { \
+				  throw std::logic_error("Accessed invalid type inside CUI_BUTTON template"); \
+			  } \
+		  }, \
+		  event_data.get()); \
 		const auto point = sf::Vector2f(x, y); \
-		auto* node = event_data.caller(); \
-		if (!window.cache()[event_data.caller_index()].getGlobalBounds().contains(point)) return; \
-		auto& e_schemes = node->data().event_schematics(); \
+		{ \
+			std::unique_lock wlock(window.window_mutex_); \
+			if (!window.cache()[event_data.caller_index()].getGlobalBounds().contains(point)) { \
+				return; \
+			} \
+		} \
+		std::unique_lock slock(window.scene_mutex_); \
+		auto node = event_data.caller(); \
+		auto& e_schemes = node->event_schematics(); \
 		for (auto it = e_schemes.begin(); it != e_schemes.end(); ++it) { \
-			if (it.key() == event_name) { \
-				node->data().active_schematic() = it.value(); \
+			if (it.key() == event_data.event_name()) { \
+				node->active_schematic() = it.value(); \
+				active_schematic_changed = true; \
 			} \
 		} \
 	}

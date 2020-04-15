@@ -269,41 +269,47 @@ int main() {
 		return 0;
 	}
 
-	println("Before register_global_event()");
-	window->register_global_event(sf::Event::EventType::Closed, "on_close", [&window](const auto& event_data) {
-		window->close();
-	});
+	using EventType = sf::Event::EventType;
 
-	println("Before register_event()");
-	window->register_event(sf::Event::EventType::MouseButtonPressed,
+	window->register_global_event(EventType::Closed, "on_close", [&window](auto event_data) { window->close(); });
+	window->register_global_event(EventType::Resized, "on_resize", [&window](auto event_data) {
+		const auto [w, h] = std::get<sf::Event::SizeEvent>(event_data.get());
+		window->resize(w, h);
+		window->schedule_to_update_cache();
+	});
+	window->register_event(EventType::MouseButtonPressed,
 						   "on_click_btn",
-						   [&window, &gen, &dist](event_data_t& event_data) {
-							   // CUI_BUTTON_ON_CLICK((*window), event_data);
+						   [&window, &gen, &dist](event_data_t event_data) {
+							   CUI_BUTTON((*window), event_data);
+
 							   {
-								   std::unique_lock lock((*window).window_mutex_);
-								   const auto [_, x, y] = std::get<sf::Event::MouseButtonEvent>(event_data.get());
-								   const auto point = sf::Vector2f(x, y);
-								   auto node = event_data.caller();
-								   if (!(*window).cache()[event_data.caller_index()].getGlobalBounds().contains(point))
-									   return;
-								   auto& e_schemes = node->event_schematics();
-								   for (auto it = e_schemes.begin(); it != e_schemes.end(); ++it) {
-									   if (it.key() == event_data.event_name()) {
-										   node->active_schematic() = it.value();
-									   }
-								   }
+								   std::unique_lock lock(window->scene_mutex_);
+								   const auto r = dist(*gen);
+								   const auto g = dist(*gen);
+								   const auto b = dist(*gen);
+								   auto& graph = window->active_scene().graph();
+								   Schematic& scheme = graph.root().active_schematic();
+								   scheme.background() = cui::Color{r, g, b};
 							   }
-							   const auto r = dist(*gen);
-							   const auto g = dist(*gen);
-							   const auto b = dist(*gen);
-							   auto& graph = window->active_scene().graph();
-							   Schematic& scheme = graph.root().active_schematic();
-							   scheme.background() = cui::Color{r, g, b};
-							   window->update_cache();
+
+							   window->schedule_to_update_cache();
 						   });
+	window->register_event(EventType::MouseMoved, "on_hover", [&window](event_data_t event_data) {
+		CUI_BUTTON((*window), event_data);
+
+		if(active_schematic_changed) window->schedule_to_update_cache();
+	});
 
 	println("Before attach_event_to_node()");
 	window->attach_event_to_node("button", "on_click_btn");
+	window->attach_event_to_node("button", "on_hover");
+
+	println("Local events:");
+	for (const auto& kvp : window->active_scene().marked_sections()) {
+		for (const auto& event : kvp.second.first) {
+			println("\tName:", event.first);
+		}
+	}
 
 	println("Creating the renderwindow...");
 	window->init({800, 600, "Title", sf::Style::Default, sf::ContextSettings{}, 60});

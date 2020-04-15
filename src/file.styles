@@ -4,8 +4,9 @@ root {
 }
 
 button {
-	background: url(bin/button_with_shadow.png);
+	background: url(bin/button.png);
 }
+
 
 font {
 	font: url(bin/sansation.ttf);
@@ -14,7 +15,18 @@ font {
 btn1 {
 	x: center;
 	y: 70%;
-	text_position: top;
+	text_position: center;
+	width: 200;
+	height: 80;
+}
+
+btn1 [on_hover] {
+	background: url(bin/button_hovered.png);
+	text_color: white;
+	
+	x: center;
+	y: 70%;
+	text_position: center;
 	width: 200;
 	height: 80;
 }

@@ -31,7 +31,7 @@ public:
 	void sort(const SceneGraph<TNodeCache>& graph);
 
 	template <typename TNodeCache>
-	static RenderCache populate(SceneGraph<TNodeCache>& graph);
+	void cache_resource(Node<TNodeCache>& node);
 	template <typename TNodeCache>
 	void update_ve(const SceneGraph<TNodeCache>& graph, const Node<TNodeCache>& node, u64 index);
 	template <typename TNodeCache>
@@ -54,20 +54,55 @@ public:
 	void handle_rule_width(const VisualElement& parent_ve, const Schematic& scheme, VisualElement& ve);
 	void handle_rule_height(const VisualElement& parent_ve, const Schematic& scheme, VisualElement& ve);
 
-private:
-	tsl::hopscotch_map<std::string, sf::Texture> textures_;
-	tsl::hopscotch_map<std::string, sf::Font> fonts_;
+public:
+	tsl::hopscotch_map<std::string, sf::Texture> textures;
+	tsl::hopscotch_map<std::string, sf::Font> fonts;
 };
 
 template <typename TNodeCache>
-RenderCache RenderCache::populate(SceneGraph<TNodeCache>& graph) {
-	RenderCache cache;
+void RenderCache::cache_resource(Node<TNodeCache>& node) {
+	{
+		auto& scheme = node.default_schematic();
+		auto& background = scheme.background();
+		auto& font = scheme.font();
+		if (background.is_string()) {
+			const auto path_head = get_path_head(background.string());
+			if (!textures.contains(path_head)) {
+				println("Added texture named:", path_head);
+				textures[path_head].loadFromFile(background.string());
+				background = path_head;
+			}
+		}
+		if (font.is_string()) {
+			const auto path_head = get_path_head(font.string());
+			if (!fonts.contains(path_head)) {
+				println("Added font named:", path_head);
+				fonts[path_head].loadFromFile(font.string());
+				font = path_head;
+			}
+		}
+	}
 
-	cache.reserve(graph.length() + 1);
-	cache.emplace_back();
-	cache.update_cache(graph);
-
-	return cache;
+	for (auto kvp_it = node.event_schematics().begin(); kvp_it != node.event_schematics().end(); ++kvp_it) {
+		auto& background = kvp_it.value().background();
+		auto& font = kvp_it.value().font();
+		if (background.is_string()) {
+			const auto path_head = get_path_head(background.string());
+			if (!textures.contains(path_head)) {
+				println("Added texture named:", path_head);
+				textures[path_head].loadFromFile(background.string());
+				background = path_head;
+			}
+		}
+		if (font.is_string()) {
+			const auto path_head = get_path_head(font.string());
+			if (!fonts.contains(path_head)) {
+				println("Added font named:", path_head);
+				fonts[path_head].loadFromFile(font.string());
+				font = path_head;
+			}
+		}
+	}
 }
 
 template <typename TNodeCache>
@@ -138,9 +173,7 @@ void RenderCache::update_ve(const SceneGraph<TNodeCache>& graph, const Node<TNod
 	}
 
 	handle_background(scheme, ve);
-	if (!scheme.font().is_none()) {
-		handle_font(scheme, ve);
-	}
+	handle_font(scheme, ve);
 	handle_font_size(scheme, ve);
 	handle_text_color(scheme, ve);
 	handle_text_position(scheme, ve);
@@ -150,12 +183,7 @@ void RenderCache::handle_background(Schematic& scheme, VisualElement& ve) {
 	auto& val = scheme.background();
 	// Add support for images later
 	if (val.is_string()) {
-		const auto path_head = get_path_head(val.string());
-		if (!textures_.contains(path_head)) {
-			textures_[path_head].loadFromFile(val.string());
-			val = path_head;
-		}
-		ve.setTexture(&textures_.at(val.string()));
+		ve.setTexture(&textures.at(val.string()));
 		return;
 	}
 	ve.setFillColor(intermediary::Color{val.rgba()});
@@ -163,13 +191,9 @@ void RenderCache::handle_background(Schematic& scheme, VisualElement& ve) {
 
 void RenderCache::handle_font(Schematic& scheme, VisualElement& ve) {
 	auto& val = scheme.font();
+	if (val.is_none()) return;
 
-	const auto path_head = get_path_head(val.string());
-	if (!fonts_.contains(path_head)) {
-		fonts_[path_head].loadFromFile(val.string());
-		val = path_head;
-	}
-	ve.text().setFont(fonts_[path_head]);
+	ve.text().setFont(fonts.at(val.string()));
 	return;
 }
 
