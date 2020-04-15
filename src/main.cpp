@@ -235,8 +235,9 @@ int main() {
 
 	std::unique_ptr<win_t> window;
 
-	std::unique_ptr<std::random_device> device;
-	std::unique_ptr<std::mt19937> gen;
+	std::unique_ptr<std::random_device> device = std::make_unique<std::random_device>();
+	;
+	std::unique_ptr<std::mt19937> gen = std::make_unique<std::mt19937>((*device)());
 	std::uniform_int_distribution<int> dist(0, 255);
 
 	constexpr auto scenes_variant = ct::scenes::parse_scenes<scene__>();
@@ -289,13 +290,6 @@ int main() {
 
 	println("Creating the renderwindow...");
 	window->init({800, 600, "Title", sf::Style::Default, sf::ContextSettings{}, 60});
-
-	println(window->active_scene().graph());
-
-	for (const auto& ve : window->cache_) {
-		println(ve, "\n///////////////////////////////////////////////////\n");
-	}
-
 	println("Starting the app loop...");
 
 	println("Window is running: ", window->window()->isOpen());

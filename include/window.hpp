@@ -54,19 +54,19 @@ public:
 
 	template <template <typename, u64> typename Container, u64 Size, typename... Scenes>
 	Window(const Container<ct::Style, Size>& p_styles, const Scenes&... p_scenes)
-		: scenes_{scene_graph_t{p_scenes, p_styles}...}, hovered_node_(nullptr), focused_node_(nullptr) {}
+		: scenes_{scene_graph_t{p_scenes, p_styles}...} {}
 
 	template <template <typename, u64> typename Container, u64 Size, typename... Scenes>
 	Window(Container<ct::Style, Size>&& p_styles, Scenes&&... p_scenes)
-		: scenes_{scene_graph_t{std::move(p_scenes), p_styles}...}, hovered_node_(nullptr), focused_node_(nullptr) {}
+		: scenes_{scene_graph_t{std::move(p_scenes), p_styles}...} {}
 
 	template <template <typename> typename Container, typename... Scenes>
 	Window(const Container<ct::Style>& p_styles, const Scenes&... p_scenes)
-		: scenes_{scene_graph_t{p_scenes, p_styles}...}, hovered_node_(nullptr), focused_node_(nullptr) {}
+		: scenes_{scene_graph_t{p_scenes, p_styles}...} {}
 
 	template <template <typename> typename Container, typename... Scenes>
 	Window(Container<ct::Style>&& p_styles, Scenes&&... p_scenes)
-		: scenes_{scene_graph_t{std::move(p_scenes), p_styles}...}, hovered_node_(nullptr), focused_node_(nullptr) {}
+		: scenes_{scene_graph_t{std::move(p_scenes), p_styles}...} {}
 
 	void init(const WindowOptions& options);
 
@@ -116,8 +116,9 @@ public:
 		return scenes_;
 	}
 
-	[[nodiscard]] bool is_running() const noexcept {
-		return window_->isOpen();
+	[[nodiscard]] bool is_running() noexcept {
+		std::shared_lock lock(window_mutex_);
+		return running_;
 	}
 
 	[[nodiscard]] auto window() noexcept -> window_ptr_t& {
@@ -128,20 +129,14 @@ public:
 		return window_;
 	}
 
-	[[nodiscard]] auto hovered_node() noexcept -> node_t* {
-		return hovered_node_;
-	}
-
-	[[nodiscard]] auto hovered_node() const noexcept -> const node_t* {
-		return hovered_node_;
-	}
-
 	void close() {
 		std::unique_lock lock(window_mutex_);
-		window_->close();
+		running_ = false;
+		timer_cv_.notify_one();
 	}
 
 	~Window() {
+		window_->close();
 		event_cv_.notify_all();
 		timer_cv_.notify_one();
 		for (auto& thr : event_pool_) {
@@ -165,9 +160,7 @@ public:
 	TrackedList<scene_t> scenes_;
 	RenderCache cache_;
 	std::unique_ptr<sf::RenderWindow> window_;
-	sf::Vector2f mouse_position_;
-	node_t* hovered_node_;
-	node_t* focused_node_;
+	bool running_;
 };
 
 /// \brief Initializes the window
@@ -178,13 +171,12 @@ void Window::init(const WindowOptions& options) {
 	const auto& [w, h, title, style, ctx_settings, framerate] = options;
 	auto& graph = this->active_scene().graph();
 	this->resize(w, h);
-	{
-		std::unique_lock lock(scene_mutex_);
-		cache_ = RenderCache::populate(graph);
-	}
+	std::unique_lock lock(scene_mutex_);
+	cache_ = RenderCache::populate(graph);
 
 	window_ = std::make_unique<sf::RenderWindow>(sf::VideoMode(w, h), title, style, ctx_settings);
 	window_->setFramerateLimit(framerate);
+	running_ = true;
 
 	const auto num_of_event_threads = std::thread::hardware_concurrency() - 1;
 	event_pool_.reserve(num_of_event_threads);
@@ -193,13 +185,9 @@ void Window::init(const WindowOptions& options) {
 			while (true) {
 				event_package_t event_package;
 				{
-					std::unique_lock<std::mutex> lock(event_mutex_);
-					bool running;
-					event_cv_.wait(lock, [this, &running] {
-						running = this->is_running();
-						return !running || !this->event_queue_.empty();
-					});
-					if (!running && event_queue_.empty()) return;
+					std::unique_lock lock(event_mutex_);
+					event_cv_.wait(lock, [this] { return !this->is_running() || !this->event_queue_.empty(); });
+					if (!this->is_running() && event_queue_.empty()) return;
 					event_package = std::move(this->event_queue_.back());
 					this->event_queue_.pop_back();
 					event_cv_.notify_all();
@@ -243,7 +231,7 @@ void Window::resize(const int w, const int h) {
 void Window::handle_events() {
 	sf::Event event;
 	while (window_->pollEvent(event)) {
-		process_event(event);
+		this->process_event(event);
 	}
 }
 
@@ -402,7 +390,7 @@ void Window::dispatch_event(const marker_t marker, const std::string& name, cons
 /// \param name The name for the event, eg. on_btn_click, on_packet_receive, ...
 void Window::dispatch_event(const marker_t marker, const std::string& name) {
 	std::unique_lock<std::mutex> lock(event_mutex_);
-	event_queue_.emplace_back(this->active_scene().get_event(marker, name));
+	event_queue_.emplace_back(this->active_scene().get_global_event(marker, name));
 	event_cv_.notify_one();
 }
 
@@ -436,12 +424,8 @@ void Window::timer_execute_next_in_line() {
 /// \returns A boolean indicating whether the window has stopped running
 bool Window::timer_wait_until_push() noexcept {
 	std::unique_lock lock(timer_mutex_);
-	bool running;
-	timer_cv_.wait(lock, [this, &running] {
-		running = this->is_running();
-		return !running || !timer_queue_.empty();
-	});
-	return !running;
+	timer_cv_.wait(lock, [this] { return !this->is_running() || !timer_queue_.empty(); });
+	return !this->is_running();
 }
 
 /// \brief Waits for the wait duration of the shortest timer event
@@ -488,29 +472,19 @@ void Window::process_event(const sf::Event& event) {
 	using EventType = sf::Event::EventType;
 	const auto& type = event.type;
 
-	{
-		std::shared_lock slock(scene_mutex_);
-		auto& scene = this->active_scene();
+	std::shared_lock slock(scene_mutex_);
+	auto& scene = this->active_scene();
 
-		const auto it = scene.marked_sections().find(type);
+	const auto it = scene.marked_sections().find(type);
 
-		if (it != scene.marked_sections().end()) return;
-	}
+	if (it == scene.marked_sections().end()) return;
+	slock.unlock();
 
 	event_data_t event_data;
 
 	switch (type) {
-		case EventType::Closed: {
-			break;
-		}
 		case EventType::Resized: {
 			event_data.get() = event.size;
-			break;
-		}
-		case EventType::LostFocus: {
-			break;
-		}
-		case EventType::GainedFocus: {
 			break;
 		}
 		case EventType::TextEntered: {
@@ -535,12 +509,6 @@ void Window::process_event(const sf::Event& event) {
 		}
 		case EventType::MouseButtonReleased: {
 			event_data.get() = event.mouseButton;
-			break;
-		}
-		case EventType::MouseEntered: {
-			break;
-		}
-		case EventType::MouseLeft: {
 			break;
 		}
 		case EventType::JoystickButtonPressed: {
@@ -580,9 +548,6 @@ void Window::process_event(const sf::Event& event) {
 			break;
 		}
 		case EventType::MouseMoved: {
-			const auto [x, y] = event.mouseMove;
-			mouse_position_.x = x;
-			mouse_position_.y = y;
 			event_data.get() = event.mouseMove;
 			break;
 		}
@@ -590,9 +555,11 @@ void Window::process_event(const sf::Event& event) {
 		}
 	}
 
-	auto& graph = scene.graph();
+	std::unique_lock lock(scene_mutex_);
 
+	auto& graph = scene.graph();
 	const auto& node_events = it->second.first;
+
 	for (const auto& kvp : node_events) {
 		const auto& event_name = kvp.first;
 
@@ -606,6 +573,7 @@ void Window::process_event(const sf::Event& event) {
 			}
 
 			if (node.attached_events().contains(event_name)) {
+				println("Yep, it's node:", node.data().name());
 				this->dispatch_event(type, event_name, event_data = event_data_t(event_data.get(), &(node.data())));
 			}
 		}

@@ -137,9 +137,6 @@ void RenderCache::update_ve(const SceneGraph<TNodeCache>& graph, const Node<TNod
 		handle_y(scheme, ve);
 	}
 
-	if (node.active_schematic().get().background().is_string()) {
-		println(node.active_schematic().get().background().string());
-	}
 	handle_background(scheme, ve);
 	if (!scheme.font().is_none()) {
 		handle_font(scheme, ve);
