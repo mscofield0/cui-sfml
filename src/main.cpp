@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <utility>
 #include <random>
+#include <string>
 
 #include <window_options.hpp>
 #include <render_cache.hpp>
@@ -168,7 +169,8 @@ std::ostream& operator<<(std::ostream& os, const cui::Schematic& sg) {
 	return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const cui::SceneGraph& sg) {
+template <typename TNodeCache>
+std::ostream& operator<<(std::ostream& os, const cui::SceneGraph<TNodeCache>& sg) {
 	os << sg.root().name() << "{\n\t";
 	os << "Text: " << sg.root().text() << "\n\t";
 	os << "Default attributes:\n\t\t";
@@ -264,24 +266,25 @@ int main() {
 		return 0;
 	}
 
-	for (const auto& ve : window->cache_) {
-		println(ve, "\n///////////////////////////////////////////////////\n");
-	}
-
-	window->register_event(sf::Event::EventType::Closed, "on_close", [&window] {
+	println("Before register_global_event()");
+	window->register_global_event(sf::Event::EventType::Closed, "on_close", [&window](const auto& event_data) {
 		window->close();
 	});
-	
-	window->register_event(sf::Event::EventType::MouseButtonPressed, "on_click_btn", [&window, &gen, &dist] {
-		const auto r = dist(gen);
-		const auto g = dist(gen);
-		const auto b = dist(gen);
-		auto& graph = window->active_scene().graph();
-		Schematic& scheme = graph.root().active_schematic();
-		scheme.background() = cui::Color{r, g, b};
-		window->update_cache();
-	});
 
+	println("Before register_event()");
+	window->register_event(sf::Event::EventType::MouseButtonPressed,
+						   "on_click_btn",
+						   [&window, &gen, &dist](const auto& event_data) {
+							   const auto r = dist(*gen);
+							   const auto g = dist(*gen);
+							   const auto b = dist(*gen);
+							   auto& graph = window->active_scene().graph();
+							   Schematic& scheme = graph.root().active_schematic();
+							   scheme.background() = cui::Color{r, g, b};
+							   window->update_cache();
+						   });
+
+	println("Before attach_event_to_node()");
 	window->attach_event_to_node("button", "on_click_btn");
 
 	println("Creating the renderwindow...");

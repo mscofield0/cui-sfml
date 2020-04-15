@@ -15,10 +15,11 @@
 
 namespace cui {
 
-class SceneGraph : public NaryTree<Node>
+template <typename TNodeCache>
+class SceneGraph : public NaryTree<Node<TNodeCache>>
 {
 public:
-	using tree_t = NaryTree<Node>;
+	using tree_t = NaryTree<Node<TNodeCache>>;
 	using data_type = typename tree_t::data_type;
 	using size_type = typename tree_t::size_type;
 	static constexpr u64 root_index = -1;
@@ -49,8 +50,9 @@ private:
 	data_type root_;
 };
 
+template <typename TNodeCache>
 template <u64 AOB, template <typename, u64> typename Container, u64 N>
-SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& sc) : tree_t{}, root_() {
+SceneGraph<TNodeCache>::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& sc) : tree_t{}, root_() {
 	this->vec_.reserve(AOB);
 
 	for (const auto& style : sc) {
@@ -63,7 +65,7 @@ SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& 
 		using children_t = typename tree_t::node_type::vec_t;
 
 		const auto& [t_block, t_children, t_depth] = sr.get(i);
-		this->emplace_back(Node(t_block.name(), t_block.text()), children_t{}, t_depth);
+		this->emplace_back(data_type(t_block.name(), t_block.text()), children_t{}, t_depth);
 		auto& node = this->back();
 		for (const auto idx : t_children) node.children().push_back(idx);
 
@@ -79,8 +81,9 @@ SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& 
 	}
 }
 
+template <typename TNodeCache>
 template <u64 AOB, template <typename> typename Container>
-SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style>& sc) {
+SceneGraph<TNodeCache>::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style>& sc) {
 	this->vec_.reserve(AOB);
 
 	for (const auto& style : sc) {
@@ -93,7 +96,7 @@ SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style>& sc)
 		using children_t = typename tree_t::node_type::vec_t;
 
 		const auto& [t_block, t_children, t_depth] = sr.get(i);
-		this->emplace_back(Node(t_block.name(), t_block.text()), children_t{}, t_depth);
+		this->emplace_back(data_type(t_block.name(), t_block.text()), children_t{}, t_depth);
 		auto& node = this->back();
 		for (const auto idx : t_children) node.children().push_back(idx);
 
@@ -109,7 +112,8 @@ SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style>& sc)
 	}
 }
 
-auto SceneGraph::get_parent_index(const size_type index) const noexcept -> size_type {
+template <typename TNodeCache>
+auto SceneGraph<TNodeCache>::get_parent_index(const size_type index) const noexcept -> size_type {
 	if (index == root_index) return root_index;
 	const auto it = std::find_if(this->begin(), this->end(), [index](const auto& node) {
 		const auto& children = node.children();
@@ -120,14 +124,16 @@ auto SceneGraph::get_parent_index(const size_type index) const noexcept -> size_
 	return std::distance(this->begin(), it);
 }
 
-auto SceneGraph::get_parent(const size_type index) noexcept -> data_type& {
+template <typename TNodeCache>
+auto SceneGraph<TNodeCache>::get_parent(const size_type index) noexcept -> data_type& {
 	const auto idx = get_parent_index(index);
 	if (idx == root_index) return root_;
 
 	return this->operator[](idx).data();
 }
 
-void SceneGraph::apply_style(data_type& node, const ct::Style& style) {
+template <typename TNodeCache>
+void SceneGraph<TNodeCache>::apply_style(data_type& node, const ct::Style& style) {
 	if (style.events().empty()) {
 		for (const auto& attr_data : style.attributes()) {
 			node.default_schematic().assign(attr_data);

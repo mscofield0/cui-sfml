@@ -344,32 +344,64 @@ public:
 	}
 
 	// Getters
+	[[nodiscard]] auto rgba() noexcept -> Color& {
+		return *rgba_;
+	}
+
 	[[nodiscard]] auto rgba() const noexcept -> const Color& {
 		return *rgba_;
+	}
+
+	[[nodiscard]] auto float_value() noexcept -> float& {
+		return *float_value_;
 	}
 
 	[[nodiscard]] auto float_value() const noexcept -> float {
 		return *float_value_;
 	}
 
+	[[nodiscard]] auto integer_value() noexcept -> int& {
+		return *integer_value_;
+	}
+
 	[[nodiscard]] auto integer_value() const noexcept -> int {
 		return *integer_value_;
+	}
+
+	[[nodiscard]] auto vec2() noexcept -> Vec2f& {
+		return *vec2_;
 	}
 
 	[[nodiscard]] auto vec2() const noexcept -> const Vec2f& {
 		return *vec2_;
 	}
 
+	[[nodiscard]] auto vec3() noexcept -> Vec3f& {
+		return *vec3_;
+	}
+
 	[[nodiscard]] auto vec3() const noexcept -> const Vec3f& {
 		return *vec3_;
+	}
+
+	[[nodiscard]] auto vec4() noexcept -> Vec4f& {
+		return *vec4_;
 	}
 
 	[[nodiscard]] auto vec4() const noexcept -> const Vec4f& {
 		return *vec4_;
 	}
 
+	[[nodiscard]] auto instruction() noexcept -> Instruction& {
+		return *instruction_;
+	}
+
 	[[nodiscard]] auto instruction() const noexcept -> const Instruction& {
 		return *instruction_;
+	}
+
+	[[nodiscard]] auto string() noexcept -> std::string& {
+		return *string_;
 	}
 
 	[[nodiscard]] auto string() const noexcept -> const std::string& {

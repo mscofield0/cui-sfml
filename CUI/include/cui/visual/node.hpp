@@ -10,11 +10,13 @@
 
 namespace cui {
 
+template <typename TCache>
 class Node
 {
 public:
 	using schematic_map_t = tsl::hopscotch_map<std::string, Schematic>;
 	using schematic_ref = std::reference_wrapper<Schematic>;
+	using cache_t = TCache;
 
 	Node()
 		: default_schematic_(), event_schematics_(), active_(std::ref(default_schematic_)), name_("root"), text_("") {}
@@ -49,6 +51,7 @@ public:
 		active_ = default_schematic_;
 		name_ = rhs.name_;
 		text_ = rhs.text_;
+		cache_ = rhs.cache_;
 		return *this;
 	}
 
@@ -58,6 +61,7 @@ public:
 		active_ = default_schematic_;
 		name_ = std::move(rhs.name_);
 		text_ = std::move(rhs.text_);
+		cache_ = std::move(rhs.cache_);
 		return *this;
 	}
 
@@ -101,12 +105,21 @@ public:
 		return text_;
 	}
 
+	[[nodiscard]] auto cache() noexcept -> cache_t& {
+		return cache_;
+	}
+
+	[[nodiscard]] auto cache() const noexcept -> const cache_t {
+		return cache_;
+	}
+
 private:
 	Schematic default_schematic_;
 	schematic_map_t event_schematics_;
 	schematic_ref active_;
 	std::string name_;
 	std::string text_;
+	cache_t cache_;
 };
 
 }	 // namespace cui

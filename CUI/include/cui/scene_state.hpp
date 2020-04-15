@@ -12,17 +12,18 @@
 
 namespace cui {
 
-template <typename EventFunctionType, typename EventType>
+template <typename EventFunctionType, typename EventType, typename TNodeCache>
 class SceneState
 {
 public:
+	using graph_t = SceneGraph<TNodeCache>;
 	using event_t = EventFunctionType;
 	using event_map_t = tsl::hopscotch_map<std::string, event_t>;
 	using event_marker_map_t = tsl::hopscotch_map<EventType, std::pair<event_map_t, event_map_t>>;
 
-	SceneState(const SceneGraph& p_graph) : graph_(p_graph) {}
+	SceneState(const graph_t& p_graph) : graph_(p_graph) {}
 
-	SceneState(SceneGraph&& p_graph) : graph_(std::move(p_graph)) {}
+	SceneState(graph_t&& p_graph) : graph_(std::move(p_graph)) {}
 
 	void register_event(const EventType& type, const std::string& name, event_t&& event) {
 		auto& reged_events = marked_sections_[type].first;
@@ -33,7 +34,7 @@ public:
 		auto& reged_events = marked_sections_[type].first;
 		reged_events[std::move(name)] = std::move(event);
 	}
-	
+
 	void register_global_event(const EventType& type, const std::string& name, event_t&& event) {
 		auto& reged_events = marked_sections_[type].second;
 		reged_events[name] = std::move(event);
@@ -51,7 +52,7 @@ public:
 	void unregister_event(const EventType& type, std::string&& name) {
 		marked_sections_[type].first.erase(std::move(name));
 	}
-	
+
 	void unregister_global_event(const EventType& type, const std::string& name) {
 		marked_sections_[type].second.erase(name);
 	}
@@ -76,11 +77,11 @@ public:
 		return marked_sections_.at(type).second.at(std::move(name));
 	}
 
-	[[nodiscard]] auto graph() noexcept -> SceneGraph& {
+	[[nodiscard]] auto graph() noexcept -> graph_t& {
 		return graph_;
 	}
 
-	[[nodiscard]] auto graph() const noexcept -> const SceneGraph& {
+	[[nodiscard]] auto graph() const noexcept -> const graph_t& {
 		return graph_;
 	}
 
@@ -91,13 +92,13 @@ public:
 	[[nodiscard]] auto registered_events(const EventType& event_type) const noexcept -> const event_map_t& {
 		return marked_sections_.at(event_type).first;
 	}
-	
+
 	[[nodiscard]] auto registered_global_events(const EventType& event_type) const noexcept -> const event_map_t& {
 		return marked_sections_.at(event_type).second;
 	}
 
 private:
-	SceneGraph graph_;
+	graph_t graph_;
 	event_marker_map_t marked_sections_;
 };
 

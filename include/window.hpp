@@ -16,9 +16,11 @@
 #include <cui/scene_state.hpp>
 #include <cui/containers/tracked_list.hpp>
 #include <detail/timer_event.hpp>
+#include <detail/event_data.hpp>
+#include <detail/event_package.hpp>
 #include <render_cache.hpp>
 #include <window_options.hpp>
-#include <event_function.hpp>
+#include <detail/node_cache.hpp>
 #include <aliases.hpp>
 
 #include <SFML/Window/Event.hpp>
@@ -35,31 +37,36 @@ public:
 	using time_point_t = std::chrono::time_point<steady_clock_t>;
 	template <typename Period>
 	using duration_t = std::chrono::duration<standard_duration_t::rep, Period>;
-	using event_t = std::function<void()>;
+	using node_cache_t = NodeCache;
+	using scene_graph_t = SceneGraph<node_cache_t>;
+	using node_t = typename scene_graph_t::data_type;
+	using event_data_t = EventData<node_t>;
+	using event_t = std::function<void(event_data_t)>;
+	using event_package_t = EventPackage<event_data_t>;
 	using marker_t = sf::Event::EventType;
 	using timer_event_t = TimerEvent;
 	using window_t = sf::RenderWindow;
 	using window_ptr_t = std::unique_ptr<window_t>;
-	using event_queue_t = std::vector<event_t>;
+	using event_queue_t = std::vector<event_package_t>;
 	using timer_queue_t = std::priority_queue<timer_event_t, std::vector<timer_event_t>, std::greater<timer_event_t>>;
 	using cache_t = RenderCache;
-	using scene_t = SceneState<event_t, marker_t>;
+	using scene_t = SceneState<event_t, marker_t, node_cache_t>;
 
 	template <template <typename, u64> typename Container, u64 Size, typename... Scenes>
 	Window(const Container<ct::Style, Size>& p_styles, const Scenes&... p_scenes)
-		: scenes_{SceneGraph{p_scenes, p_styles}...} {}
+		: scenes_{scene_graph_t{p_scenes, p_styles}...}, hovered_node_(nullptr), focused_node_(nullptr) {}
 
 	template <template <typename, u64> typename Container, u64 Size, typename... Scenes>
 	Window(Container<ct::Style, Size>&& p_styles, Scenes&&... p_scenes)
-		: scenes_{SceneGraph{std::move(p_scenes), p_styles}...} {}
+		: scenes_{scene_graph_t{std::move(p_scenes), p_styles}...}, hovered_node_(nullptr), focused_node_(nullptr) {}
 
 	template <template <typename> typename Container, typename... Scenes>
 	Window(const Container<ct::Style>& p_styles, const Scenes&... p_scenes)
-		: scenes_{SceneGraph{p_scenes, p_styles}...} {}
+		: scenes_{scene_graph_t{p_scenes, p_styles}...}, hovered_node_(nullptr), focused_node_(nullptr) {}
 
 	template <template <typename> typename Container, typename... Scenes>
 	Window(Container<ct::Style>&& p_styles, Scenes&&... p_scenes)
-		: scenes_{SceneGraph{std::move(p_scenes), p_styles}...} {}
+		: scenes_{scene_graph_t{std::move(p_scenes), p_styles}...}, hovered_node_(nullptr), focused_node_(nullptr) {}
 
 	void init(const WindowOptions& options);
 
@@ -67,14 +74,19 @@ public:
 
 	void register_event(marker_t marker, const std::string& name, event_t&& event);
 	void register_event(marker_t marker, std::string&& name, event_t&& event);
+	void register_global_event(marker_t marker, const std::string& name, event_t&& event);
+	void register_global_event(marker_t marker, std::string&& name, event_t&& event);
 	void unregister_event(marker_t marker, const std::string& name);
 	void unregister_event(marker_t marker, std::string&& name);
+	void unregister_global_event(marker_t marker, const std::string& name);
+	void unregister_global_event(marker_t marker, std::string&& name);
 
 	void attach_event_to_node(const std::string& search_name, const std::string& event_name);
 	void attach_event_to_node(const std::string& search_name, std::string&& event_name);
 	void detach_event_from_node(const std::string& search_name, const std::string& event_name);
 	void detach_event_from_node(const std::string& search_name, std::string&& event_name);
 
+	void dispatch_event(marker_t marker, const std::string& name, const event_data_t& event_data);
 	void dispatch_event(marker_t marker, const std::string& name);
 	void process_event(const sf::Event& event);
 
@@ -88,25 +100,40 @@ public:
 	void render() noexcept;
 	void resize(int w, int h);
 
-
 	[[nodiscard]] auto active_scene() noexcept -> scene_t& {
-		std::shared_lock lock(scene_mutex_);
+		return scenes_.current_item();
+	}
+
+	[[nodiscard]] auto active_scene() const noexcept -> const scene_t& {
 		return scenes_.current_item();
 	}
 
 	[[nodiscard]] auto scenes() noexcept -> TrackedList<scene_t>& {
-		std::shared_lock lock(scene_mutex_);
 		return scenes_;
 	}
 
-	[[nodiscard]] bool is_running() noexcept {
-		std::shared_lock lock(window_mutex_);
+	[[nodiscard]] auto scenes() const noexcept -> const TrackedList<scene_t>& {
+		return scenes_;
+	}
+
+	[[nodiscard]] bool is_running() const noexcept {
 		return window_->isOpen();
 	}
 
 	[[nodiscard]] auto window() noexcept -> window_ptr_t& {
-		std::shared_lock lock(window_mutex_);
 		return window_;
+	}
+
+	[[nodiscard]] auto window() const noexcept -> const window_ptr_t& {
+		return window_;
+	}
+
+	[[nodiscard]] auto hovered_node() noexcept -> node_t* {
+		return hovered_node_;
+	}
+
+	[[nodiscard]] auto hovered_node() const noexcept -> const node_t* {
+		return hovered_node_;
 	}
 
 	void close() {
@@ -115,10 +142,6 @@ public:
 	}
 
 	~Window() {
-		{
-			std::unique_lock lock(window_mutex_);
-			if (window_->isOpen()) window_->close();
-		}
 		event_cv_.notify_all();
 		timer_cv_.notify_one();
 		for (auto& thr : event_pool_) {
@@ -142,7 +165,9 @@ public:
 	TrackedList<scene_t> scenes_;
 	RenderCache cache_;
 	std::unique_ptr<sf::RenderWindow> window_;
-	
+	sf::Vector2f mouse_position_;
+	node_t* hovered_node_;
+	node_t* focused_node_;
 };
 
 /// \brief Initializes the window
@@ -166,7 +191,7 @@ void Window::init(const WindowOptions& options) {
 	for (u64 i = 0; i < num_of_event_threads; ++i) {
 		event_pool_.emplace_back([this] {
 			while (true) {
-				event_t evt;
+				event_package_t event_package;
 				{
 					std::unique_lock<std::mutex> lock(event_mutex_);
 					bool running;
@@ -175,11 +200,11 @@ void Window::init(const WindowOptions& options) {
 						return !running || !this->event_queue_.empty();
 					});
 					if (!running && event_queue_.empty()) return;
-					evt = std::move(this->event_queue_.back());
+					event_package = std::move(this->event_queue_.back());
 					this->event_queue_.pop_back();
 					event_cv_.notify_all();
 				}
-				evt();
+				event_package.invoke();
 			}
 		});
 	}
@@ -222,7 +247,7 @@ void Window::handle_events() {
 	}
 }
 
-/// \brief Registers an event
+/// \brief Registers an event available to nodes
 /// \details Stores the event name and function inside the \sa SceneState event map
 /// \param name The name for the event, eg. on_btn_click, on_packet_receive, ...
 /// \param marker Marks the event to be looked up on a specific \sa sf::Event
@@ -232,7 +257,7 @@ void Window::register_event(const marker_t marker, const std::string& name, even
 	this->active_scene().register_event(marker, name, std::move(event));
 }
 
-/// \brief Registers an event
+/// \brief Registers an event available to nodes
 /// \details Stores the event name and function inside the \sa SceneState event map
 /// \param name The name for the event, eg. on_btn_click, on_packet_receive, ...
 /// \param marker Marks the event to be looked up on a specific \sa sf::Event
@@ -242,11 +267,31 @@ void Window::register_event(const marker_t marker, std::string&& name, event_t&&
 	this->active_scene().register_event(marker, name, std::move(event));
 }
 
+/// \brief Registers a global event
+/// \details Stores the event name and function inside the \sa SceneState event map
+/// \param name The name for the event, eg. on_btn_click, on_packet_receive, ...
+/// \param marker Marks the event to be looked up on a specific \sa sf::Event
+/// \param event The function that executes during dispatch
+void Window::register_global_event(marker_t marker, const std::string& name, event_t&& event) {
+	std::unique_lock lock(scene_mutex_);
+	this->active_scene().register_global_event(marker, name, std::move(event));
+}
+
+/// \brief Registers a global event
+/// \details Stores the event name and function inside the \sa SceneState event map
+/// \param name The name for the event, eg. on_btn_click, on_packet_receive, ...
+/// \param marker Marks the event to be looked up on a specific \sa sf::Event
+/// \param event The function that executes during dispatch
+void Window::register_global_event(marker_t marker, std::string&& name, event_t&& event) {
+	std::unique_lock lock(scene_mutex_);
+	this->active_scene().register_global_event(marker, std::move(name), std::move(event));
+}
+
 /// \brief Unregisters an event
 /// \details Erases the event from the \sa SceneState event map
 /// \param name The name for the event, eg. on_btn_click, on_packet_receive, ...
 /// \param marker Marks the event to be looked up on a specific \sa sf::Event
-void Window::unregister_event(marker_t marker, const std::string& name) {
+void Window::unregister_event(const marker_t marker, const std::string& name) {
 	std::unique_lock lock(scene_mutex_);
 	this->active_scene().unregister_event(marker, name);
 }
@@ -255,9 +300,27 @@ void Window::unregister_event(marker_t marker, const std::string& name) {
 /// \details Erases the event from the \sa SceneState event map
 /// \param name The name for the event, eg. on_btn_click, on_packet_receive, ...
 /// \param marker Marks the event to be looked up on a specific \sa sf::Event
-void Window::unregister_event(marker_t marker, std::string&& name) {
+void Window::unregister_event(const marker_t marker, std::string&& name) {
 	std::unique_lock lock(scene_mutex_);
 	this->active_scene().unregister_event(marker, std::move(name));
+}
+
+/// \brief Unregisters a global event
+/// \details Erases the event from the \sa SceneState event map
+/// \param name The name for the event, eg. on_btn_click, on_packet_receive, ...
+/// \param marker Marks the event to be looked up on a specific \sa sf::Event
+void Window::unregister_global_event(const marker_t marker, const std::string& name) {
+	std::unique_lock lock(scene_mutex_);
+	this->active_scene().unregister_global_event(marker, name);
+}
+
+/// \brief Unregisters a global event
+/// \details Erases the event from the \sa SceneState event map
+/// \param name The name for the event, eg. on_btn_click, on_packet_receive, ...
+/// \param marker Marks the event to be looked up on a specific \sa sf::Event
+void Window::unregister_global_event(const marker_t marker, std::string&& name) {
+	std::unique_lock lock(scene_mutex_);
+	this->active_scene().unregister_global_event(marker, std::move(name));
 }
 
 /// \brief Attaches a registered event to a node
@@ -320,6 +383,18 @@ void Window::detach_event_from_node(const std::string& search_name, const std::s
 	it->detach_event(std::move(event_name));
 }
 
+/// \brief Dispatches an event with event data
+/// \details Pushes the event onto the event queue which then gets processed
+/// by an available thread
+/// \param marker Marks the event to be looked up on a specific \sa sf::Event
+/// \param name The name for the event, eg. on_btn_click, on_packet_receive, ...
+/// \param event_data The event data (eg. received from sf::Event::Resized)
+void Window::dispatch_event(const marker_t marker, const std::string& name, const event_data_t& event_data) {
+	std::unique_lock<std::mutex> lock(event_mutex_);
+	event_queue_.emplace_back(this->active_scene().get_event(marker, name), event_data);
+	event_cv_.notify_one();
+}
+
 /// \brief Dispatches an event
 /// \details Pushes the event onto the event queue which then gets processed
 /// by an available thread
@@ -327,7 +402,7 @@ void Window::detach_event_from_node(const std::string& search_name, const std::s
 /// \param name The name for the event, eg. on_btn_click, on_packet_receive, ...
 void Window::dispatch_event(const marker_t marker, const std::string& name) {
 	std::unique_lock<std::mutex> lock(event_mutex_);
-	event_queue_.push_back(this->active_scene().get_event(marker, name));
+	event_queue_.emplace_back(this->active_scene().get_event(marker, name));
 	event_cv_.notify_one();
 }
 
@@ -413,25 +488,131 @@ void Window::process_event(const sf::Event& event) {
 	using EventType = sf::Event::EventType;
 	const auto& type = event.type;
 
-	const auto& scene = this->active_scene();
-	const auto it = scene.marked_sections().find(type);
+	{
+		std::shared_lock slock(scene_mutex_);
+		auto& scene = this->active_scene();
+
+		const auto it = scene.marked_sections().find(type);
+
+		if (it != scene.marked_sections().end()) return;
+	}
+
+	event_data_t event_data;
 
 	switch (type) {
 		case EventType::Closed: {
 			break;
 		}
 		case EventType::Resized: {
-			this->resize(event.size.width, event.size.height);
+			event_data.get() = event.size;
+			break;
+		}
+		case EventType::LostFocus: {
+			break;
+		}
+		case EventType::GainedFocus: {
+			break;
+		}
+		case EventType::TextEntered: {
+			event_data.get() = event.text;
+			break;
+		}
+		case EventType::KeyPressed: {
+			event_data.get() = event.key;
+			break;
+		}
+		case EventType::KeyReleased: {
+			event_data.get() = event.key;
+			break;
+		}
+		case EventType::MouseWheelScrolled: {
+			event_data.get() = event.mouseWheelScroll;
+			break;
+		}
+		case EventType::MouseButtonPressed: {
+			event_data.get() = event.mouseButton;
+			break;
+		}
+		case EventType::MouseButtonReleased: {
+			event_data.get() = event.mouseButton;
+			break;
+		}
+		case EventType::MouseEntered: {
+			break;
+		}
+		case EventType::MouseLeft: {
+			break;
+		}
+		case EventType::JoystickButtonPressed: {
+			event_data.get() = event.joystickButton;
+			break;
+		}
+		case EventType::JoystickButtonReleased: {
+			event_data.get() = event.joystickButton;
+			break;
+		}
+		case EventType::JoystickMoved: {
+			event_data.get() = event.joystickMove;
+			break;
+		}
+		case EventType::JoystickConnected: {
+			event_data.get() = event.joystickConnect;
+			break;
+		}
+		case EventType::JoystickDisconnected: {
+			event_data.get() = event.joystickConnect;
+			break;
+		}
+		case EventType::TouchBegan: {
+			event_data.get() = event.touch;
+			break;
+		}
+		case EventType::TouchMoved: {
+			event_data.get() = event.touch;
+			break;
+		}
+		case EventType::TouchEnded: {
+			event_data.get() = event.touch;
+			break;
+		}
+		case EventType::SensorChanged: {
+			event_data.get() = event.sensor;
+			break;
+		}
+		case EventType::MouseMoved: {
+			const auto [x, y] = event.mouseMove;
+			mouse_position_.x = x;
+			mouse_position_.y = y;
+			event_data.get() = event.mouseMove;
 			break;
 		}
 		default: {
 		}
 	}
 
-	if (it != scene.marked_sections().end()) {
-		for (const auto& event : it->second.second) {
-			this->dispatch_event(type, event.first);
+	auto& graph = scene.graph();
+
+	const auto& node_events = it->second.first;
+	for (const auto& kvp : node_events) {
+		const auto& event_name = kvp.first;
+
+		for (auto& node : graph) {
+			auto& e_schemes = node.data().event_schematics();
+			for (auto it = e_schemes.begin(); it != e_schemes.end(); ++it) {
+				if (it.key() == event_name) {
+					node.data().active_schematic() = it.value();
+					// queue render cache update
+				}
+			}
+
+			if (node.attached_events().contains(event_name)) {
+				this->dispatch_event(type, event_name, event_data = event_data_t(event_data.get(), &(node.data())));
+			}
 		}
+	}
+
+	for (const auto& kvp : it->second.second) {
+		this->dispatch_event(type, kvp.first);
 	}
 }
 
