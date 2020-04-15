@@ -1,19 +1,19 @@
 #ifndef CUI_SFML_RENDER_CACHE_HPP
 #define CUI_SFML_RENDER_CACHE_HPP
 
-#include <cui/utils/print.hpp>
 #include <cui/compile_time/format/fmt.hpp>
+#include <cui/utils/print.hpp>
 
-#include <string>
 #include <algorithm>
+#include <string>
 
-#include <tsl/hopscotch_map.h>
 #include <cui/containers/vector.hpp>
 #include <cui/utils/get_path_head.hpp>
 #include <cui/visual/node.hpp>
 #include <cui/visual/scene_graph.hpp>
-#include <visual_element.hpp>
 #include <detail/iterator_pair.hpp>
+#include <tsl/hopscotch_map.h>
+#include <visual_element.hpp>
 
 #include <detail/intermediaries/color.hpp>
 

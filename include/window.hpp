@@ -1,30 +1,30 @@
 #ifndef CUI_WINDOW_HPP
 #define CUI_WINDOW_HPP
 
+#include <condition_variable>
 #include <functional>
+#include <mutex>
+#include <queue>
+#include <shared_mutex>
+#include <string_view>
+#include <thread>
 #include <utility>
 #include <vector>
-#include <queue>
-#include <mutex>
-#include <shared_mutex>
-#include <condition_variable>
-#include <thread>
-#include <string_view>
 
-#include <cui/compile_time/style.hpp>
+#include <aliases.hpp>
 #include <cui/compile_time/scene.hpp>
-#include <cui/scene_state.hpp>
+#include <cui/compile_time/style.hpp>
 #include <cui/containers/tracked_list.hpp>
-#include <detail/timer_event.hpp>
+#include <cui/scene_state.hpp>
 #include <detail/event_data.hpp>
 #include <detail/event_package.hpp>
+#include <detail/node_cache.hpp>
+#include <detail/timer_event.hpp>
 #include <render_cache.hpp>
 #include <window_options.hpp>
-#include <detail/node_cache.hpp>
-#include <aliases.hpp>
 
-#include <SFML/Window/Event.hpp>
 #include <SFML/Graphics.hpp>
+#include <SFML/Window/Event.hpp>
 
 namespace cui {
 
@@ -41,7 +41,7 @@ public:
 	using scene_graph_t = SceneGraph<node_cache_t>;
 	using node_t = typename scene_graph_t::data_type;
 	using event_data_t = EventData<node_t>;
-	using event_t = std::function<void(event_data_t)>;
+	using event_t = std::function<void(event_data_t&)>;
 	using event_package_t = EventPackage<event_data_t>;
 	using marker_t = sf::Event::EventType;
 	using timer_event_t = TimerEvent;
@@ -86,7 +86,7 @@ public:
 	void detach_event_from_node(const std::string& search_name, const std::string& event_name);
 	void detach_event_from_node(const std::string& search_name, std::string&& event_name);
 
-	void dispatch_event(marker_t marker, const std::string& name, const event_data_t& event_data);
+	void dispatch_event(marker_t marker, const std::string& name, event_data_t& event_data);
 	void dispatch_event(marker_t marker, const std::string& name);
 	void process_event(const sf::Event& event);
 
@@ -114,6 +114,14 @@ public:
 
 	[[nodiscard]] auto scenes() const noexcept -> const TrackedList<scene_t>& {
 		return scenes_;
+	}
+
+	[[nodiscard]] auto cache() noexcept -> cache_t& {
+		return cache_;
+	}
+
+	[[nodiscard]] auto cache() const noexcept -> const cache_t& {
+		return cache_;
 	}
 
 	[[nodiscard]] bool is_running() noexcept {
@@ -146,21 +154,23 @@ public:
 	}
 
 public:
-	std::vector<std::thread> event_pool_;
-	std::thread timer_thread_;
-	event_queue_t event_queue_;
-	timer_queue_t timer_queue_;
 	std::mutex event_mutex_;
 	std::mutex timer_mutex_;
 	std::shared_mutex scene_mutex_;
 	std::shared_mutex window_mutex_;
+	bool running_;
+
+private:
+	std::vector<std::thread> event_pool_;
+	std::thread timer_thread_;
+	event_queue_t event_queue_;
+	timer_queue_t timer_queue_;
 	std::condition_variable event_cv_;
 	std::condition_variable timer_cv_;
 	bool timer_wait_awakened;
 	TrackedList<scene_t> scenes_;
 	RenderCache cache_;
 	std::unique_ptr<sf::RenderWindow> window_;
-	bool running_;
 };
 
 /// \brief Initializes the window
@@ -377,7 +387,7 @@ void Window::detach_event_from_node(const std::string& search_name, const std::s
 /// \param marker Marks the event to be looked up on a specific \sa sf::Event
 /// \param name The name for the event, eg. on_btn_click, on_packet_receive, ...
 /// \param event_data The event data (eg. received from sf::Event::Resized)
-void Window::dispatch_event(const marker_t marker, const std::string& name, const event_data_t& event_data) {
+void Window::dispatch_event(const marker_t marker, const std::string& name, event_data_t& event_data) {
 	std::unique_lock<std::mutex> lock(event_mutex_);
 	event_queue_.emplace_back(this->active_scene().get_event(marker, name), event_data);
 	event_cv_.notify_one();
@@ -563,18 +573,13 @@ void Window::process_event(const sf::Event& event) {
 	for (const auto& kvp : node_events) {
 		const auto& event_name = kvp.first;
 
-		for (auto& node : graph) {
-			auto& e_schemes = node.data().event_schematics();
-			for (auto it = e_schemes.begin(); it != e_schemes.end(); ++it) {
-				if (it.key() == event_name) {
-					node.data().active_schematic() = it.value();
-					// queue render cache update
-				}
-			}
+		for (std::size_t i = cache_.len(); i > 1; ++i) {
+			auto& node = graph[i];
 
 			if (node.attached_events().contains(event_name)) {
-				println("Yep, it's node:", node.data().name());
-				this->dispatch_event(type, event_name, event_data = event_data_t(event_data.get(), &(node.data())));
+				this->dispatch_event(type,
+									 event_name,
+									 event_data = event_data_t(event_data.get(), &(node.data()), i, event_name));
 			}
 		}
 	}

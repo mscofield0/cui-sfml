@@ -1,26 +1,27 @@
-#include <cui/compile_time/styles/detail/constants.hpp>
-#include <cui/compile_time/style.hpp>
 #include <cui/compile_time/scene.hpp>
-#include <cui/compile_time/value_data.hpp>
-#include <cui/compile_time/styles/parse_styles.hpp>
 #include <cui/compile_time/scenes/parse_scenes.hpp>
 #include <cui/compile_time/string/string_view.hpp>
+#include <cui/compile_time/style.hpp>
+#include <cui/compile_time/styles/detail/constants.hpp>
+#include <cui/compile_time/styles/parse_styles.hpp>
+#include <cui/compile_time/value_data.hpp>
 
-#include <cui/visual/scene_graph.hpp>
 #include <cui/visual/node.hpp>
+#include <cui/visual/scene_graph.hpp>
 #include <window.hpp>
 
 #include <aliases.hpp>
 #include <iostream>
-#include <type_traits>
-#include <utility>
 #include <random>
 #include <string>
+#include <type_traits>
+#include <utility>
 
-#include <window_options.hpp>
-#include <render_cache.hpp>
-#include <detail/intermediaries/color.hpp>
 #include <cui/utils/print.hpp>
+#include <detail/intermediaries/color.hpp>
+#include <detail/templates/button.hpp>
+#include <render_cache.hpp>
+#include <window_options.hpp>
 
 std::ostream& operator<<(std::ostream& os, const cui::ct::StringView str) {
 	for (const auto ch : str) os << ch;
@@ -232,6 +233,7 @@ int main() {
 	END_STATIC_STRING_HOLDER
 
 	using win_t = Window;
+	using event_data_t = EventData<Node<NodeCache>>;
 
 	std::unique_ptr<win_t> window;
 
@@ -275,7 +277,22 @@ int main() {
 	println("Before register_event()");
 	window->register_event(sf::Event::EventType::MouseButtonPressed,
 						   "on_click_btn",
-						   [&window, &gen, &dist](const auto& event_data) {
+						   [&window, &gen, &dist](event_data_t& event_data) {
+							   // CUI_BUTTON_ON_CLICK((*window), event_data);
+							   {
+								   std::unique_lock lock((*window).window_mutex_);
+								   const auto [_, x, y] = std::get<sf::Event::MouseButtonEvent>(event_data.get());
+								   const auto point = sf::Vector2f(x, y);
+								   auto node = event_data.caller();
+								   if (!(*window).cache()[event_data.caller_index()].getGlobalBounds().contains(point))
+									   return;
+								   auto& e_schemes = node->event_schematics();
+								   for (auto it = e_schemes.begin(); it != e_schemes.end(); ++it) {
+									   if (it.key() == event_data.event_name()) {
+										   node->active_schematic() = it.value();
+									   }
+								   }
+							   }
 							   const auto r = dist(*gen);
 							   const auto g = dist(*gen);
 							   const auto b = dist(*gen);
