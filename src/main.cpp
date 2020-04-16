@@ -306,6 +306,11 @@ int main() {
 			if (hovered_node.has_value()) {
 				auto* node = std::any_cast<node_t*>(hovered_node);
 
+				println("Node address comparison:",
+						std::hex,
+						static_cast<uintptr_t>(node),
+						"==",
+						static_cast<uintptr_t>(event_data.caller()));
 				if (node == event_data.caller()) return;
 
 				node->active_schematic() = node->default_schematic();
