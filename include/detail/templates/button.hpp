@@ -4,7 +4,6 @@
 #include <detail/templates/requirements.hpp>
 
 #define CUI_BUTTON(window, event_data) \
-	bool active_schematic_changed = false; \
 	{ \
 		int x, y; \
 		std::visit( \
@@ -23,15 +22,6 @@
 			std::unique_lock wlock(window.window_mutex_); \
 			if (!window.cache()[event_data.caller_index()].getGlobalBounds().contains(point)) { \
 				return; \
-			} \
-		} \
-		std::unique_lock slock(window.scene_mutex_); \
-		auto node = event_data.caller(); \
-		auto& e_schemes = node->event_schematics(); \
-		for (auto it = e_schemes.begin(); it != e_schemes.end(); ++it) { \
-			if (it.key() == event_data.event_name()) { \
-				node->active_schematic() = it.value(); \
-				active_schematic_changed = true; \
 			} \
 		} \
 	}

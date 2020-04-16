@@ -1,6 +1,7 @@
 #ifndef CUI_WINDOW_HPP
 #define CUI_WINDOW_HPP
 
+#include <any>
 #include <condition_variable>
 #include <functional>
 #include <mutex>
@@ -37,8 +38,7 @@ public:
 	using time_point_t = std::chrono::time_point<steady_clock_t>;
 	template <typename Period>
 	using duration_t = std::chrono::duration<standard_duration_t::rep, Period>;
-	using node_cache_t = NodeCache;
-	using scene_graph_t = SceneGraph<node_cache_t>;
+	using scene_graph_t = SceneGraph;
 	using node_t = typename scene_graph_t::data_type;
 	using event_data_t = EventData<node_t>;
 	using event_t = std::function<void(event_data_t)>;
@@ -50,7 +50,8 @@ public:
 	using event_queue_t = std::vector<event_package_t>;
 	using timer_queue_t = std::priority_queue<timer_event_t, std::vector<timer_event_t>, std::greater<timer_event_t>>;
 	using cache_t = RenderCache;
-	using scene_t = SceneState<event_t, marker_t, node_cache_t>;
+	using scene_t = SceneState<event_t, marker_t>;
+	using event_cache_t = tsl::hopscotch_map<std::string, std::any>;
 
 	template <template <typename, u64> typename Container, u64 Size, typename... Scenes>
 	Window(const Container<ct::Style, Size>& p_styles, const Scenes&... p_scenes)
@@ -161,6 +162,7 @@ public:
 	std::shared_mutex window_mutex_;
 	bool running_;
 	bool update_cache_flag_;
+	event_cache_t event_cache;
 
 private:
 	std::vector<std::thread> event_pool_;
@@ -341,11 +343,16 @@ void Window::attach_event_to_node(const std::string& search_name, const std::str
 	std::unique_lock lock(scene_mutex_);
 	auto& graph = this->active_scene().graph();
 
+	if (graph.root().name() == search_name) {
+		graph.root().attach_event(event_name);
+		return;
+	}
+
 	auto it = std::find_if(graph.begin(), graph.end(), [search_name](const auto& node) {
 		return node.data().name() == search_name;
 	});
 	if (it == graph.end()) throw std::logic_error("No node found by that name");
-	it->attach_event(event_name);
+	it->data().attach_event(event_name);
 }
 
 /// \brief Attaches a registered event to a node
@@ -356,26 +363,16 @@ void Window::attach_event_to_node(const std::string& search_name, std::string&& 
 	std::unique_lock lock(scene_mutex_);
 	auto& graph = this->active_scene().graph();
 
-	auto it = std::find_if(graph.begin(), graph.end(), [search_name](const auto& node) {
-		return node.data().name() == search_name;
-	});
-	if (it == graph.end()) throw std::logic_error("No node found by that name");
-	it->attach_event(std::move(event_name));
-}
-
-/// \brief Detaches a registered event from a node
-/// \details Searches for the node by name. If no node is found, an exception is thrown
-/// \param search_name The name of the node to search for
-/// \param event_name The name of the event that is being detached
-void Window::detach_event_from_node(const std::string& search_name, std::string&& event_name) {
-	std::unique_lock lock(scene_mutex_);
-	auto& graph = this->active_scene().graph();
+	if (graph.root().name() == search_name) {
+		graph.root().attach_event(event_name);
+		return;
+	}
 
 	auto it = std::find_if(graph.begin(), graph.end(), [search_name](const auto& node) {
 		return node.data().name() == search_name;
 	});
 	if (it == graph.end()) throw std::logic_error("No node found by that name");
-	it->detach_event(event_name);
+	it->data().attach_event(std::move(event_name));
 }
 
 /// \brief Detaches a registered event from a node
@@ -386,11 +383,36 @@ void Window::detach_event_from_node(const std::string& search_name, const std::s
 	std::unique_lock lock(scene_mutex_);
 	auto& graph = this->active_scene().graph();
 
+	if (graph.root().name() == search_name) {
+		graph.root().detach_event(event_name);
+		return;
+	}
+
 	auto it = std::find_if(graph.begin(), graph.end(), [search_name](const auto& node) {
 		return node.data().name() == search_name;
 	});
 	if (it == graph.end()) throw std::logic_error("No node found by that name");
-	it->detach_event(std::move(event_name));
+	it->data().detach_event(event_name);
+}
+
+/// \brief Detaches a registered event from a node
+/// \details Searches for the node by name. If no node is found, an exception is thrown
+/// \param search_name The name of the node to search for
+/// \param event_name The name of the event that is being detached
+void Window::detach_event_from_node(const std::string& search_name, std::string&& event_name) {
+	std::unique_lock lock(scene_mutex_);
+	auto& graph = this->active_scene().graph();
+
+	if (graph.root().name() == search_name) {
+		graph.root().detach_event(std::move(event_name));
+		return;
+	}
+
+	auto it = std::find_if(graph.begin(), graph.end(), [search_name](const auto& node) {
+		return node.data().name() == search_name;
+	});
+	if (it == graph.end()) throw std::logic_error("No node found by that name");
+	it->data().detach_event(std::move(event_name));
 }
 
 /// \brief Dispatches an event with event data
@@ -468,16 +490,15 @@ void Window::schedule_to_update_cache() {
 /// \details Locks the internal scene mutex with a \sa std::shared_lock
 void Window::update_cache() {
 	std::unique_lock lock(scene_mutex_);
-	println("Updating cache...");
+	println("Updating cache");
 	cache_.update_cache(this->active_scene().graph());
-	println("Updated cache.");
 }
 
 /// \brief Renders the current scene
 /// \details Iterates through the cache and draws visible elements then displays them
 void Window::render() noexcept {
 	std::unique_lock lock(window_mutex_);
-	if(update_cache_flag_) {
+	if (update_cache_flag_) {
 		this->update_cache();
 		update_cache_flag_ = false;
 	}
@@ -589,14 +610,20 @@ void Window::process_event(const sf::Event& event) {
 	for (const auto& kvp : node_events) {
 		const auto& event_name = kvp.first;
 
-		for (std::size_t i = 0; i < graph.length(); ++i) {
+		for (std::size_t i = graph.length() - 1;; ++i) {
 			auto& node = graph[i];
 
-			if (node.attached_events().contains(event_name)) {
+			if (node.data().attached_events().contains(event_name)) {
 				this->dispatch_event(type,
 									 event_name,
 									 event_data_t(event_data.get(), &(node.data()), i + 1, event_name));
 			}
+
+			if (i == 0) break;
+		}
+
+		if (graph.root().attached_events().contains(event_name)) {
+			this->dispatch_event(type, event_name, event_data_t(event_data.get(), &(graph.root()), 0, event_name));
 		}
 	}
 

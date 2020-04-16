@@ -27,17 +27,16 @@ public:
 	[[nodiscard]] auto len() const noexcept -> u64 {
 		return this->size() - 1;
 	}
-	template <typename TNodeCache>
-	void sort(const SceneGraph<TNodeCache>& graph);
 
-	template <typename TNodeCache>
-	void cache_resource(Node<TNodeCache>& node);
-	template <typename TNodeCache>
-	void update_ve(const SceneGraph<TNodeCache>& graph, const Node<TNodeCache>& node, u64 index);
-	template <typename TNodeCache>
-	void update_root(const SceneGraph<TNodeCache>& graph);
-	template <typename TNodeCache>
-	void update_cache(const SceneGraph<TNodeCache>& graph);
+	void sort(const SceneGraph& graph);
+
+	void cache_resource(Node& node);
+
+	void update_ve(const SceneGraph& graph, const Node& node, u64 index);
+
+	void update_root(const SceneGraph& graph);
+
+	void update_cache(const SceneGraph& graph);
 
 	void handle_background(Schematic& scheme, VisualElement& ve);
 	void handle_font(Schematic& scheme, VisualElement& ve);
@@ -59,8 +58,7 @@ public:
 	tsl::hopscotch_map<std::string, sf::Font> fonts;
 };
 
-template <typename TNodeCache>
-void RenderCache::cache_resource(Node<TNodeCache>& node) {
+void RenderCache::cache_resource(Node& node) {
 	{
 		auto& scheme = node.default_schematic();
 		auto& background = scheme.background();
@@ -105,8 +103,7 @@ void RenderCache::cache_resource(Node<TNodeCache>& node) {
 	}
 }
 
-template <typename TNodeCache>
-void RenderCache::update_cache(const SceneGraph<TNodeCache>& graph) {
+void RenderCache::update_cache(const SceneGraph& graph) {
 	update_root(graph);
 
 	for (std::size_t i = 0; i < graph.length(); ++i) {
@@ -118,15 +115,13 @@ void RenderCache::update_cache(const SceneGraph<TNodeCache>& graph) {
 	sort(graph);
 }
 
-template <typename TNodeCache>
-void RenderCache::update_root(const SceneGraph<TNodeCache>& graph) {
+void RenderCache::update_root(const SceneGraph& graph) {
 	const auto& root = graph.root();
 
-	update_ve(graph, root, SceneGraph<TNodeCache>::root_index);
+	update_ve(graph, root, SceneGraph::root_index);
 }
 
-template <typename TNodeCache>
-void RenderCache::sort(const SceneGraph<TNodeCache>& graph) {
+void RenderCache::sort(const SceneGraph& graph) {
 	std::vector<std::size_t> v;
 	v.reserve(graph.length());
 	for (const auto& node : graph) {
@@ -138,8 +133,7 @@ void RenderCache::sort(const SceneGraph<TNodeCache>& graph) {
 	std::sort(begin, end, [&graph](const auto& lhs, const auto& rhs) { return lhs > rhs; });
 }
 
-template <typename TNodeCache>
-void RenderCache::update_ve(const SceneGraph<TNodeCache>& graph, const Node<TNodeCache>& node, const u64 index) {
+void RenderCache::update_ve(const SceneGraph& graph, const Node& node, const u64 index) {
 	auto& ve = this->operator[](index + 1);
 	auto& scheme = node.active_schematic().get();
 	auto parent_index = graph.get_parent_index(index);

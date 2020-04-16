@@ -12,11 +12,11 @@
 
 namespace cui {
 
-template <typename EventFunctionType, typename EventType, typename TNodeCache>
+template <typename EventFunctionType, typename EventType>
 class SceneState
 {
 public:
-	using graph_t = SceneGraph<TNodeCache>;
+	using graph_t = SceneGraph;
 	using event_t = EventFunctionType;
 	using event_map_t = tsl::hopscotch_map<std::string, event_t>;
 	using event_marker_map_t = tsl::hopscotch_map<EventType, std::pair<event_map_t, event_map_t>>;

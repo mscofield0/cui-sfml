@@ -11,6 +11,7 @@
 #include <window.hpp>
 
 #include <aliases.hpp>
+#include <any>
 #include <iostream>
 #include <random>
 #include <string>
@@ -170,8 +171,7 @@ std::ostream& operator<<(std::ostream& os, const cui::Schematic& sg) {
 	return os;
 }
 
-template <typename TNodeCache>
-std::ostream& operator<<(std::ostream& os, const cui::SceneGraph<TNodeCache>& sg) {
+std::ostream& operator<<(std::ostream& os, const cui::SceneGraph& sg) {
 	os << sg.root().name() << "{\n\t";
 	os << "Text: " << sg.root().text() << "\n\t";
 	os << "Default attributes:\n\t\t";
@@ -233,7 +233,8 @@ int main() {
 	END_STATIC_STRING_HOLDER
 
 	using win_t = Window;
-	using event_data_t = EventData<Node<NodeCache>>;
+	using node_t = Node;
+	using event_data_t = EventData<node_t>;
 
 	std::unique_ptr<win_t> window;
 
@@ -297,12 +298,43 @@ int main() {
 	window->register_event(EventType::MouseMoved, "on_hover", [&window](event_data_t event_data) {
 		CUI_BUTTON((*window), event_data);
 
-		if(active_schematic_changed) window->schedule_to_update_cache();
+		bool active_schematic_changed = false;
+		{
+			std::unique_lock dlock(window->scene_mutex_);
+			auto& hovered_node = window->event_cache["hovered_node"];
+
+			if (hovered_node.has_value()) {
+				auto* node = std::any_cast<node_t*>(hovered_node);
+
+				if (node == event_data.caller()) return;
+
+				node->active_schematic() = node->default_schematic();
+			}
+
+			if (event_data.caller_index() != 0) {
+				hovered_node = event_data.caller();
+			} else {
+				hovered_node.reset();
+			}
+
+			auto node = event_data.caller();
+			auto& e_schemes = node->event_schematics();
+			for (auto it = e_schemes.begin(); it != e_schemes.end(); ++it) {
+				if (it.key() == event_data.event_name()) {
+					println("Node name:", node->name());
+					node->active_schematic() = it.value();
+					active_schematic_changed = true;
+				}
+			}
+		}
+
+		if (active_schematic_changed) window->schedule_to_update_cache();
 	});
 
 	println("Before attach_event_to_node()");
 	window->attach_event_to_node("button", "on_click_btn");
 	window->attach_event_to_node("button", "on_hover");
+	window->attach_event_to_node("root", "on_hover");
 
 	println("Local events:");
 	for (const auto& kvp : window->active_scene().marked_sections()) {

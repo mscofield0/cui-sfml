@@ -13,7 +13,7 @@ public:
 	String(const ct::StringView str) : str_(str.begin(), str.end()) {}
 	explicit String(const std::string& str) : str_(str) {}
 
-	[[nodiscard]] operator std::string() const {
+	[[nodiscard]] operator const std::string &() const {
 		return str_;
 	}
 

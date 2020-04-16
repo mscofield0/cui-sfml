@@ -3,7 +3,6 @@
 
 #include <vector>
 
-#include <tsl/hopscotch_set.h>
 #include <aliases.hpp>
 
 namespace cui::nary {
@@ -45,22 +44,6 @@ public:
 		return depth_;
 	}
 
-	[[nodiscard]] auto attached_events() noexcept -> tsl::hopscotch_set<std::string>& {
-		return attached_events_;
-	}
-
-	[[nodiscard]] auto attached_events() const noexcept -> const tsl::hopscotch_set<std::string>& {
-		return attached_events_;
-	}
-
-	void attach_event(const std::string& name) {
-		attached_events_.emplace(name);
-	}
-
-	void detach_event(const std::string& name) {
-		attached_events_.emplace(name);
-	}
-
 	void add_child(const size_type index) {
 		children_.push_back(index);
 	}
@@ -69,7 +52,6 @@ private:
 	data_type data_;
 	vec_t children_;
 	size_type depth_;
-	tsl::hopscotch_set<std::string> attached_events_;
 };
 
 }	 // namespace cui::nary

@@ -15,11 +15,10 @@
 
 namespace cui {
 
-template <typename TNodeCache>
-class SceneGraph : public NaryTree<Node<TNodeCache>>
+class SceneGraph : public NaryTree<Node>
 {
 public:
-	using tree_t = NaryTree<Node<TNodeCache>>;
+	using tree_t = NaryTree<Node>;
 	using data_type = typename tree_t::data_type;
 	using size_type = typename tree_t::size_type;
 	static constexpr u64 root_index = -1;
@@ -50,9 +49,8 @@ private:
 	data_type root_;
 };
 
-template <typename TNodeCache>
 template <u64 AOB, template <typename, u64> typename Container, u64 N>
-SceneGraph<TNodeCache>::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& sc) : tree_t{}, root_() {
+SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& sc) : tree_t{}, root_() {
 	this->vec_.reserve(AOB);
 
 	for (const auto& style : sc) {
@@ -81,9 +79,8 @@ SceneGraph<TNodeCache>::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct:
 	}
 }
 
-template <typename TNodeCache>
 template <u64 AOB, template <typename> typename Container>
-SceneGraph<TNodeCache>::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style>& sc) {
+SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style>& sc) {
 	this->vec_.reserve(AOB);
 
 	for (const auto& style : sc) {
@@ -112,8 +109,7 @@ SceneGraph<TNodeCache>::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct:
 	}
 }
 
-template <typename TNodeCache>
-auto SceneGraph<TNodeCache>::get_parent_index(const size_type index) const noexcept -> size_type {
+auto SceneGraph::get_parent_index(const size_type index) const noexcept -> size_type {
 	if (index == root_index) return root_index;
 	const auto it = std::find_if(this->begin(), this->end(), [index](const auto& node) {
 		const auto& children = node.children();
@@ -124,16 +120,14 @@ auto SceneGraph<TNodeCache>::get_parent_index(const size_type index) const noexc
 	return std::distance(this->begin(), it);
 }
 
-template <typename TNodeCache>
-auto SceneGraph<TNodeCache>::get_parent(const size_type index) noexcept -> data_type& {
+auto SceneGraph::get_parent(const size_type index) noexcept -> data_type& {
 	const auto idx = get_parent_index(index);
 	if (idx == root_index) return root_;
 
 	return this->operator[](idx).data();
 }
 
-template <typename TNodeCache>
-void SceneGraph<TNodeCache>::apply_style(data_type& node, const ct::Style& style) {
+void SceneGraph::apply_style(data_type& node, const ct::Style& style) {
 	if (style.events().empty()) {
 		for (const auto& attr_data : style.attributes()) {
 			node.default_schematic().assign(attr_data);

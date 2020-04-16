@@ -6,17 +6,16 @@
 
 #include <compile_time/string/string_view.hpp>
 #include <tsl/hopscotch_map.h>
+#include <tsl/hopscotch_set.h>
 #include <visual/schematic.hpp>
 
 namespace cui {
 
-template <typename TCache>
 class Node
 {
 public:
 	using schematic_map_t = tsl::hopscotch_map<std::string, Schematic>;
 	using schematic_ref = std::reference_wrapper<Schematic>;
-	using cache_t = TCache;
 
 	Node()
 		: default_schematic_(), event_schematics_(), active_(std::ref(default_schematic_)), name_("root"), text_("") {}
@@ -39,11 +38,13 @@ public:
 
 	Node(const Node& rhs)
 		: default_schematic_(rhs.default_schematic_), event_schematics_(rhs.event_schematics_),
-		  active_(std::ref(default_schematic_)), name_(rhs.name_), text_(rhs.text_) {}
+		  active_(std::ref(default_schematic_)), name_(rhs.name_), text_(rhs.text_),
+		  attached_events_(rhs.attached_events_) {}
 
 	Node(Node&& rhs)
 		: default_schematic_(std::move(rhs.default_schematic_)), event_schematics_(std::move(rhs.event_schematics_)),
-		  active_(std::ref(default_schematic_)), name_(std::move(rhs.name_)), text_(std::move(rhs.text_)) {}
+		  active_(std::ref(default_schematic_)), name_(std::move(rhs.name_)), text_(std::move(rhs.text_)),
+		  attached_events_(std::move(rhs.attached_events_)) {}
 
 	Node& operator=(const Node& rhs) {
 		default_schematic_ = rhs.default_schematic_;
@@ -51,7 +52,7 @@ public:
 		active_ = default_schematic_;
 		name_ = rhs.name_;
 		text_ = rhs.text_;
-		cache_ = rhs.cache_;
+		attached_events_ = rhs.attached_events_;
 		return *this;
 	}
 
@@ -61,7 +62,7 @@ public:
 		active_ = default_schematic_;
 		name_ = std::move(rhs.name_);
 		text_ = std::move(rhs.text_);
-		cache_ = std::move(rhs.cache_);
+		attached_events_ = std::move(rhs.attached_events_);
 		return *this;
 	}
 
@@ -105,12 +106,20 @@ public:
 		return text_;
 	}
 
-	[[nodiscard]] auto cache() noexcept -> cache_t& {
-		return cache_;
+	[[nodiscard]] auto attached_events() noexcept -> tsl::hopscotch_set<std::string>& {
+		return attached_events_;
 	}
 
-	[[nodiscard]] auto cache() const noexcept -> const cache_t {
-		return cache_;
+	[[nodiscard]] auto attached_events() const noexcept -> const tsl::hopscotch_set<std::string>& {
+		return attached_events_;
+	}
+
+	void attach_event(const std::string& name) {
+		attached_events_.emplace(name);
+	}
+
+	void detach_event(const std::string& name) {
+		attached_events_.emplace(name);
 	}
 
 private:
@@ -119,7 +128,7 @@ private:
 	schematic_ref active_;
 	std::string name_;
 	std::string text_;
-	cache_t cache_;
+	tsl::hopscotch_set<std::string> attached_events_;
 };
 
 }	 // namespace cui
