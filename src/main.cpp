@@ -20,9 +20,13 @@
 
 #include <cui/utils/print.hpp>
 #include <detail/intermediaries/color.hpp>
-#include <detail/templates/button.hpp>
+#include <detail/templates/on_click.hpp>
+#include <detail/templates/on_hover.hpp>
+#include <detail/templates/on_resize.hpp>
+#include <detail/templates/switch_schematic.hpp>
 #include <render_cache.hpp>
 #include <window_options.hpp>
+
 
 std::ostream& operator<<(std::ostream& os, const cui::ct::StringView str) {
 	for (const auto ch : str) os << ch;
@@ -218,6 +222,19 @@ std::ostream& operator<<(std::ostream& os, const cui::VisualElement& ve) {
 	return os;
 }
 
+struct Benchmark
+{
+	std::chrono::time_point<std::chrono::steady_clock> start, end;
+	Benchmark() {
+		start = std::chrono::steady_clock::now();
+	}
+	~Benchmark() {
+		end = std::chrono::steady_clock::now();
+		auto diff = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+		std::cout << "Time taken: " << diff.count() << " us\n";
+	}
+};
+
 #define STATIC_STRING_HOLDER(name) static constexpr const char name[] =
 #define END_STATIC_STRING_HOLDER ;
 
@@ -239,7 +256,6 @@ int main() {
 	std::unique_ptr<win_t> window;
 
 	std::unique_ptr<std::random_device> device = std::make_unique<std::random_device>();
-	;
 	std::unique_ptr<std::mt19937> gen = std::make_unique<std::mt19937>((*device)());
 	std::uniform_int_distribution<int> dist(0, 255);
 
@@ -273,88 +289,46 @@ int main() {
 	using EventType = sf::Event::EventType;
 
 	window->register_global_event(EventType::Closed, "on_close", [&window](auto event_data) { window->close(); });
+
 	window->register_global_event(EventType::Resized, "on_resize", [&window](auto event_data) {
-		const auto [w, h] = std::get<sf::Event::SizeEvent>(event_data.get());
-		window->resize(w, h);
-		window->schedule_to_update_cache();
+		templates::OnResize((*window), event_data);
 	});
-	window->register_event(EventType::MouseButtonPressed,
-						   "on_click_btn",
-						   [&window, &gen, &dist](event_data_t event_data) {
-							   CUI_BUTTON((*window), event_data);
 
-							   {
-								   std::unique_lock lock(window->scene_mutex_);
-								   const auto r = dist(*gen);
-								   const auto g = dist(*gen);
-								   const auto b = dist(*gen);
-								   auto& graph = window->active_scene().graph();
-								   Schematic& scheme = graph.root().active_schematic();
-								   scheme.background() = cui::Color{r, g, b};
-							   }
+	window->register_event(
+	  EventType::MouseButtonPressed,
+	  "on_click_btn",
+	  [&window, &gen, &dist](event_data_t event_data) {
+		  templates::OnClick((*window), event_data, [&gen, &dist](Window& window, event_data_t& event_data) {
+			  const auto r = dist(*gen);
+			  const auto g = dist(*gen);
+			  const auto b = dist(*gen);
+			  std::unique_lock lock(window.scene_mutex);
+			  Schematic& scheme = window.active_scene().graph().root().active_schematic();
+			  scheme.background() = cui::Color{r, g, b};
+		  });
 
-							   window->schedule_to_update_cache();
-						   });
+		  window->schedule_to_update_cache();
+	  });
+
 	window->register_event(EventType::MouseMoved, "on_hover", [&window](event_data_t event_data) {
-		CUI_BUTTON((*window), event_data);
-
-		bool active_schematic_changed = false;
-		{
-			std::unique_lock dlock(window->scene_mutex_);
-			auto& hovered_node = window->event_cache["hovered_node"];
-
-			if (hovered_node.has_value()) {
-				auto* node = std::any_cast<node_t*>(hovered_node);
-
-				println("Node address comparison:",
-						std::hex,
-						static_cast<uintptr_t>(node),
-						"==",
-						static_cast<uintptr_t>(event_data.caller()));
-				if (node == event_data.caller()) return;
-
-				node->active_schematic() = node->default_schematic();
-			}
-
-			if (event_data.caller_index() != 0) {
-				hovered_node = event_data.caller();
-			} else {
-				hovered_node.reset();
-			}
-
-			auto node = event_data.caller();
-			auto& e_schemes = node->event_schematics();
-			for (auto it = e_schemes.begin(); it != e_schemes.end(); ++it) {
-				if (it.key() == event_data.event_name()) {
-					println("Node name:", node->name());
-					node->active_schematic() = it.value();
-					active_schematic_changed = true;
-				}
-			}
-		}
-
-		if (active_schematic_changed) window->schedule_to_update_cache();
+		templates::OnHover((*window),
+						   event_data,
+						   event_data.caller()->name(),
+						   templates::SwitchToDefaultSchematic,
+						   templates::SwitchToEventSchematic);
 	});
 
-	println("Before attach_event_to_node()");
 	window->attach_event_to_node("button", "on_click_btn");
 	window->attach_event_to_node("button", "on_hover");
-	window->attach_event_to_node("root", "on_hover");
 
-	println("Local events:");
+	println("Node-local events:");
 	for (const auto& kvp : window->active_scene().marked_sections()) {
 		for (const auto& event : kvp.second.first) {
 			println("\tName:", event.first);
 		}
 	}
 
-	println("Creating the renderwindow...");
 	window->init({800, 600, "Title", sf::Style::Default, sf::ContextSettings{}, 60});
-	println("Starting the app loop...");
-
-	println("Window is running: ", window->window()->isOpen());
-
-	println("After using the newly initialized window variable!");
 
 	while (window->is_running()) {
 		window->handle_events();

@@ -127,7 +127,7 @@ public:
 	}
 
 	[[nodiscard]] bool is_running() noexcept {
-		std::shared_lock lock(window_mutex_);
+		std::shared_lock lock(window_mutex);
 		return running_;
 	}
 
@@ -140,7 +140,7 @@ public:
 	}
 
 	void close() {
-		std::unique_lock lock(window_mutex_);
+		std::unique_lock lock(window_mutex);
 		running_ = false;
 		timer_cv_.notify_one();
 	}
@@ -156,12 +156,11 @@ public:
 	}
 
 public:
-	std::mutex event_mutex_;
-	std::mutex timer_mutex_;
-	std::shared_mutex scene_mutex_;
-	std::shared_mutex window_mutex_;
-	bool running_;
-	bool update_cache_flag_;
+	std::mutex event_mutex;
+	std::mutex timer_mutex;
+	std::shared_mutex scene_mutex;
+	std::shared_mutex window_mutex;
+	std::shared_mutex event_cache_mutex;
 	event_cache_t event_cache;
 
 private:
@@ -171,7 +170,9 @@ private:
 	timer_queue_t timer_queue_;
 	std::condition_variable event_cv_;
 	std::condition_variable timer_cv_;
-	bool timer_wait_awakened;
+	bool timer_wait_awakened_;
+	bool update_cache_flag_;
+	bool running_;
 	TrackedList<scene_t> scenes_;
 	RenderCache cache_;
 	std::unique_ptr<sf::RenderWindow> window_;
@@ -185,7 +186,7 @@ void Window::init(const WindowOptions& options) {
 	const auto& [w, h, title, style, ctx_settings, framerate] = options;
 	auto& graph = this->active_scene().graph();
 	this->resize(w, h);
-	std::unique_lock lock(scene_mutex_);
+	std::unique_lock lock(scene_mutex);
 
 	window_ = std::make_unique<sf::RenderWindow>(sf::VideoMode(w, h), title, style, ctx_settings);
 
@@ -209,7 +210,7 @@ void Window::init(const WindowOptions& options) {
 			while (true) {
 				event_package_t event_package;
 				{
-					std::unique_lock lock(event_mutex_);
+					std::unique_lock lock(event_mutex);
 					event_cv_.wait(lock, [this] { return !this->is_running() || !this->event_queue_.empty(); });
 					if (!this->is_running() && event_queue_.empty()) return;
 					event_package = std::move(this->event_queue_.back());
@@ -236,7 +237,7 @@ void Window::init(const WindowOptions& options) {
 /// \param w The width to resize to
 /// \param h The height to resize to
 void Window::resize(const int w, const int h) {
-	std::unique_lock lock(scene_mutex_);
+	std::unique_lock lock(scene_mutex);
 	auto& graph = this->active_scene().graph();
 
 	graph.root().default_schematic().width() = static_cast<int>(w);
@@ -265,7 +266,7 @@ void Window::handle_events() {
 /// \param marker Marks the event to be looked up on a specific \sa sf::Event
 /// \param event The function that executes during dispatch
 void Window::register_event(const marker_t marker, const std::string& name, event_t&& event) {
-	std::unique_lock lock(scene_mutex_);
+	std::unique_lock lock(scene_mutex);
 	this->active_scene().register_event(marker, name, std::move(event));
 }
 
@@ -275,7 +276,7 @@ void Window::register_event(const marker_t marker, const std::string& name, even
 /// \param marker Marks the event to be looked up on a specific \sa sf::Event
 /// \param event The function that executes during dispatch
 void Window::register_event(const marker_t marker, std::string&& name, event_t&& event) {
-	std::unique_lock lock(scene_mutex_);
+	std::unique_lock lock(scene_mutex);
 	this->active_scene().register_event(marker, name, std::move(event));
 }
 
@@ -285,7 +286,7 @@ void Window::register_event(const marker_t marker, std::string&& name, event_t&&
 /// \param marker Marks the event to be looked up on a specific \sa sf::Event
 /// \param event The function that executes during dispatch
 void Window::register_global_event(marker_t marker, const std::string& name, event_t&& event) {
-	std::unique_lock lock(scene_mutex_);
+	std::unique_lock lock(scene_mutex);
 	this->active_scene().register_global_event(marker, name, std::move(event));
 }
 
@@ -295,7 +296,7 @@ void Window::register_global_event(marker_t marker, const std::string& name, eve
 /// \param marker Marks the event to be looked up on a specific \sa sf::Event
 /// \param event The function that executes during dispatch
 void Window::register_global_event(marker_t marker, std::string&& name, event_t&& event) {
-	std::unique_lock lock(scene_mutex_);
+	std::unique_lock lock(scene_mutex);
 	this->active_scene().register_global_event(marker, std::move(name), std::move(event));
 }
 
@@ -304,7 +305,7 @@ void Window::register_global_event(marker_t marker, std::string&& name, event_t&
 /// \param name The name for the event, eg. on_btn_click, on_packet_receive, ...
 /// \param marker Marks the event to be looked up on a specific \sa sf::Event
 void Window::unregister_event(const marker_t marker, const std::string& name) {
-	std::unique_lock lock(scene_mutex_);
+	std::unique_lock lock(scene_mutex);
 	this->active_scene().unregister_event(marker, name);
 }
 
@@ -313,7 +314,7 @@ void Window::unregister_event(const marker_t marker, const std::string& name) {
 /// \param name The name for the event, eg. on_btn_click, on_packet_receive, ...
 /// \param marker Marks the event to be looked up on a specific \sa sf::Event
 void Window::unregister_event(const marker_t marker, std::string&& name) {
-	std::unique_lock lock(scene_mutex_);
+	std::unique_lock lock(scene_mutex);
 	this->active_scene().unregister_event(marker, std::move(name));
 }
 
@@ -322,7 +323,7 @@ void Window::unregister_event(const marker_t marker, std::string&& name) {
 /// \param name The name for the event, eg. on_btn_click, on_packet_receive, ...
 /// \param marker Marks the event to be looked up on a specific \sa sf::Event
 void Window::unregister_global_event(const marker_t marker, const std::string& name) {
-	std::unique_lock lock(scene_mutex_);
+	std::unique_lock lock(scene_mutex);
 	this->active_scene().unregister_global_event(marker, name);
 }
 
@@ -331,7 +332,7 @@ void Window::unregister_global_event(const marker_t marker, const std::string& n
 /// \param name The name for the event, eg. on_btn_click, on_packet_receive, ...
 /// \param marker Marks the event to be looked up on a specific \sa sf::Event
 void Window::unregister_global_event(const marker_t marker, std::string&& name) {
-	std::unique_lock lock(scene_mutex_);
+	std::unique_lock lock(scene_mutex);
 	this->active_scene().unregister_global_event(marker, std::move(name));
 }
 
@@ -340,7 +341,7 @@ void Window::unregister_global_event(const marker_t marker, std::string&& name) 
 /// \param search_name The name of the node to search for
 /// \param event_name The name of the event that's being attached
 void Window::attach_event_to_node(const std::string& search_name, const std::string& event_name) {
-	std::unique_lock lock(scene_mutex_);
+	std::unique_lock lock(scene_mutex);
 	auto& graph = this->active_scene().graph();
 
 	if (graph.root().name() == search_name) {
@@ -360,7 +361,7 @@ void Window::attach_event_to_node(const std::string& search_name, const std::str
 /// \param search_name The name of the node to search for
 /// \param event_name The name of the event that's being attached
 void Window::attach_event_to_node(const std::string& search_name, std::string&& event_name) {
-	std::unique_lock lock(scene_mutex_);
+	std::unique_lock lock(scene_mutex);
 	auto& graph = this->active_scene().graph();
 
 	if (graph.root().name() == search_name) {
@@ -380,7 +381,7 @@ void Window::attach_event_to_node(const std::string& search_name, std::string&& 
 /// \param search_name The name of the node to search for
 /// \param event_name The name of the event that is being detached
 void Window::detach_event_from_node(const std::string& search_name, const std::string& event_name) {
-	std::unique_lock lock(scene_mutex_);
+	std::unique_lock lock(scene_mutex);
 	auto& graph = this->active_scene().graph();
 
 	if (graph.root().name() == search_name) {
@@ -400,7 +401,7 @@ void Window::detach_event_from_node(const std::string& search_name, const std::s
 /// \param search_name The name of the node to search for
 /// \param event_name The name of the event that is being detached
 void Window::detach_event_from_node(const std::string& search_name, std::string&& event_name) {
-	std::unique_lock lock(scene_mutex_);
+	std::unique_lock lock(scene_mutex);
 	auto& graph = this->active_scene().graph();
 
 	if (graph.root().name() == search_name) {
@@ -422,7 +423,7 @@ void Window::detach_event_from_node(const std::string& search_name, std::string&
 /// \param name The name for the event, eg. on_btn_click, on_packet_receive, ...
 /// \param event_data The event data (eg. received from sf::Event::Resized)
 void Window::dispatch_event(const marker_t marker, const std::string& name, const event_data_t& event_data) {
-	std::unique_lock<std::mutex> lock(event_mutex_);
+	std::unique_lock<std::mutex> lock(event_mutex);
 	event_queue_.emplace_back(event_data.has_caller() ? this->active_scene().get_event(marker, name)
 													  : this->active_scene().get_global_event(marker, name),
 							  event_data);
@@ -438,18 +439,18 @@ void Window::dispatch_event(const marker_t marker, const std::string& name, cons
 /// \param duration The duration for the timer event to wait until executed
 template <typename Period>
 void Window::timer_dispatch_event(const marker_t marker, const std::string& name, duration_t<Period> duration) {
-	std::unique_lock lock(timer_mutex_);
+	std::unique_lock lock(timer_mutex);
 	const bool was_empty = timer_queue_.empty();
 	const auto s_duration = std::chrono::duration_cast<standard_duration_t>(duration);
 	timer_queue_.emplace(this->active_scene().get_event(marker, name), s_duration);
-	if (!was_empty) timer_wait_awakened = true;
+	if (!was_empty) timer_wait_awakened_ = true;
 	timer_cv_.notify_one();
 }
 
 /// \brief Execute the next timer event in waiting queue
 /// \details Starts executing the event whose wait time is up
 void Window::timer_execute_next_in_line() {
-	std::unique_lock lock(timer_mutex_);
+	std::unique_lock lock(timer_mutex);
 	timer_queue_.top()();
 	timer_queue_.pop();
 }
@@ -458,7 +459,7 @@ void Window::timer_execute_next_in_line() {
 /// \details Locks the timer mutex and performs an indefinite wait on enqueued timer events
 /// \returns A boolean indicating whether the window has stopped running
 bool Window::timer_wait_until_push() noexcept {
-	std::unique_lock lock(timer_mutex_);
+	std::unique_lock lock(timer_mutex);
 	timer_cv_.wait(lock, [this] { return !this->is_running() || !timer_queue_.empty(); });
 	return !this->is_running();
 }
@@ -468,12 +469,12 @@ bool Window::timer_wait_until_push() noexcept {
 /// \param previous The previous duration waited on
 /// \returns A boolean indicating whether or not the wait has been interrupted
 bool Window::timer_wait_for(standard_duration_t& previous) {
-	std::unique_lock lock(timer_mutex_);
+	std::unique_lock lock(timer_mutex);
 	time_point_t before = steady_clock_t::now();
 	timer_cv_.wait_for(lock, timer_queue_.top().duration() - previous);
 	previous = steady_clock_t::now() - before;
-	if (timer_wait_awakened) {
-		timer_wait_awakened = false;
+	if (timer_wait_awakened_) {
+		timer_wait_awakened_ = false;
 		return true;
 	}
 	return false;
@@ -482,22 +483,21 @@ bool Window::timer_wait_for(standard_duration_t& previous) {
 /// \brief Schedule to update the \sa RenderCache
 /// \details Sets the update cache flag to true
 void Window::schedule_to_update_cache() {
-	std::unique_lock lock(window_mutex_);
+	std::unique_lock lock(window_mutex);
 	update_cache_flag_ = true;
 }
 
 /// \brief Updates the internal \sa RenderCache
 /// \details Locks the internal scene mutex with a \sa std::shared_lock
 void Window::update_cache() {
-	std::unique_lock lock(scene_mutex_);
-	println("Updating cache");
+	std::shared_lock lock(scene_mutex);
 	cache_.update_cache(this->active_scene().graph());
 }
 
 /// \brief Renders the current scene
 /// \details Iterates through the cache and draws visible elements then displays them
 void Window::render() noexcept {
-	std::unique_lock lock(window_mutex_);
+	std::unique_lock lock(window_mutex);
 	if (update_cache_flag_) {
 		this->update_cache();
 		update_cache_flag_ = false;
@@ -519,7 +519,7 @@ void Window::process_event(const sf::Event& event) {
 	using EventType = sf::Event::EventType;
 	const auto& type = event.type;
 
-	std::shared_lock slock(scene_mutex_);
+	std::shared_lock slock(scene_mutex);
 	auto& scene = this->active_scene();
 
 	const auto it = scene.marked_sections().find(type);
@@ -602,10 +602,14 @@ void Window::process_event(const sf::Event& event) {
 		}
 	}
 
-	std::unique_lock lock(scene_mutex_);
+	std::unique_lock lock(scene_mutex);
 
 	auto& graph = scene.graph();
 	const auto& node_events = it->second.first;
+
+	for (const auto& kvp : it->second.second) {
+		this->dispatch_event(type, kvp.first, event_data_t(event_data.get(), kvp.first));
+	}
 
 	for (const auto& kvp : node_events) {
 		const auto& event_name = kvp.first;
@@ -625,10 +629,6 @@ void Window::process_event(const sf::Event& event) {
 		if (graph.root().attached_events().contains(event_name)) {
 			this->dispatch_event(type, event_name, event_data_t(event_data.get(), &(graph.root()), 0, event_name));
 		}
-	}
-
-	for (const auto& kvp : it->second.second) {
-		this->dispatch_event(type, kvp.first, event_data_t(event_data.get(), kvp.first));
 	}
 }
 
