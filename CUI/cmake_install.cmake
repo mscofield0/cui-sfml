@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/zec/CUI-SFML/CUI
+# Install script for directory: D:/Coding/__GIT/CUI-SFML/CUI
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
