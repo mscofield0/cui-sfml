@@ -7,20 +7,23 @@
 #include <algorithm>
 #include <string>
 
+#include <aliases.hpp>
 #include <cui/containers/vector.hpp>
 #include <cui/utils/get_path_head.hpp>
 #include <cui/visual/node.hpp>
 #include <cui/visual/scene_graph.hpp>
+#include <detail/intermediaries/color.hpp>
 #include <detail/iterator_pair.hpp>
 #include <tsl/hopscotch_map.h>
 #include <visual_element.hpp>
 
-#include <detail/intermediaries/color.hpp>
 
-#include <aliases.hpp>
+#include <SFML/Window/Cursor.hpp>
 
 namespace cui {
 
+/// \brief Class for transforming CUI attributes and rules into a \sa cui::VisualElement
+/// \details Holds all VEs in a \sa cui::Vector which gets sorted according to the \sa cui::SceneGraph node depths
 class RenderCache : public Vector<VisualElement>
 {
 public:
@@ -56,8 +59,12 @@ public:
 public:
 	tsl::hopscotch_map<std::string, sf::Texture> textures;
 	tsl::hopscotch_map<std::string, sf::Font> fonts;
+	tsl::hopscotch_map<sf::Cursor::Type, sf::Cursor> cursors;
 };
 
+/// \brief Caches \sa cui::Node resources such as images and fonts
+/// \details Does not cache twice, the resource exists throughout the existence of the \sa cui::window
+/// \param node The node from which to cache resources
 void RenderCache::cache_resource(Node& node) {
 	{
 		auto& scheme = node.default_schematic();
@@ -101,8 +108,23 @@ void RenderCache::cache_resource(Node& node) {
 			}
 		}
 	}
+
+	cursors[sf::Cursor::Type::Arrow].loadFromSystem(sf::Cursor::Arrow);
+	cursors[sf::Cursor::Type::ArrowWait].loadFromSystem(sf::Cursor::ArrowWait);
+	cursors[sf::Cursor::Type::Wait].loadFromSystem(sf::Cursor::Wait);
+	cursors[sf::Cursor::Type::Text].loadFromSystem(sf::Cursor::Text);
+	cursors[sf::Cursor::Type::Hand].loadFromSystem(sf::Cursor::Hand);
+	cursors[sf::Cursor::Type::SizeHorizontal].loadFromSystem(sf::Cursor::SizeHorizontal);
+	cursors[sf::Cursor::Type::SizeVertical].loadFromSystem(sf::Cursor::SizeVertical);
+	cursors[sf::Cursor::Type::SizeTopLeftBottomRight].loadFromSystem(sf::Cursor::SizeTopLeftBottomRight);
+	cursors[sf::Cursor::Type::SizeBottomLeftTopRight].loadFromSystem(sf::Cursor::SizeBottomLeftTopRight);
+	cursors[sf::Cursor::Type::SizeAll].loadFromSystem(sf::Cursor::SizeAll);
+	cursors[sf::Cursor::Type::Cross].loadFromSystem(sf::Cursor::Cross);
+	cursors[sf::Cursor::Type::Help].loadFromSystem(sf::Cursor::Help);
 }
 
+/// \brief Updates the cache
+/// \details Iterates through the graph and updates each \sa cui::VisualElement
 void RenderCache::update_cache(const SceneGraph& graph) {
 	update_root(graph);
 
@@ -115,12 +137,19 @@ void RenderCache::update_cache(const SceneGraph& graph) {
 	sort(graph);
 }
 
+/// \brief Updates the root node of the \sa cui::SceneGraph
+/// \details Calls \sa cui::RenderCache::update_ve() on the root node
+/// \param graph The graph from which to update the root node
 void RenderCache::update_root(const SceneGraph& graph) {
 	const auto& root = graph.root();
 
 	update_ve(graph, root, SceneGraph::root_index);
 }
 
+/// \brief Sorts the cache according to the \sa cui::SceneGraph node depths
+/// \details Creates a zip iterator to the depths vector of the \sa cui::SceneGraph and
+/// the cache vector, then sorts it accordingly
+/// \param graph The graph from which to sort the cache
 void RenderCache::sort(const SceneGraph& graph) {
 	std::vector<std::size_t> v;
 	v.reserve(graph.length());
@@ -133,6 +162,12 @@ void RenderCache::sort(const SceneGraph& graph) {
 	std::sort(begin, end, [&graph](const auto& lhs, const auto& rhs) { return lhs > rhs; });
 }
 
+/// \brief Updates the \sa cui::VisualElement according to the \sa cui::SceneGraph node attributes and rules
+/// \details Updates the entire \sa cui::VisualElement and does no attempt to figure out which ones do not need
+/// to be updated
+/// \param graph The \sa cui::SceneGraph from which the node is used to update the corresponding \sa cui::VisualElement
+/// \param node The node being used to update the corresponding \sa cui::VisualElement
+/// \param index The index of the node in the \sa cui::SceneGraph nodes vector
 void RenderCache::update_ve(const SceneGraph& graph, const Node& node, const u64 index) {
 	auto& ve = this->operator[](index + 1);
 	auto& scheme = node.active_schematic().get();

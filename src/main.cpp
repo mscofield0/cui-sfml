@@ -27,7 +27,6 @@
 #include <render_cache.hpp>
 #include <window_options.hpp>
 
-
 std::ostream& operator<<(std::ostream& os, const cui::ct::StringView str) {
 	for (const auto ch : str) os << ch;
 	return os;
@@ -66,8 +65,7 @@ std::ostream& operator<<(std::ostream& os, const cui::ValueData& val) {
 			break;
 		}
 		case cui::data_types::DataTypes::Color: {
-			os << "rgba(" << val.rgba().red() << "," << val.rgba().green() << "," << val.rgba().blue() << ','
-			   << val.rgba().alpha() << ')';
+			os << "rgba(" << val.rgba().red() << "," << val.rgba().green() << "," << val.rgba().blue() << ',' << val.rgba().alpha() << ')';
 			break;
 		}
 		case cui::data_types::DataTypes::Float: {
@@ -290,32 +288,23 @@ int main() {
 
 	window->register_global_event(EventType::Closed, "on_close", [&window](auto event_data) { window->close(); });
 
-	window->register_global_event(EventType::Resized, "on_resize", [&window](auto event_data) {
-		templates::OnResize((*window), event_data);
+	window->register_global_event(EventType::Resized, "on_resize", [&window](auto event_data) { templates::OnResize((*window), event_data); });
+
+	window->register_event(EventType::MouseButtonPressed, "on_click_btn", [&window, &gen, &dist](event_data_t event_data) {
+		templates::OnClick((*window), event_data, [&gen, &dist](Window& window, event_data_t& event_data) {
+			const auto r = dist(*gen);
+			const auto g = dist(*gen);
+			const auto b = dist(*gen);
+			std::unique_lock lock(window.scene_mutex);
+			Schematic& scheme = window.active_scene().graph().root().active_schematic();
+			scheme.background() = cui::Color{r, g, b};
+		});
+
+		window->schedule_to_update_cache();
 	});
 
-	window->register_event(
-	  EventType::MouseButtonPressed,
-	  "on_click_btn",
-	  [&window, &gen, &dist](event_data_t event_data) {
-		  templates::OnClick((*window), event_data, [&gen, &dist](Window& window, event_data_t& event_data) {
-			  const auto r = dist(*gen);
-			  const auto g = dist(*gen);
-			  const auto b = dist(*gen);
-			  std::unique_lock lock(window.scene_mutex);
-			  Schematic& scheme = window.active_scene().graph().root().active_schematic();
-			  scheme.background() = cui::Color{r, g, b};
-		  });
-
-		  window->schedule_to_update_cache();
-	  });
-
 	window->register_event(EventType::MouseMoved, "on_hover", [&window](event_data_t event_data) {
-		templates::OnHover((*window),
-						   event_data,
-						   event_data.caller()->name(),
-						   templates::SwitchToDefaultSchematic,
-						   templates::SwitchToEventSchematic);
+		templates::OnHover((*window), event_data, event_data.caller()->name(), templates::SwitchToDefaultSchematic, templates::SwitchToEventSchematic);
 	});
 
 	window->attach_event_to_node("button", "on_click_btn");
