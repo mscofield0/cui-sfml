@@ -602,7 +602,7 @@ void Window::process_event(const sf::Event& event) {
 	for (const auto& kvp : node_events) {
 		const auto& event_name = kvp.first;
 
-		for (std::size_t i = graph.length() - 1;; ++i) {
+		for (std::size_t i = graph.length() - 1;; --i) {
 			auto& node = graph[i];
 
 			if (node.data().attached_events().contains(event_name)) {

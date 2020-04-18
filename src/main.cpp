@@ -82,7 +82,6 @@ int main() {
 		window = std::make_unique<win_t>(std::move(sty), std::move(scenes_variant.type_a()));
 	}
 
-	println(window->active_scene().graph());
 
 	// stdlib utilities for RNG
 	std::unique_ptr<std::random_device> device = std::make_unique<std::random_device>();
@@ -216,6 +215,8 @@ int main() {
 
 	// Initialize the window
 	window->init({800, 600, "Title", sf::Style::Default, sf::ContextSettings{}, 60});
+
+	println(window->active_scene().graph());
 
 	// Start the main window loop
 	while (window->is_running()) {
