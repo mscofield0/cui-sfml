@@ -27,7 +27,6 @@ namespace cui::ct::scenes {
 
 template <const char* str>
 constexpr auto parse_scenes() -> Variant<Scene<detail::count_amount_of_blocks(str)>, Format<256>> {
-	constexpr StringView delims = "\"\n";
 	constexpr auto amount_of_blocks = detail::count_amount_of_blocks(str);
 
 	constexpr char invalid_block_name[] = "Invalid block name (must consist of alphanumeric character [a-zA-Z0-9] starting with a letter)";

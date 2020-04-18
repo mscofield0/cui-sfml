@@ -24,4 +24,4 @@ set_target_properties(CUI-SFML
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 target_compile_features(CUI-SFML PUBLIC cxx_std_17)
-target_compile_options(CUI-SFML PRIVATE -O2 -Wall -Wextra -Wpedantic)
+target_compile_options(CUI-SFML PRIVATE -g -Wall -Wextra -Wpedantic)

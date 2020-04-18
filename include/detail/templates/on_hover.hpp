@@ -10,12 +10,8 @@ namespace cui::templates {
 using on_hover_invoke_fn_t = std::function<void(Window&, event_data_t&)>;
 using on_hover_with_id_invoke_fn_t = std::function<void(Window&, event_data_t&, const std::string&)>;
 
-void OnHover(Window& window,
-			 event_data_t& event_data,
-			 const std::string& event_cache_id,
-			 on_hover_invoke_fn_t&& fn_no_hover,
-			 on_hover_invoke_fn_t&& fn_hover) {
-	if (!NodeContainsPoint(window, event_data.caller_index(), GetMousePosition(window, event_data))) {
+void OnHover(Window& window, event_data_t& event_data, const std::string& event_cache_id, on_hover_invoke_fn_t&& fn_no_hover, on_hover_invoke_fn_t&& fn_hover) {
+	if (!NodeContainsPoint(window, event_data.caller_index(), GetMousePosition(event_data))) {
 		std::unique_lock dlock(window.scene_mutex);
 
 		auto& cache_item = window.event_cache[event_cache_id];
@@ -43,12 +39,8 @@ void OnHover(Window& window,
 	fn_hover(window, event_data);
 }
 
-void OnHover(Window& window,
-			 event_data_t& event_data,
-			 const std::string& event_cache_id,
-			 on_hover_with_id_invoke_fn_t&& fn_no_hover,
-			 on_hover_with_id_invoke_fn_t&& fn_hover) {
-	if (!NodeContainsPoint(window, event_data.caller_index(), GetMousePosition(window, event_data))) {
+void OnHover(Window& window, event_data_t& event_data, const std::string& event_cache_id, on_hover_with_id_invoke_fn_t&& fn_no_hover, on_hover_with_id_invoke_fn_t&& fn_hover) {
+	if (!NodeContainsPoint(window, event_data.caller_index(), GetMousePosition(event_data))) {
 		std::unique_lock dlock(window.event_cache_mutex);
 
 		auto& cache_item = window.event_cache[event_cache_id];

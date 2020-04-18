@@ -54,20 +54,16 @@ public:
 	using event_cache_t = tsl::hopscotch_map<std::string, std::any>;
 
 	template <template <typename, u64> typename Container, u64 Size, typename... Scenes>
-	Window(const Container<ct::Style, Size>& p_styles, const Scenes&... p_scenes)
-		: scenes_{scene_graph_t{p_scenes, p_styles}...} {}
+	Window(const Container<ct::Style, Size>& p_styles, const Scenes&... p_scenes) : scenes_{scene_graph_t{p_scenes, p_styles}...} {}
 
 	template <template <typename, u64> typename Container, u64 Size, typename... Scenes>
-	Window(Container<ct::Style, Size>&& p_styles, Scenes&&... p_scenes)
-		: scenes_{scene_graph_t{std::move(p_scenes), p_styles}...} {}
+	Window(Container<ct::Style, Size>&& p_styles, Scenes&&... p_scenes) : scenes_{scene_graph_t{std::move(p_scenes), p_styles}...} {}
 
 	template <template <typename> typename Container, typename... Scenes>
-	Window(const Container<ct::Style>& p_styles, const Scenes&... p_scenes)
-		: scenes_{scene_graph_t{p_scenes, p_styles}...} {}
+	Window(const Container<ct::Style>& p_styles, const Scenes&... p_scenes) : scenes_{scene_graph_t{p_scenes, p_styles}...} {}
 
 	template <template <typename> typename Container, typename... Scenes>
-	Window(Container<ct::Style>&& p_styles, Scenes&&... p_scenes)
-		: scenes_{scene_graph_t{std::move(p_scenes), p_styles}...} {}
+	Window(Container<ct::Style>&& p_styles, Scenes&&... p_scenes) : scenes_{scene_graph_t{std::move(p_scenes), p_styles}...} {}
 
 	void init(const WindowOptions& options);
 
@@ -197,7 +193,9 @@ void Window::init(const WindowOptions& options) {
 
 	cache_.reserve(graph.length() + 1);
 	cache_.emplace_back();
+	println("Before updating cache | Size:", cache_.size());
 	cache_.update_cache(graph);
+	println("After updating cache | Size:", cache_.size());
 
 	window_->setFramerateLimit(framerate);
 	running_ = true;
@@ -349,9 +347,7 @@ void Window::attach_event_to_node(const std::string& search_name, const std::str
 		return;
 	}
 
-	auto it = std::find_if(graph.begin(), graph.end(), [search_name](const auto& node) {
-		return node.data().name() == search_name;
-	});
+	auto it = std::find_if(graph.begin(), graph.end(), [search_name](const auto& node) { return node.data().name() == search_name; });
 	if (it == graph.end()) throw std::logic_error("No node found by that name");
 	it->data().attach_event(event_name);
 }
@@ -369,9 +365,7 @@ void Window::attach_event_to_node(const std::string& search_name, std::string&& 
 		return;
 	}
 
-	auto it = std::find_if(graph.begin(), graph.end(), [search_name](const auto& node) {
-		return node.data().name() == search_name;
-	});
+	auto it = std::find_if(graph.begin(), graph.end(), [search_name](const auto& node) { return node.data().name() == search_name; });
 	if (it == graph.end()) throw std::logic_error("No node found by that name");
 	it->data().attach_event(std::move(event_name));
 }
@@ -389,9 +383,7 @@ void Window::detach_event_from_node(const std::string& search_name, const std::s
 		return;
 	}
 
-	auto it = std::find_if(graph.begin(), graph.end(), [search_name](const auto& node) {
-		return node.data().name() == search_name;
-	});
+	auto it = std::find_if(graph.begin(), graph.end(), [search_name](const auto& node) { return node.data().name() == search_name; });
 	if (it == graph.end()) throw std::logic_error("No node found by that name");
 	it->data().detach_event(event_name);
 }
@@ -409,9 +401,7 @@ void Window::detach_event_from_node(const std::string& search_name, std::string&
 		return;
 	}
 
-	auto it = std::find_if(graph.begin(), graph.end(), [search_name](const auto& node) {
-		return node.data().name() == search_name;
-	});
+	auto it = std::find_if(graph.begin(), graph.end(), [search_name](const auto& node) { return node.data().name() == search_name; });
 	if (it == graph.end()) throw std::logic_error("No node found by that name");
 	it->data().detach_event(std::move(event_name));
 }
@@ -424,9 +414,7 @@ void Window::detach_event_from_node(const std::string& search_name, std::string&
 /// \param event_data The event data (eg. received from sf::Event::Resized)
 void Window::dispatch_event(const marker_t marker, const std::string& name, const event_data_t& event_data) {
 	std::unique_lock<std::mutex> lock(event_mutex);
-	event_queue_.emplace_back(event_data.has_caller() ? this->active_scene().get_event(marker, name)
-													  : this->active_scene().get_global_event(marker, name),
-							  event_data);
+	event_queue_.emplace_back(event_data.has_caller() ? this->active_scene().get_event(marker, name) : this->active_scene().get_global_event(marker, name), event_data);
 	event_cv_.notify_one();
 }
 
@@ -618,9 +606,7 @@ void Window::process_event(const sf::Event& event) {
 			auto& node = graph[i];
 
 			if (node.data().attached_events().contains(event_name)) {
-				this->dispatch_event(type,
-									 event_name,
-									 event_data_t(event_data.get(), &(node.data()), i + 1, event_name));
+				this->dispatch_event(type, event_name, event_data_t(event_data.get(), &(node.data()), i + 1, event_name));
 			}
 
 			if (i == 0) break;

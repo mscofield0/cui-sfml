@@ -5,7 +5,7 @@
 
 namespace cui::templates {
 
-sf::Vector2f GetMousePosition(const Window& window, const event_data_t& event_data) {
+sf::Vector2f GetMousePosition(const event_data_t& event_data) {
 	int x, y;
 	std::visit(
 	  [&x, &y](auto& arg) {

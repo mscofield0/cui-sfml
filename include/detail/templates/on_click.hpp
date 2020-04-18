@@ -11,7 +11,7 @@ using on_click_invoke_fn_t = std::function<void(Window&, event_data_t&)>;
 using on_click_with_point_invoke_fn_t = std::function<void(Window&, event_data_t&, const sf::Vector2f&)>;
 
 void OnClick(Window& window, event_data_t& event_data, on_click_invoke_fn_t&& fn_on_click) {
-	if (!NodeContainsPoint(window, event_data.caller_index(), GetMousePosition(window, event_data))) {
+	if (!NodeContainsPoint(window, event_data.caller_index(), GetMousePosition(event_data))) {
 		return;
 	}
 
@@ -19,7 +19,7 @@ void OnClick(Window& window, event_data_t& event_data, on_click_invoke_fn_t&& fn
 }
 
 void OnClick(Window& window, event_data_t& event_data, on_click_with_point_invoke_fn_t&& fn_on_click) {
-	const auto point = GetMousePosition(window, event_data);
+	const auto point = GetMousePosition(event_data);
 	if (!NodeContainsPoint(window, event_data.caller_index(), point)) {
 		return;
 	}

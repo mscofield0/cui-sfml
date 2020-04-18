@@ -7,28 +7,66 @@ button {
 	background: url(bin/button.png);
 }
 
-
 font {
 	font: url(bin/sansation.ttf);
 }
 
+btn_size {
+	width: 100;
+	height: 60;
+}
+
 btn1 {
-	x: center;
+	x: left;
 	y: 70%;
-	text_position: center;
-	width: 200;
-	height: 80;
 }
 
 btn1 [on_hover] {
 	background: url(bin/button_hovered.png);
 	text_color: white;
 	
+	x: left;
+	y: 70%;
+}
+
+btn2 {
 	x: center;
 	y: 70%;
-	text_position: center;
-	width: 200;
-	height: 80;
+}
+
+btn2 [on_hover] {
+	background: url(bin/button_hovered.png);
+	text_color: white;
+	
+	x: center;
+	y: 70%;
+}
+
+btn3 {
+	x: right;
+	y: 70%;
+}
+
+btn3 [on_hover] {
+	background: url(bin/button_hovered.png);
+	text_color: white;
+	
+	x: right;
+	y: 70%;
+}
+
+text_box_holder {
+	x: 30%;
+	y: 50;
+	width: 40%;
+	height: 100;
+}
+
+text_box {
+	x: 10%;
+	y: 20;
+	width: 80%;
+	height: 60;
 }
 
 )"

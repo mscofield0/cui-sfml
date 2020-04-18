@@ -3,6 +3,7 @@
 
 #include <SFML/Window/Cursor.hpp>
 
+/// \brief Collection of system cursors provided by SFML
 namespace cui::cursors {
 
 static sf::Cursor Arrow;

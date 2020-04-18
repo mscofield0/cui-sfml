@@ -25,20 +25,18 @@ public:
 	TrackedVector() : base_t{}, tracker_{0} {}
 	TrackedVector(size_type count, const_reference value = value_type()) : base_t(count, value), tracker_{0} {}
 	template <typename InputIt>
-	explicit TrackedVector(size_type p_tracker, InputIt first, InputIt last)
-		: base_t(first, last), tracker_{p_tracker} {}
+	explicit TrackedVector(size_type p_tracker, InputIt first, InputIt last) : base_t(first, last), tracker_{p_tracker} {}
 	TrackedVector(size_type p_tracker, std::initializer_list<T> init) : base_t(init), tracker_{p_tracker} {}
-	TrackedVector(size_type p_tracker, size_type count, const_reference value = value_type())
-		: base_t(count, value), tracker_{p_tracker} {}
+	TrackedVector(size_type p_tracker, size_type count, const_reference value = value_type()) : base_t(count, value), tracker_{p_tracker} {}
 	template <typename... Args>
 	TrackedVector(Args&&... args) : base_t{std::forward<Args>(args)...}, tracker_{0} {}
 
 	reference current_item() noexcept {
-		return (*(static_cast<base_t*>(this)))[tracker_];
+		return base_t::operator[](tracker_);
 	}
 
 	const_reference current_item() const noexcept {
-		return (*(static_cast<base_t*>(this)))[tracker_];
+		return base_t::operator[](tracker_);
 	}
 
 	void change_tracked_item(size_type idx) {

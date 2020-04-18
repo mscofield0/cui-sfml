@@ -46,12 +46,12 @@ public:
 	}
 
 	[[nodiscard]] constexpr auto at(size_type pos) -> reference {
-		if (pos >= size()) throw ct::CTException{ct::fmt(".at({}) | Index exceeds current size! | Size: {}", pos, size())};
+		if (pos >= size()) throw ct::fmt_throw(".at({}) | Index exceeds current size! | Size: {}", pos, size());
 		return data_[pos];
 	}
 
 	[[nodiscard]] constexpr auto at(size_type pos) const -> const_reference {
-		if (pos >= size()) throw ct::CTException{ct::fmt(".at({}) | Index exceeds current size! | Size: {}", pos, size())};
+		if (pos >= size()) throw ct::fmt_throw(".at({}) | Index exceeds current size! | Size: {}", pos, size());
 		return data_[pos];
 	}
 
@@ -64,22 +64,22 @@ public:
 	}
 
 	[[nodiscard]] constexpr auto front() -> reference {
-		if (empty()) throw ct::CTException{ct::fmt(".front() | Instance of StaticVector is empty!")};
+		if (empty()) throw ct::fmt_throw(".front() | Instance of StaticVector is empty!");
 		return data_.front();
 	}
 
 	[[nodiscard]] constexpr auto front() const -> const_reference {
-		if (empty()) throw ct::CTException{ct::fmt(".front() | Instance of StaticVector is empty!")};
+		if (empty()) throw ct::fmt_throw(".front() | Instance of StaticVector is empty!");
 		return data_.front();
 	}
 
 	[[nodiscard]] constexpr auto back() -> reference {
-		if (empty()) throw ct::CTException{ct::fmt(".back() | Instance of StaticVector is empty!")};
+		if (empty()) throw ct::fmt_throw(".back() | Instance of StaticVector is empty!");
 		return data_[size_ - 1];
 	}
 
 	[[nodiscard]] constexpr auto back() const -> const_reference {
-		if (empty()) throw ct::CTException{ct::fmt(".back() | Instance of StaticVector is empty!")};
+		if (empty()) throw ct::fmt_throw(".back() | Instance of StaticVector is empty!");
 		return data_[size_ - 1];
 	}
 
@@ -140,7 +140,7 @@ public:
 	}
 
 	constexpr void assign(size_type count, const_reference val) {
-		if (count >= max_size()) throw ct::CTException{ct::fmt(".assign({}, value) | Amount of values trying to be assigned exceed max size!", count)};
+		if (count >= max_size()) throw ct::fmt_throw(".assign({}, value) | Amount of values trying to be assigned exceed max size!", count);
 		size_ = count;
 		for (size_type i = 0; i < size_; ++i) {
 			data_[i] = val;
@@ -150,8 +150,7 @@ public:
 	template <typename InputIt>
 	constexpr void assign(InputIt first, InputIt last) {
 		const auto dist = std::distance<InputIt>(first, last);
-		if (dist >= max_size() - size())
-			throw ct::CTException{ct::fmt(".assign(first, last) | Amount of values trying to be assigned exceed max size! Size: {}", dist)};
+		if (dist >= max_size() - size()) throw ct::fmt_throw(".assign(first, last) | Amount of values trying to be assigned exceed max size! Size: {}", dist);
 		size_ = dist;
 		auto it = data_.begin();
 		while (first < last) {
@@ -161,7 +160,7 @@ public:
 
 	constexpr void assign(std::initializer_list<value_type> ilist) {
 		if (ilist.size() > max_size())
-			throw ct::CTException{ct::fmt(".assign(init_list) | Amount of values trying to be assigned exceeds max size! Size: {}", ilist.size())};
+			throw ct::fmt_throw(".assign(init_list) | Amount of values trying to be assigned exceeds max size! Size: {}", ilist.size());
 		auto it = data_.begin();
 		auto in_it = ilist.begin();
 		while (in_it < ilist.end()) {
@@ -176,7 +175,7 @@ public:
 	constexpr auto insert(iterator pos, const_reference val) -> iterator {
 		const auto dist = std::distance<const_iterator>(begin(), pos);
 		if (dist >= max_size() - size() || size() >= max_size())
-			throw ct::CTException{ct::fmt(".insert(pos, value) | Iterator is out of bounds! | Distance from begin(): {}", dist)};
+			throw ct::fmt_throw(".insert(pos, value) | Iterator is out of bounds! | Distance from begin(): {}", dist);
 		for (auto it = pos; it < cend(); ++it) {
 			*(it + 1) = *it;
 		}
@@ -187,7 +186,7 @@ public:
 	constexpr auto insert(iterator pos, value_type&& val) -> const_iterator {
 		const auto dist = std::distance<const_iterator>(begin(), pos);
 		if (dist >= max_size() - size() || size() >= max_size())
-			throw ct::CTException{ct::fmt(".insert(pos, value) | Iterator is out of bounds! | Distance from begin(): {}", dist)};
+			throw ct::fmt_throw(".insert(pos, value) | Iterator is out of bounds! | Distance from begin(): {}", dist);
 		for (auto it = pos; it < cend(); ++it) {
 			*(it + 1) = *it;
 		}
@@ -198,11 +197,11 @@ public:
 	constexpr auto insert(iterator pos, size_type count, const_reference val) -> iterator {
 		const auto dist = std::distance<const_iterator>(begin(), pos);
 		if (dist + count >= max_size() - size()) {
-			throw ct::CTException{ct::fmt(".insert(pos, {}, value) | Inserted elements would exceed bounds! | Distance from begin(): {}", count, dist)};
+			throw ct::fmt_throw(".insert(pos, {}, value) | Inserted elements would exceed bounds! | Distance from begin(): {}", count, dist);
 		}
 
 		if (size() - count >= max_size()) {
-			throw ct::CTException{ct::fmt(".insert(pos, {}, value) | Inserted elements would exceed max size! | Size: {}", count, size())};
+			throw ct::fmt_throw(".insert(pos, {}, value) | Inserted elements would exceed max size! | Size: {}", count, size());
 		}
 
 		for (auto it = pos; it < cend(); ++it) {
@@ -219,11 +218,11 @@ public:
 		const auto dist = std::distance<const_iterator>(begin(), pos);
 		const auto count = std::distance(first, last);
 		if (dist + count >= max_size() - size()) {
-			throw ct::CTException{ct::fmt(".insert(pos, first, last) | Inserted elements would exceed bounds! | Distance from begin(): {}", count, dist)};
+			throw ct::fmt_throw(".insert(pos, first, last) | Inserted elements would exceed bounds! | Distance from begin(): {}", count, dist);
 		}
 
 		if (size() - count >= max_size()) {
-			throw ct::CTException{ct::fmt(".insert(pos, first, last) | Inserted elements would exceed max size! | Size: {}", count, size())};
+			throw ct::fmt_throw(".insert(pos, first, last) | Inserted elements would exceed max size! | Size: {}", count, size());
 		}
 		for (auto it = pos; it < cend(); ++it) {
 			*(it + count + 1) = *it;
@@ -239,11 +238,11 @@ public:
 		const auto dist = std::distance<const_iterator>(begin(), pos);
 		const auto count = ilist.size();
 		if (dist + count >= max_size() - size()) {
-			throw ct::CTException{ct::fmt(".insert(pos, init_list) | Inserted elements would exceed bounds! | Distance from begin(): {}", count, dist)};
+			throw ct::fmt_throw(".insert(pos, init_list) | Inserted elements would exceed bounds! | Distance from begin(): {}", count, dist);
 		}
 
 		if (size() - count >= max_size()) {
-			throw ct::CTException{ct::fmt(".insert(pos, init_list) | Inserted elements would exceed max size! | Size: {}", count, size())};
+			throw ct::fmt_throw(".insert(pos, init_list) | Inserted elements would exceed max size! | Size: {}", count, size());
 		}
 		for (auto it = pos; it < cend(); ++it) {
 			*(it + count + 1) = *it;
@@ -270,7 +269,7 @@ public:
 	constexpr auto erase(iterator first, iterator last) -> iterator {
 		const auto count = std::distance<const_iterator>(first, last);
 		if (first >= last || first < begin() || last >= end()) {
-			throw ct::CTException{ct::fmt(".erase(first, last) | Invalid iterators!")};
+			throw ct::fmt_throw(".erase(first, last) | Invalid iterators!");
 		}
 		auto right_half_it = last;
 		if (std::distance<const_iterator>(begin(), last) < size()) {
@@ -287,14 +286,14 @@ public:
 
 	constexpr void push_back(const_reference val) {
 		if (full()) {
-			throw ct::CTException{ct::fmt(".push_back(val) | StaticVector is full!")};
+			throw ct::fmt_throw(".push_back(val) | StaticVector is full!");
 		}
 		data_[size_++] = val;
 	}
 
 	constexpr void push_back(value_type&& val) {
 		if (full()) {
-			throw ct::CTException{ct::fmt(".push_back(val) | StaticVector is full!")};
+			throw ct::fmt_throw(".push_back(val) | StaticVector is full!");
 		}
 		data_[size_++] = std::move(val);
 	}
@@ -302,7 +301,7 @@ public:
 	template <typename... Args>
 	constexpr auto emplace_back(Args... args) -> reference {
 		if (full()) {
-			throw ct::CTException{ct::fmt(".emplace_back(args...) | StaticVector is full!")};
+			throw ct::fmt_throw(".emplace_back(args...) | StaticVector is full!");
 		}
 		data_[size_++] = value_type{std::forward<Args>(args)...};
 		return back();
@@ -310,21 +309,21 @@ public:
 
 	constexpr void pop_back() {
 		if (empty()) {
-			throw ct::CTException{ct::fmt(".pop_back() | StaticVector is empty!")};
+			throw ct::fmt_throw(".pop_back() | StaticVector is empty!");
 		}
 		--size_;
 	}
 
 	constexpr void resize(size_type count) {
 		if (count >= max_size()) {
-			throw ct::CTException{ct::fmt(".resize({}) | Resize amount exceeds max size!", count)};
+			throw ct::fmt_throw(".resize({}) | Resize amount exceeds max size!", count);
 		}
 		size_ = count;
 	}
 
 	constexpr void resize(size_type count, const_reference val) {
 		if (count > max_size()) {
-			throw ct::CTException{ct::fmt(".resize({}, value) | Resize amount exceeds max size!", count)};
+			throw ct::fmt_throw(".resize({}, value) | Resize amount exceeds max size!", count);
 		}
 		if (size() < count) {
 			for (size_type i = 0; i < count - size(); ++i) {

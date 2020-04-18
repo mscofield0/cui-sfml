@@ -7,6 +7,7 @@
 
 namespace cui {
 
+/// \brief A \sa std::list wrapper that tracks the active element
 template <typename T>
 class TrackedList : public std::list<T>
 {
@@ -27,8 +28,7 @@ public:
 	template <typename InputIt>
 	explicit TrackedList(size_type p_tracker, InputIt first, InputIt last) : base_t(first, last), tracker_(p_tracker) {}
 	TrackedList(size_type p_tracker, std::initializer_list<T> init) : base_t(init), tracker_(p_tracker) {}
-	TrackedList(size_type p_tracker, size_type count, const_reference value = value_type())
-		: base_t(count, value), tracker_(p_tracker) {}
+	TrackedList(size_type p_tracker, size_type count, const_reference value = value_type()) : base_t(count, value), tracker_(p_tracker) {}
 	template <typename... Args>
 	TrackedList(Args&&... args) : base_t{std::forward<Args>(args)...}, tracker_(0) {}
 
@@ -47,7 +47,7 @@ public:
 	}
 
 	void change_tracked_item(size_type idx) {
-		if (idx >= this->size()) throw std::length_error("Index larger than size()");
+		if (idx >= this->size()) throw cui::ct::CTException("Index exceeds current size! | Index: {}, Size: {}", idx, this->size());
 		tracker_ = idx;
 	}
 

@@ -70,16 +70,16 @@ void RenderCache::cache_resource(Node& node) {
 			if (!textures.contains(path_head)) {
 				println("Added texture named:", path_head);
 				textures[path_head].loadFromFile(background.string());
-				background = path_head;
 			}
+			background = path_head;
 		}
 		if (font.is_string()) {
 			const auto path_head = get_path_head(font.string());
 			if (!fonts.contains(path_head)) {
 				println("Added font named:", path_head);
 				fonts[path_head].loadFromFile(font.string());
-				font = path_head;
 			}
+			font = path_head;
 		}
 	}
 
@@ -91,16 +91,16 @@ void RenderCache::cache_resource(Node& node) {
 			if (!textures.contains(path_head)) {
 				println("Added texture named:", path_head);
 				textures[path_head].loadFromFile(background.string());
-				background = path_head;
 			}
+			background = path_head;
 		}
 		if (font.is_string()) {
 			const auto path_head = get_path_head(font.string());
 			if (!fonts.contains(path_head)) {
 				println("Added font named:", path_head);
 				fonts[path_head].loadFromFile(font.string());
-				font = path_head;
 			}
+			font = path_head;
 		}
 	}
 }
@@ -343,7 +343,7 @@ void RenderCache::handle_text_position(const Schematic& scheme, VisualElement& v
 	const auto [w, h] = ve.getSize();
 
 	const auto [_0, _1, tw, th] = ve.text().getGlobalBounds();
-	float nx, ny;
+	float nx = 0, ny = 0;
 
 	switch (val.instruction()) {
 		case Instruction::TopLeft: {
