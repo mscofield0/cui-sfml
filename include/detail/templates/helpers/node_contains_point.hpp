@@ -6,7 +6,6 @@
 namespace cui::templates {
 
 bool NodeContainsPoint(Window& window, std::size_t caller_index, const sf::Vector2f& point) {
-	std::shared_lock lock(window.window_mutex);
 	return window.cache()[caller_index].getGlobalBounds().contains(point);
 }
 

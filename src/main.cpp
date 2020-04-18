@@ -82,7 +82,6 @@ int main() {
 		window = std::make_unique<win_t>(std::move(sty), std::move(scenes_variant.type_a()));
 	}
 
-
 	// stdlib utilities for RNG
 	std::unique_ptr<std::random_device> device = std::make_unique<std::random_device>();
 	std::unique_ptr<std::mt19937> gen = std::make_unique<std::mt19937>((*device)());
@@ -104,63 +103,49 @@ int main() {
 	window->register_event(EventType::MouseButtonPressed, "on_click_btn1", [&window, &gen, &dist](event_data_t event_data) {
 		// Uses CUI's GUI helper template `OnClick` to provide functionality on click
 		templates::OnClick((*window), event_data, [&gen, &dist](Window& window, event_data_t& event_data) {
-			std::size_t index = 0;
-			{
-				std::unique_lock lock(window.scene_mutex);
-				auto& graph = window.active_scene().graph();
-				auto text_box = std::find_if(graph.begin(), graph.end(), [](const auto& node) { return node.data().name() == "text_box"; });
-				index = static_cast<std::size_t>(std::distance(graph.begin(), text_box));
-				auto& scheme = text_box->data().active_schematic().get();
-				scheme.text_color() = cui::Color(255, 0, 0);
-			}
-			std::unique_lock lock(window.window_mutex);
+			auto& graph = window.active_scene().graph();
+			auto text_box = std::find_if(graph.begin(), graph.end(), [](const auto& node) { return node.data().name() == "text_box"; });
+			const auto index = static_cast<std::size_t>(std::distance(graph.begin(), text_box));
+			auto& scheme = text_box->data().active_schematic().get();
+			scheme.text_color() = cui::Color(255, 0, 0);
 			window.cache()[index].text().setString("Red text");
-		});
 
-		// Schedule the render cache to be updated
-		window->schedule_to_update_cache();
+			// Schedule the render cache to be updated
+			window.schedule_to_update_cache();
+		});
 	});
 
 	// Register the on_click_btn event [OPTIONAL, defines functionality on button click]
 	window->register_event(EventType::MouseButtonPressed, "on_click_btn2", [&window, &gen, &dist](event_data_t event_data) {
 		// Uses CUI's GUI helper template `OnClick` to provide functionality on click
 		templates::OnClick((*window), event_data, [&gen, &dist](Window& window, event_data_t& event_data) {
-			std::size_t index = 0;
-			{
-				std::unique_lock lock(window.scene_mutex);
-				auto& graph = window.active_scene().graph();
-				auto text_box = std::find_if(graph.begin(), graph.end(), [](const auto& node) { return node.data().name() == "text_box"; });
-				index = static_cast<std::size_t>(std::distance(graph.begin(), text_box));
-				auto& scheme = text_box->data().active_schematic().get();
-				scheme.text_color() = cui::Color(0, 255, 0);
-			}
-			std::unique_lock lock(window.window_mutex);
+			auto& graph = window.active_scene().graph();
+			auto text_box = std::find_if(graph.begin(), graph.end(), [](const auto& node) { return node.data().name() == "text_box"; });
+			const auto index = static_cast<std::size_t>(std::distance(graph.begin(), text_box));
+			auto& scheme = text_box->data().active_schematic().get();
+			scheme.text_color() = cui::Color(0, 255, 0);
 			window.cache()[index].text().setString("Green text");
-		});
 
-		// Schedule the render cache to be updated
-		window->schedule_to_update_cache();
+			// Schedule the render cache to be updated
+			window.schedule_to_update_cache();
+		});
 	});
 
 	// Register the on_click_btn event [OPTIONAL, defines functionality on button click]
 	window->register_event(EventType::MouseButtonPressed, "on_click_btn3", [&window, &gen, &dist](event_data_t event_data) {
 		// Uses CUI's GUI helper template `OnClick` to provide functionality on click
 		templates::OnClick((*window), event_data, [&gen, &dist](Window& window, event_data_t& event_data) {
-			std::size_t index = 0;
-			{
-				std::unique_lock lock(window.scene_mutex);
-				auto& graph = window.active_scene().graph();
-				auto text_box = std::find_if(graph.begin(), graph.end(), [](const auto& node) { return node.data().name() == "text_box"; });
-				index = static_cast<std::size_t>(std::distance(graph.begin(), text_box));
-				auto& scheme = text_box->data().active_schematic().get();
-				scheme.text_color() = cui::Color(0, 0, 255);
-			}
-			std::unique_lock lock(window.window_mutex);
-			window.cache()[index].text().setString("Blue text");
-		});
+			auto& graph = window.active_scene().graph();
+			auto text_box = std::find_if(graph.begin(), graph.end(), [](const auto& node) { return node.data().name() == "text_box"; });
+			const auto index = static_cast<std::size_t>(std::distance(graph.begin(), text_box));
+			auto& scheme = text_box->data().active_schematic().get();
+			scheme.text_color() = cui::Color(0, 0, 255);
 
-		// Schedule the render cache to be updated
-		window->schedule_to_update_cache();
+			window.cache()[index].text().setString("Blue text");
+
+			// Schedule the render cache to be updated
+			window.schedule_to_update_cache();
+		});
 	});
 
 	// Register the on_hover event [OPTIONAL, defines functionality on hover]
@@ -171,12 +156,10 @@ int main() {
 						   event_data.caller()->name(),
 						   [](Window& window, event_data_t& event_data) {
 							   templates::SwitchToDefaultSchematic(window, event_data);
-							   std::unique_lock lock(window.window_mutex);
 							   window.window()->setMouseCursor(cursors::Arrow);
 						   },
 						   [](Window& window, event_data_t& event_data) {
 							   templates::SwitchToEventSchematic(window, event_data);
-							   std::unique_lock lock(window.window_mutex);
 							   window.window()->setMouseCursor(cursors::Hand);
 						   });
 	});
@@ -196,10 +179,6 @@ int main() {
 		}
 	}
 	println();
-	for (const auto& ve : window->cache()) {
-		println(ve);
-		println("////////////////////////////////////////////////");
-	}
 
 	for (const auto& kvp : window->active_scene().marked_sections()) {
 		println("EventType:", static_cast<u64>(kvp.first));
@@ -215,12 +194,4 @@ int main() {
 
 	// Initialize the window
 	window->init({800, 600, "Title", sf::Style::Default, sf::ContextSettings{}, 60});
-
-	println(window->active_scene().graph());
-
-	// Start the main window loop
-	while (window->is_running()) {
-		window->handle_events();
-		window->render();
-	}
 }
