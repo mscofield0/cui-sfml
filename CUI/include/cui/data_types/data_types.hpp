@@ -3,8 +3,9 @@
 
 #include <aliases.hpp>
 
-namespace cui::data_types {
+namespace cui {
 
+/// \brief An enum containing all CUI data types
 enum class DataTypes : u8
 {
 	None = 0,
@@ -18,6 +19,6 @@ enum class DataTypes : u8
 	String
 };
 
-}	 // namespace cui::data_types
+}	 // namespace cui
 
 #endif	  // CUI_DATA_TYPES_HPP

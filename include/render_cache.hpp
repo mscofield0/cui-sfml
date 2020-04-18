@@ -8,7 +8,6 @@
 #include <string>
 
 #include <aliases.hpp>
-#include <cui/containers/vector.hpp>
 #include <cui/utils/get_path_head.hpp>
 #include <cui/visual/node.hpp>
 #include <cui/visual/scene_graph.hpp>
@@ -17,14 +16,11 @@
 #include <tsl/hopscotch_map.h>
 #include <visual_element.hpp>
 
-
-#include <SFML/Window/Cursor.hpp>
-
 namespace cui {
 
 /// \brief Class for transforming CUI attributes and rules into a \sa cui::VisualElement
 /// \details Holds all VEs in a \sa cui::Vector which gets sorted according to the \sa cui::SceneGraph node depths
-class RenderCache : public Vector<VisualElement>
+class RenderCache : public std::vector<VisualElement>
 {
 public:
 	[[nodiscard]] auto len() const noexcept -> u64 {
@@ -59,7 +55,6 @@ public:
 public:
 	tsl::hopscotch_map<std::string, sf::Texture> textures;
 	tsl::hopscotch_map<std::string, sf::Font> fonts;
-	tsl::hopscotch_map<sf::Cursor::Type, sf::Cursor> cursors;
 };
 
 /// \brief Caches \sa cui::Node resources such as images and fonts
@@ -108,19 +103,6 @@ void RenderCache::cache_resource(Node& node) {
 			}
 		}
 	}
-
-	cursors[sf::Cursor::Type::Arrow].loadFromSystem(sf::Cursor::Arrow);
-	cursors[sf::Cursor::Type::ArrowWait].loadFromSystem(sf::Cursor::ArrowWait);
-	cursors[sf::Cursor::Type::Wait].loadFromSystem(sf::Cursor::Wait);
-	cursors[sf::Cursor::Type::Text].loadFromSystem(sf::Cursor::Text);
-	cursors[sf::Cursor::Type::Hand].loadFromSystem(sf::Cursor::Hand);
-	cursors[sf::Cursor::Type::SizeHorizontal].loadFromSystem(sf::Cursor::SizeHorizontal);
-	cursors[sf::Cursor::Type::SizeVertical].loadFromSystem(sf::Cursor::SizeVertical);
-	cursors[sf::Cursor::Type::SizeTopLeftBottomRight].loadFromSystem(sf::Cursor::SizeTopLeftBottomRight);
-	cursors[sf::Cursor::Type::SizeBottomLeftTopRight].loadFromSystem(sf::Cursor::SizeBottomLeftTopRight);
-	cursors[sf::Cursor::Type::SizeAll].loadFromSystem(sf::Cursor::SizeAll);
-	cursors[sf::Cursor::Type::Cross].loadFromSystem(sf::Cursor::Cross);
-	cursors[sf::Cursor::Type::Help].loadFromSystem(sf::Cursor::Help);
 }
 
 /// \brief Updates the cache
@@ -265,23 +247,21 @@ void RenderCache::handle_rule_x(const VisualElement& parent_ve, const Schematic&
 
 		ve.setPosition(abs_pos, y, this->front());
 	} else if (val.is_instruction()) {
-		using namespace data_types;
-
 		const auto [x, y] = ve.getPosition();
 		const auto [w, h] = ve.getSize();
 		const auto [px, py] = parent_ve.getPosition();
 		const auto [pw, ph] = parent_ve.getSize();
 
-		switch (val.instruction().active()) {
-			case Functions::Left: {
+		switch (val.instruction()) {
+			case Instruction::Left: {
 				ve.setPosition(px, y, this->front());
 				break;
 			}
-			case Functions::Right: {
+			case Instruction::Right: {
 				ve.setPosition(px + pw - w, y, this->front());
 				break;
 			}
-			case Functions::Center: {
+			case Instruction::Center: {
 				ve.setPosition((px + pw) / 2 - w / 2, y, this->front());
 				break;
 			}
@@ -305,23 +285,21 @@ void RenderCache::handle_rule_y(const VisualElement& parent_ve, const Schematic&
 
 		ve.setPosition(x, abs_pos, this->front());
 	} else if (val.is_instruction()) {
-		using namespace data_types;
-
 		const auto [x, y] = ve.getPosition();
 		const auto [w, h] = ve.getSize();
 		const auto [px, py] = parent_ve.getPosition();
 		const auto [pw, ph] = parent_ve.getSize();
 
-		switch (val.instruction().active()) {
-			case Functions::Top: {
+		switch (val.instruction()) {
+			case Instruction::Top: {
 				ve.setPosition(x, py, this->front());
 				break;
 			}
-			case Functions::Bottom: {
+			case Instruction::Bottom: {
 				ve.setPosition(x, py + ph - h, this->front());
 				break;
 			}
-			case Functions::Center: {
+			case Instruction::Center: {
 				ve.setPosition(x, (py + ph) / 2 - h / 2, this->front());
 				break;
 			}
@@ -367,57 +345,56 @@ void RenderCache::handle_text_position(const Schematic& scheme, VisualElement& v
 	const auto [_0, _1, tw, th] = ve.text().getGlobalBounds();
 	float nx, ny;
 
-	using namespace data_types;
-	switch (val.instruction().active()) {
-		case Functions::TopLeft: {
+	switch (val.instruction()) {
+		case Instruction::TopLeft: {
 			nx = x;
 			ny = y;
 
 			break;
 		}
-		case Functions::Top: {
+		case Instruction::Top: {
 			nx = x + w / 2 - tw / 2;
 			ny = y;
 
 			break;
 		}
-		case Functions::TopRight: {
+		case Instruction::TopRight: {
 			nx = x + w - tw;
 			ny = y;
 
 			break;
 		}
-		case Functions::Left: {
+		case Instruction::Left: {
 			nx = x;
 			ny = y + h / 2 - th / 2;
 
 			break;
 		}
-		case Functions::Center: {
+		case Instruction::Center: {
 			nx = x + w / 2 - tw / 2;
 			ny = y + h / 2 - th / 2;
 
 			break;
 		}
-		case Functions::Right: {
+		case Instruction::Right: {
 			nx = x + w - tw;
 			ny = y + h / 2 - th / 2;
 
 			break;
 		}
-		case Functions::BottomLeft: {
+		case Instruction::BottomLeft: {
 			nx = x;
 			ny = y + h - th;
 
 			break;
 		}
-		case Functions::Bottom: {
+		case Instruction::Bottom: {
 			nx = x + w / 2 - tw / 2;
 			ny = y + h - th;
 
 			break;
 		}
-		case Functions::BottomRight: {
+		case Instruction::BottomRight: {
 			nx = x + w - tw;
 			ny = y + h - th;
 

@@ -4,10 +4,10 @@
 #include <compile_time/string/string_view.hpp>
 #include <compile_time/styles/attribute.hpp>
 #include <containers/static_vector.hpp>
-#include <aliases.hpp>
 
 namespace cui::ct::styles {
 
+/// \brief Class holding a style definition
 class Definition
 {
 public:
@@ -56,8 +56,8 @@ public:
 	[[nodiscard]] constexpr bool parse_events(const StringView events) {
 		if (events.empty()) return false;
 
-		u64 prev = 0;
-		u64 pos = events.find_first_of(',');
+		std::size_t prev = 0;
+		std::size_t pos = events.find_first_of(',');
 		while (pos != StringView::npos) {
 			if (prev == pos) return false;
 			const auto temp_str = events.substr(prev, pos - prev).trim();

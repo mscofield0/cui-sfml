@@ -1,13 +1,13 @@
 #ifndef CUI_SFML_ITERATOR_PAIR_HPP
 #define CUI_SFML_ITERATOR_PAIR_HPP
 
-#include <vector>
-#include <utility>
-#include <functional>
-#include <cui/containers/vector.hpp>
 #include <cui/containers/detail/nary_tree/node.hpp>
 #include <cui/visual/node.hpp>
+#include <functional>
+#include <utility>
+#include <vector>
 #include <visual_element.hpp>
+
 
 namespace cui {
 
@@ -70,8 +70,8 @@ public:
 	using T2 = VisualElement;
 	using iterator1_t = typename std::vector<T1>::iterator;
 	using const_iterator1_t = typename std::vector<T1>::const_iterator;
-	using iterator2_t = typename Vector<T2>::iterator;
-	using const_iterator2_t = typename Vector<T2>::const_iterator;
+	using iterator2_t = typename std::vector<T2>::iterator;
+	using const_iterator2_t = typename std::vector<T2>::const_iterator;
 
 	IteratorPair(iterator1_t it1, iterator2_t it2) : it1_(it1), it2_(it2), proxy_(*it1_, *it2_) {}
 

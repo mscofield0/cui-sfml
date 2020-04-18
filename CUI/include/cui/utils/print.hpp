@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+namespace cui {
+
 template <typename... Args>
 void print(Args&&... args) {
 	((std::cout << args << ' '), ...);
@@ -13,5 +15,7 @@ void println(Args&&... args) {
 	((std::cout << args << ' '), ...);
 	std::cout << '\n';
 }
+
+}	 // namespace cui
 
 #endif	  // CUI_PRINT_HPP

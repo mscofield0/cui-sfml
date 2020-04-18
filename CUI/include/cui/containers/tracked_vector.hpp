@@ -1,20 +1,17 @@
 #ifndef CUI_TRACKED_VECTOR_HPP
 #define CUI_TRACKED_VECTOR_HPP
 
-#include <initializer_list>
 #include <exception>
-
-#include <containers/vector.hpp>
-#include <utils/forward.hpp>
-#include <utils/move.hpp>
+#include <initializer_list>
+#include <vector>
 
 namespace cui {
 
 template <typename T>
-class TrackedVector : public Vector<T>
+class TrackedVector : public std::vector<T>
 {
 public:
-	using base_t = Vector<T>;
+	using base_t = std::vector<T>;
 	using value_type = typename base_t::value_type;
 	using size_type = typename base_t::size_type;
 	using difference_type = typename base_t::difference_type;
@@ -34,7 +31,7 @@ public:
 	TrackedVector(size_type p_tracker, size_type count, const_reference value = value_type())
 		: base_t(count, value), tracker_{p_tracker} {}
 	template <typename... Args>
-	TrackedVector(Args&&... args) : base_t{cui::forward<Args>(args)...}, tracker_{0} {}
+	TrackedVector(Args&&... args) : base_t{std::forward<Args>(args)...}, tracker_{0} {}
 
 	reference current_item() noexcept {
 		return (*(static_cast<base_t*>(this)))[tracker_];

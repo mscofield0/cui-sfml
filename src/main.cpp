@@ -19,6 +19,7 @@
 #include <utility>
 
 #include <cui/utils/print.hpp>
+#include <cursors.hpp>
 #include <detail/intermediaries/color.hpp>
 #include <detail/templates/on_click.hpp>
 #include <detail/templates/on_hover.hpp>
@@ -27,12 +28,13 @@
 #include <render_cache.hpp>
 #include <window_options.hpp>
 
+
 std::ostream& operator<<(std::ostream& os, const cui::ct::StringView str) {
 	for (const auto ch : str) os << ch;
 	return os;
 }
 
-template <cui::u32 Size>
+template <std::size_t Size>
 std::ostream& operator<<(std::ostream& os, const cui::ct::Format<Size>& format) {
 	os << format.data().data();
 	return os;
@@ -60,23 +62,23 @@ std::ostream& operator<<(std::ostream& os, const cui::ct::styles::Definition& va
 
 std::ostream& operator<<(std::ostream& os, const cui::ValueData& val) {
 	switch (val.active()) {
-		case cui::data_types::DataTypes::None: {
+		case cui::DataTypes::None: {
 			os << "Nothing";
 			break;
 		}
-		case cui::data_types::DataTypes::Color: {
+		case cui::DataTypes::Color: {
 			os << "rgba(" << val.rgba().red() << "," << val.rgba().green() << "," << val.rgba().blue() << ',' << val.rgba().alpha() << ')';
 			break;
 		}
-		case cui::data_types::DataTypes::Float: {
+		case cui::DataTypes::Float: {
 			os << val.float_value();
 			break;
 		}
-		case cui::data_types::DataTypes::Int: {
+		case cui::DataTypes::Int: {
 			os << val.integer_value();
 			break;
 		}
-		case cui::data_types::DataTypes::Vec2: {
+		case cui::DataTypes::Vec2: {
 			os << "vec(";
 			for (size_t i = 0; i < 1; ++i) {
 				os << val.vec2()[i] << ',';
@@ -84,7 +86,7 @@ std::ostream& operator<<(std::ostream& os, const cui::ValueData& val) {
 			os << val.vec2().back() << ')';
 			break;
 		}
-		case cui::data_types::DataTypes::Vec3: {
+		case cui::DataTypes::Vec3: {
 			os << "vec(";
 			for (size_t i = 0; i < 2; ++i) {
 				os << val.vec3()[i] << ',';
@@ -92,7 +94,7 @@ std::ostream& operator<<(std::ostream& os, const cui::ValueData& val) {
 			os << val.vec3().back() << ')';
 			break;
 		}
-		case cui::data_types::DataTypes::Vec4: {
+		case cui::DataTypes::Vec4: {
 			os << "vec(";
 			for (size_t i = 0; i < 3; ++i) {
 				os << val.vec4()[i] << ',';
@@ -100,11 +102,11 @@ std::ostream& operator<<(std::ostream& os, const cui::ValueData& val) {
 			os << val.vec4().back() << ')';
 			break;
 		}
-		case cui::data_types::DataTypes::Instruction: {
+		case cui::DataTypes::Instruction: {
 			os << "Instruction";
 			break;
 		}
-		case cui::data_types::DataTypes::String: {
+		case cui::DataTypes::String: {
 			os << val.string();
 			break;
 		}
@@ -135,13 +137,13 @@ std::ostream& operator<<(std::ostream& os, const cui::ct::Style& style) {
 	return os;
 }
 
-template <cui::u64 N>
+template <std::size_t N>
 std::ostream& operator<<(std::ostream& os, const cui::ct::Scene<N>& val) {
-	for (cui::u64 i = 0; i < val.blocks().size(); ++i) {
+	for (std::size_t i = 0; i < val.blocks().size(); ++i) {
 		const auto& block = val.blocks()[i];
 		os << "Block: {\n\tName: " << block.name() << "\n\tStyle list: {\n\t\t";
 		if (!block.style_list().empty()) {
-			for (cui::u64 j = 0; j < block.style_list().size() - 1; ++j) {
+			for (std::size_t j = 0; j < block.style_list().size() - 1; ++j) {
 				const auto& style = block.style_list()[j];
 				os << style << ",\n\t\t";
 			}
@@ -149,7 +151,7 @@ std::ostream& operator<<(std::ostream& os, const cui::ct::Scene<N>& val) {
 		}
 		os << "\n\t}\n\tChildren: {\n\t\t";
 		if (!val.children()[i].empty()) {
-			for (cui::u64 j = 0; j < val.children()[i].size() - 1; ++j) {
+			for (std::size_t j = 0; j < val.children()[i].size() - 1; ++j) {
 				const auto& child = val.blocks()[val.children()[i][j]];
 				os << child.name() << ",\n\t\t";
 			}
@@ -209,7 +211,7 @@ std::ostream& operator<<(std::ostream& os, const cui::SceneGraph& sg) {
 std::ostream& operator<<(std::ostream& os, const cui::VisualElement& ve) {
 	const auto [x, y] = ve.getPosition();
 	const auto [w, h] = ve.getSize();
-	const cui::data_types::Color bg = cui::intermediary::Color{ve.getFillColor()};
+	const cui::Color bg = cui::intermediary::Color{ve.getFillColor()};
 	const auto is_visible = ve.visible();
 
 	os << "VE:";
@@ -285,6 +287,8 @@ int main() {
 	}
 
 	using EventType = sf::Event::EventType;
+
+	cursors::init_cursors();
 
 	window->register_global_event(EventType::Closed, "on_close", [&window](auto event_data) { window->close(); });
 

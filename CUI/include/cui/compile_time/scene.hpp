@@ -3,21 +3,21 @@
 
 #include <tuple>
 
-#include <compile_time/string/string_view.hpp>
 #include <compile_time/scenes/block.hpp>
+#include <compile_time/string/string_view.hpp>
 #include <containers/static_vector.hpp>
 #include <utils/as_const.hpp>
-#include <aliases.hpp>
 
 namespace cui::ct {
 
-template <u64 BlockAmount>
+/// \brief Scene class that holds the GUI tree structure
+template <std::size_t BlockAmount>
 class Scene
 {
 public:
 	using size_type = std::size_t;
 	using block_t = scenes::Block;
-	using children_t = StaticVector<u64, BlockAmount>;
+	using children_t = StaticVector<size_type, BlockAmount>;
 	using depth_t = size_type;
 
 	using blocks_t = StaticVector<block_t, BlockAmount>;

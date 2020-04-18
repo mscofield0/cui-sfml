@@ -3,32 +3,27 @@
 
 #include <utility>
 
-#include <compile_time/string/string_view.hpp>
 #include <compile_time/stream/stream.hpp>
+#include <compile_time/string/string_view.hpp>
 
 namespace cui::ct {
 
-template <typename CharT>
-constexpr BasicStringView<CharT>
-stream_substr(const Stream<CharT>& stream, typename Stream<CharT>::iterator from, typename Stream<CharT>::iterator to) {
+constexpr StringView stream_substr(const CharStream& stream, typename CharStream::iterator from, typename CharStream::iterator to) {
 	return stream.data().substr(std::distance(stream.begin(), from), std::distance(from, to));
 }
 
-template <typename CharT>
-constexpr std::pair<BasicStringView<CharT>, char> consume(Stream<CharT>& stream, BasicStringView<CharT> delims) {
-	using traits_t = typename BasicStringView<CharT>::traits_type;
-
+constexpr std::pair<StringView, char> consume(CharStream& stream, StringView delims) {
 	auto start_it = stream.current();
-	CharT delim = CharT{};
+	char delim{0};
 	while (stream.good()) {
 		const auto it = stream.current();
 		for (const auto ch : delims) {
-			if (traits_t::eq(*it, ch)) {
+			if (*it == ch) {
 				delim = ch;
 				break;
 			}
 		}
-		if (delim != CharT{}) {
+		if (delim != 0) {
 			stream.next();
 			return {stream_substr(stream, start_it, it), delim};
 		}
@@ -37,8 +32,7 @@ constexpr std::pair<BasicStringView<CharT>, char> consume(Stream<CharT>& stream,
 	return {stream_substr(stream, start_it, stream.end()), 0};
 }
 
-template <typename CharT>
-constexpr BasicStringView<CharT> consume_line(Stream<CharT>& stream) {
+constexpr StringView consume_line(CharStream& stream) {
 	auto start_it = stream.current();
 	enum class Newlines
 	{

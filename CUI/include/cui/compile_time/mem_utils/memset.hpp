@@ -1,13 +1,13 @@
 #ifndef CUI_CT_MEMSET_HPP
 #define CUI_CT_MEMSET_HPP
 
-#include <aliases.hpp>
+#include <cstdint>
 
 namespace cui {
 
 template <typename T>
-constexpr void memset(T* dest, T val, u32 length) {
-	u32 i = 0;
+constexpr void memset(T* dest, T val, std::size_t length) {
+	std::size_t i = 0;
 	while (i++ < length) *dest++ = val;
 }
 

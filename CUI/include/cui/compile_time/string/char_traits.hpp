@@ -1,10 +1,11 @@
 #ifndef CUI_CHAR_TRAITS_HPP
 #define CUI_CHAR_TRAITS_HPP
 
-#include <compile_time/mem_utils/memmove.hpp>
+#include <cstdint>
+
 #include <compile_time/mem_utils/memcpy.hpp>
+#include <compile_time/mem_utils/memmove.hpp>
 #include <compile_time/mem_utils/memset.hpp>
-#include <aliases.hpp>
 
 namespace cui {
 
@@ -16,7 +17,7 @@ class BasicCharTraits
 public:
 	using char_type = CharT;
 	using int_type = int;
-	using size_type = u64;
+	using size_type = std::size_t;
 
 	static constexpr void assign(char_type& c1, const char_type& c2) {
 		c1 = c2;

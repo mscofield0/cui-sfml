@@ -1,20 +1,19 @@
 #ifndef CUI_CT_STYLES_PARSE_STYLES_HPP
 #define CUI_CT_STYLES_PARSE_STYLES_HPP
 
+#include <aliases.hpp>
+#include <compile_time/format/fmt.hpp>
+#include <compile_time/format/format.hpp>
 #include <compile_time/stream/stream.hpp>
 #include <compile_time/stream/stream_utils.hpp>
 #include <compile_time/string/string_view.hpp>
-#include <compile_time/variant/variant.hpp>
 #include <compile_time/styles/definition.hpp>
 #include <compile_time/styles/detail/styles/count_definitions.hpp>
+#include <compile_time/variant/variant.hpp>
 #include <containers/static_vector.hpp>
-#include <utils/move.hpp>
-#include <compile_time/format/format.hpp>
-#include <compile_time/format/fmt.hpp>
-#include <aliases.hpp>
 
-#define CUI_CT_RETURN_STYLES_PARSE_ERROR(msg) \
-	return fmt_s<256>("ERROR at LINE:{}, COL:{} :: {}", stream.line(), stream.col(), msg)
+
+#define CUI_CT_RETURN_STYLES_PARSE_ERROR(msg) return fmt_s<256>("ERROR at LINE:{}, COL:{} :: {}", stream.line(), stream.col(), msg)
 
 namespace cui::ct::styles {
 
@@ -28,8 +27,7 @@ constexpr auto parse_styles() -> Variant<StaticVector<Definition, count_definiti
 	constexpr const char expected_end_of_style[] = "Expected end of style";
 	constexpr const char invalid_event_list[] = "Invalid event list";
 	constexpr const char expected_identifier_or_event_list[] = "Expected a styles identifier or an event list";
-	constexpr const char expected_end_of_style_or_attribute[] =
-	  "Expected an open curly brace or the end of an attribute";
+	constexpr const char expected_end_of_style_or_attribute[] = "Expected an open curly brace or the end of an attribute";
 	constexpr const char expected_attribute_identifier_and_colon[] = "Expected an attribute identifier and a colon";
 	constexpr const char empty_attribute_value[] = "Attribute value is empty";
 	constexpr const char expected_event_list_definition_symbol[] = "Expected a '[' previously";

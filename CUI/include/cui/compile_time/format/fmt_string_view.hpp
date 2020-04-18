@@ -3,9 +3,8 @@
 
 #include <compile_time/format/format.hpp>
 #include <compile_time/string/string_view.hpp>
-#include <aliases.hpp>
 
-template <cui::u32 Size>
+template <std::size_t Size>
 constexpr cui::ct::Format<Size>& operator<<(cui::ct::Format<Size>& format, const cui::ct::StringView str) {
 	for (const auto ch : str) format.append(ch);
 	return format;

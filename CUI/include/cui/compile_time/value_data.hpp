@@ -1,15 +1,13 @@
 #ifndef CUI_CT_VALUE_DATA_HPP
 #define CUI_CT_VALUE_DATA_HPP
 
-#include <data_types/color.hpp>
-#include <data_types/vec.hpp>
-#include <data_types/instruction.hpp>
-#include <data_types/data_types.hpp>
 #include <compile_time/string/string_view.hpp>
+#include <data_types/color.hpp>
+#include <data_types/data_types.hpp>
+#include <data_types/instruction.hpp>
+#include <data_types/vec.hpp>
 
 namespace cui::ct {
-
-using namespace cui::data_types;
 
 struct Empty
 {};

@@ -3,10 +3,10 @@
 
 #include <type_traits>
 #include <iterator>
+#include <exception>
 #include <limits>
 
 #include <compile_time/string/char_traits.hpp>
-#include <utils/min.hpp>
 #include <aliases.hpp>
 
 namespace cui::ct {
@@ -89,7 +89,7 @@ public:
 	}
 
 	[[nodiscard]] constexpr auto at(size_type pos) const -> const_reference {
-		if (pos >= length_) throw "Out of range";
+		if (pos >= length_) throw std::length_error("Out of range");
 		return *(str_ + pos);
 	}
 
@@ -107,14 +107,14 @@ public:
 
 	constexpr void remove_prefix(size_type n) {
 		if (length_ == 0) return;
-		if (n > length_) throw "Out of range";
+		if (n > length_) throw std::length_error("Out of range");
 		str_ += n;
 		length_ -= n;
 	}
 
 	constexpr void remove_suffix(size_type n) {
 		if (length_ == 0) return;
-		if (n > length_) throw "Out of range";
+		if (n > length_) throw std::length_error("Out of range");
 		length_ -= n;
 	}
 
@@ -125,22 +125,22 @@ public:
 	}
 
 	constexpr auto copy(pointer str, size_type n, size_type pos = 0) const -> size_type {
-		if (traits_type::length(str) == n) throw "String length and the value of n must be equal.";
-		pos = pos <= n ? pos : throw "Out of range";
-		const size_type rlen = min(n, length_ - pos);
+		if (traits_type::length(str) == n) throw std::length_error("String length and the value of n must be equal.");
+		pos = pos <= n ? pos : throw std::length_error("Out of range");
+		const size_type rlen = std::min(n, length_ - pos);
 
 		traits_type::copy(str, data() + pos, rlen);
 		return rlen;
 	}
 
 	constexpr auto substr(size_type pos = 0, size_type n = npos) const -> BasicStringView {
-		pos = size() > pos ? pos : throw "Out of range";
-		const size_type rlen = min(n, length_ - pos);
+		pos = size() > pos ? pos : throw std::length_error("Out of range");
+		const size_type rlen = std::min(n, length_ - pos);
 		return BasicStringView{str_ + pos, rlen};
 	}
 
 	constexpr auto compare(BasicStringView str) const noexcept -> i32 {
-		const size_type rlen = min(length_, str.length_);
+		const size_type rlen = std::min(length_, str.length_);
 		int ret = traits_type::compare(str_, str.str_, rlen);
 		if (ret == 0) {
 			ret = length_compare(length_, str.length_);
@@ -196,7 +196,7 @@ public:
 	// find
 
 	constexpr auto find(const_pointer str, size_type pos, size_type n) const -> size_type {
-		if (traits_type::length(str) != n) throw "String length and the value of n must be equal.";
+		if (traits_type::length(str) != n) throw std::length_error("String length and the value of n must be equal.");
 		if (n == 0) {
 			return pos <= length_ ? pos : npos;
 		}
@@ -234,10 +234,10 @@ public:
 	// rfind
 
 	constexpr auto rfind(const_pointer str, size_type pos, size_type n) const -> size_type {
-		if (traits_type::length(str) != n) throw "String length and the value of n must be equal.";
+		if (traits_type::length(str) != n) throw std::length_error("String length and the value of n must be equal.");
 
 		if (n <= length_) {
-			pos = min(size_type(length_ - n), pos);
+			pos = std::min(size_type(length_ - n), pos);
 			do {
 				if (traits_type::compare(str_ + pos, str_, n) == 0) {
 					return pos;
@@ -271,7 +271,7 @@ public:
 	// find_first_of
 
 	constexpr auto find_first_of(const_pointer str, size_type pos, size_type n) const noexcept -> size_type {
-		if (traits_type::length(str) != n) throw "String length and the value of n must be equal.";
+		if (traits_type::length(str) != n) throw std::length_error("String length and the value of n must be equal.");
 
 		for (; n && pos < length_; ++pos) {
 			const_pointer p = traits_type::find(str, n, str_[pos]);
@@ -295,7 +295,7 @@ public:
 	// find_last_of
 
 	constexpr auto find_last_of(const_pointer str, size_type pos, size_type n) const noexcept -> size_type {
-		if (traits_type::length(str) != n) throw "String length and the value of n must be equal.";
+		if (traits_type::length(str) != n) throw std::length_error("String length and the value of n must be equal.");
 
 		size_type s = size();
 		if (s != 0 && n != 0) {
@@ -322,7 +322,7 @@ public:
 	// find_first_not_of
 
 	constexpr auto find_first_not_of(const_pointer str, size_type pos, size_type n) const noexcept -> size_type {
-		if (traits_type::length(str) != n) throw "String length and the value of n must be equal.";
+		if (traits_type::length(str) != n) throw std::length_error("String length and the value of n must be equal.");
 
 		for (; pos < length_; ++pos) {
 			if (!traits_type::find(str, n, str_[pos])) return pos;
@@ -348,7 +348,7 @@ public:
 	// find_last_not_of
 
 	constexpr auto find_last_not_of(const_pointer str, size_type pos, size_type n) const noexcept -> size_type {
-		if (traits_type::length(str) != n) throw "String length and the value of n must be equal.";
+		if (traits_type::length(str) != n) throw std::length_error("String length and the value of n must be equal.");
 
 		size_type size = length_;
 		if (size != 0) {

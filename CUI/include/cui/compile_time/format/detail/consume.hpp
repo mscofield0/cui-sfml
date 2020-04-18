@@ -1,13 +1,14 @@
 #ifndef CUI_CT_FMT_CONSUME_HPP
 #define CUI_CT_FMT_CONSUME_HPP
 
+#include <aliases.hpp>
 #include <compile_time/format/format.hpp>
 #include <compile_time/stream/stream.hpp>
-#include <aliases.hpp>
+
 
 namespace cui::ct::detail {
 
-template <u32 Size>
+template <std::size_t Size>
 constexpr void consume_until(Format<Size>& buffer, CharStream& stream) {
 	while (stream.good()) {
 		const auto consumed = *stream.current();
@@ -24,7 +25,7 @@ constexpr void consume_until(Format<Size>& buffer, CharStream& stream) {
 	}
 }
 
-template <u32 Size>
+template <std::size_t Size>
 constexpr void consume_all(Format<Size>& buffer, CharStream& stream) {
 	while (stream.good()) {
 		buffer.append(*stream.current());

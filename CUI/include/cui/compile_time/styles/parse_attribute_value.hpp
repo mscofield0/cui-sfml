@@ -1,28 +1,25 @@
 #ifndef CUI_CT_STYLES_PARSE_ATTRIBUTE_VALUE_HPP
 #define CUI_CT_STYLES_PARSE_ATTRIBUTE_VALUE_HPP
 
-#include <compile_time/string/string_view.hpp>
-#include <compile_time/variant/variant.hpp>
-#include <compile_time/stream/stream.hpp>
-#include <compile_time/value_data.hpp>
-#include <compile_time/styles/detail/values/char_checks.hpp>
-#include <compile_time/styles/detail/values/parse_int.hpp>
-#include <compile_time/styles/detail/values/parse_float.hpp>
-#include <compile_time/styles/detail/values/parse_percentage.hpp>
-#include <compile_time/styles/detail/values/lookup_string.hpp>
-#include <compile_time/styles/detail/values/lookup_function.hpp>
-#include <compile_time/styles/detail/values/index_of_function_name.hpp>
-#include <compile_time/styles/detail/values/function_argument_list.hpp>
-#include <compile_time/styles/detail/helper_macros.hpp>
-
-#include <compile_time/styles/data_with_rule.hpp>
+#include <compile_time/format/fmt.hpp>
 #include <compile_time/format/fmt_string_view.hpp>
 #include <compile_time/format/format.hpp>
-#include <compile_time/format/fmt.hpp>
-#include <aliases.hpp>
+#include <compile_time/stream/stream.hpp>
+#include <compile_time/string/string_view.hpp>
+#include <compile_time/styles/data_with_rule.hpp>
+#include <compile_time/styles/detail/helper_macros.hpp>
+#include <compile_time/styles/detail/values/char_checks.hpp>
+#include <compile_time/styles/detail/values/function_argument_list.hpp>
+#include <compile_time/styles/detail/values/index_of_function_name.hpp>
+#include <compile_time/styles/detail/values/lookup_function.hpp>
+#include <compile_time/styles/detail/values/lookup_string.hpp>
+#include <compile_time/styles/detail/values/parse_float.hpp>
+#include <compile_time/styles/detail/values/parse_int.hpp>
+#include <compile_time/styles/detail/values/parse_percentage.hpp>
+#include <compile_time/value_data.hpp>
+#include <compile_time/variant/variant.hpp>
 
-#define CUI_CT_RETURN_ATTR_VALUE_PARSING_ERROR(msg, val) \
-	fmt_s<256>("ERROR: {}. Attribute value provided: {}", msg, val);
+#define CUI_CT_RETURN_ATTR_VALUE_PARSING_ERROR(msg, val) fmt_s<256>("ERROR: {}. Attribute value provided: {}", msg, val);
 
 namespace cui::ct::styles::detail {
 
@@ -180,11 +177,10 @@ constexpr auto parse_attribute_value(const StringView str) -> Variant<DataWithRu
 			auto fn_name = str.substr(0, open_parenthesis_idx);
 			const auto fn_name_idx = index_of_function_name(fn_name);
 			if (fn_name_idx == styles::function_names.size()) {
-				RETURN_ERROR("ERROR: Function name invalid.\nName: {}.", fn_name);
+				CUI_RETURN_ERROR("ERROR: Function name invalid.\nName: {}.", fn_name);
 			}
 			const auto closed_parenthesis_idx = str.find_last_of(')');
-			const auto args_variant = FunctionArgumentList::parse(
-			  str.substr(open_parenthesis_idx + 1, closed_parenthesis_idx - open_parenthesis_idx - 1));
+			const auto args_variant = FunctionArgumentList::parse(str.substr(open_parenthesis_idx + 1, closed_parenthesis_idx - open_parenthesis_idx - 1));
 			if (args_variant.is_type_b()) {
 				return args_variant.type_b();
 			}
@@ -197,7 +193,7 @@ constexpr auto parse_attribute_value(const StringView str) -> Variant<DataWithRu
 			return fn_processed_val.type_a();
 		}
 		default: {
-			RETURN_ERROR("ERROR: Unexpected error.");
+			CUI_RETURN_ERROR("ERROR: Unexpected error.");
 		}
 	}
 }

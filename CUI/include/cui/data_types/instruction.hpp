@@ -1,11 +1,12 @@
-#ifndef CUI_CT_DATA_TYPES_INSTRUCTION_HPP
-#define CUI_CT_DATA_TYPES_INSTRUCTION_HPP
+#ifndef CUI_DATA_TYPES_INSTRUCTION_HPP
+#define CUI_DATA_TYPES_INSTRUCTION_HPP
 
 #include <aliases.hpp>
 
-namespace cui::data_types {
+namespace cui {
 
-enum class Functions : u8
+/// \brief Enum holding all instruction functions
+enum class Instruction : u8
 {
 	TopLeft = 0,
 	Top,
@@ -18,23 +19,6 @@ enum class Functions : u8
 	BottomRight
 };
 
-class Instruction
-{
-public:
-	constexpr Instruction(Functions chosen) : active_(chosen) {}
+}	 // namespace cui
 
-	[[nodiscard]] constexpr auto active() noexcept -> Functions& {
-		return active_;
-	}
-
-	[[nodiscard]] constexpr auto active() const noexcept -> Functions {
-		return active_;
-	}
-
-private:
-	Functions active_;
-};
-
-}	 // namespace cui::data_types
-
-#endif	  // CUI_CT_DATA_TYPES_INSTRUCTION_HPP
+#endif	  // CUI_DATA_TYPES_INSTRUCTION_HPP

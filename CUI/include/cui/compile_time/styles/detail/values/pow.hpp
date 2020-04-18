@@ -3,8 +3,6 @@
 
 #include <type_traits>
 
-#include <aliases.hpp>
-
 namespace cui::ct::styles::detail {
 
 template <typename Type, std::enable_if_t<std::is_arithmetic_v<Type>>* = nullptr>

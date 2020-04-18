@@ -1,10 +1,11 @@
 #ifndef CUI_CT_VARIANT_HPP
 #define CUI_CT_VARIANT_HPP
 
-#include <aliases.hpp>
-
 namespace cui::ct {
 
+/// \brief Constexpr compliant class for holding two types in a union
+/// \details The active member is tracked and it is a compile error if an inactive member is
+/// accessed in a constexpr evaluation
 template <typename T1, typename T2>
 class Variant
 {
@@ -17,8 +18,9 @@ public:
 
 	constexpr Variant& operator=(const Variant& x) noexcept {
 		active_ = x.active_;
-		if(active_) type_a_ = x.type_a_;
-		else type_b_ = x.type_b_;
+		if (active_) type_a_ = x.type_a_;
+		else
+			type_b_ = x.type_b_;
 		return *this;
 	}
 

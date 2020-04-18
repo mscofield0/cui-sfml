@@ -1,10 +1,9 @@
 #ifndef CUI_CT_STYLES_IS_CORRECT_VALUE_FOR_ATTR_TYPE_HPP
 #define CUI_CT_STYLES_IS_CORRECT_VALUE_FOR_ATTR_TYPE_HPP
 
-#include <compile_time/styles/detail/constants.hpp>
 #include <compile_time/string/string_view.hpp>
+#include <compile_time/styles/detail/constants.hpp>
 #include <compile_time/styles/detail/values/dt_to_vat.hpp>
-#include <aliases.hpp>
 
 namespace cui::ct::styles::detail {
 
@@ -12,7 +11,7 @@ constexpr bool is_correct_value_for_attr_type(const StringView type, const Value
 	constexpr auto size = attribute_types.size();
 	auto idx = size;
 
-	for (u64 i = 0; i < attribute_names.size(); ++i) {
+	for (std::size_t i = 0; i < attribute_names.size(); ++i) {
 		if (type == attribute_names[i]) {
 			idx = i;
 			break;

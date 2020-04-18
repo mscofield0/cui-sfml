@@ -4,17 +4,18 @@
 #include <utils/print.hpp>
 
 #include <algorithm>
-#include <optional>
 #include <iterator>
+#include <optional>
 
-#include <containers/nary_tree.hpp>
+#include <aliases.hpp>
 #include <compile_time/scene.hpp>
 #include <compile_time/style.hpp>
+#include <containers/nary_tree.hpp>
 #include <visual/node.hpp>
-#include <aliases.hpp>
 
 namespace cui {
 
+/// \brief An Nary tree of \sa cui::Node
 class SceneGraph : public NaryTree<Node>
 {
 public:
@@ -23,7 +24,9 @@ public:
 	using size_type = typename tree_t::size_type;
 	static constexpr u64 root_index = -1;
 
-	SceneGraph() : tree_t() {}
+	SceneGraph();
+
+	// Compile time graph generation
 
 	template <u64 AOB, template <typename, u64> typename Container, u64 N>
 	SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& sc);
@@ -35,20 +38,22 @@ public:
 
 	[[nodiscard]] auto get_parent(size_type index) noexcept -> data_type&;
 
+	[[nodiscard]] auto root() noexcept -> data_type&;
+
+	[[nodiscard]] auto root() const noexcept -> const data_type&;
+
 	void apply_style(data_type& node, const ct::Style& style);
-
-	[[nodiscard]] auto root() noexcept -> data_type& {
-		return root_;
-	}
-
-	[[nodiscard]] auto root() const noexcept -> const data_type& {
-		return root_;
-	}
 
 private:
 	data_type root_;
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// \brief Default constructs the \sa cui::SceneGraph
+SceneGraph::SceneGraph() : tree_t() {}
+
+/// \brief Generates the graph from a \sa ct::Scene and a container of \sa ct::Style
 template <u64 AOB, template <typename, u64> typename Container, u64 N>
 SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& sc) : tree_t{}, root_() {
 	this->vec_.reserve(AOB);
@@ -79,6 +84,7 @@ SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style, N>& 
 	}
 }
 
+/// \brief Generates the graph from a \sa ct::Scene and a container of \sa ct::Style
 template <u64 AOB, template <typename> typename Container>
 SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style>& sc) {
 	this->vec_.reserve(AOB);
@@ -109,6 +115,7 @@ SceneGraph::SceneGraph(const ct::Scene<AOB>& sr, const Container<ct::Style>& sc)
 	}
 }
 
+/// \brief Gets the index of the parent of the searched for node
 auto SceneGraph::get_parent_index(const size_type index) const noexcept -> size_type {
 	if (index == root_index) return root_index;
 	const auto it = std::find_if(this->begin(), this->end(), [index](const auto& node) {
@@ -120,6 +127,7 @@ auto SceneGraph::get_parent_index(const size_type index) const noexcept -> size_
 	return std::distance(this->begin(), it);
 }
 
+/// \brief Gets the parent of a searched for node
 auto SceneGraph::get_parent(const size_type index) noexcept -> data_type& {
 	const auto idx = get_parent_index(index);
 	if (idx == root_index) return root_;
@@ -127,6 +135,7 @@ auto SceneGraph::get_parent(const size_type index) noexcept -> data_type& {
 	return this->operator[](idx).data();
 }
 
+/// \brief Applies a style to a node
 void SceneGraph::apply_style(data_type& node, const ct::Style& style) {
 	if (style.events().empty()) {
 		for (const auto& attr_data : style.attributes()) {
@@ -145,6 +154,18 @@ void SceneGraph::apply_style(data_type& node, const ct::Style& style) {
 	}
 }
 
+/// \brief Gets a mutable root node
+/// \returns The mutable root node
+auto SceneGraph::root() noexcept -> data_type& {
+	return root_;
+}
+
+/// \brief Gets an immutable root node
+/// \returns The immutable root node
+auto SceneGraph::root() const noexcept -> const data_type& {
+	return root_;
+}
+
 }	 // namespace cui
 
-#endif	  // CUI_VISUAL_SCENE_GRAPH_HPP
+#endif	  // CUI_SCENE_GRAPH_HPP

@@ -1,17 +1,18 @@
 #ifndef CUI_STATIC_STACK_HPP
 #define CUI_STATIC_STACK_HPP
 
+#include <cstdint>
+
 #include <containers/static_vector.hpp>
-#include <aliases.hpp>
 
 namespace cui {
 
-template <typename T, u64 MaxSize>
+template <typename T, std::size_t MaxSize>
 class StaticStack
 {
 public:
 	using value_type = T;
-	using size_type = u64;
+	using size_type = std::size_t;
 	using reference = value_type&;
 	using const_reference = const value_type&;
 
@@ -21,8 +22,8 @@ public:
 		return data_.size();
 	}
 
-	[[nodiscard]] constexpr bool empty() const noexcept {
-		return size() == 0;
+	[[nodiscard]] constexpr auto max_size() const noexcept -> size_type {
+		return data_.max_size();
 	}
 
 	[[nodiscard]] constexpr auto top() noexcept -> reference {
@@ -33,23 +34,22 @@ public:
 		return data_.back();
 	}
 
+	constexpr void push(const_reference item) {
+		data_.push_back(item);
+	}
+
 	constexpr auto pop() -> value_type {
 		const auto t = data_.back();
 		data_.pop_back();
 		return t;
 	}
 
-	constexpr void push(const_reference item) {
-		data_.push_back(item);
-	}
-
-	constexpr void remove_top(size_type n) {
-		if (n >= size()) throw "Cannot remove more elements than the size dictates";
-		data_.erase(data_.end() - n - 1);
-	}
-
 	constexpr void clear() noexcept {
 		data_.clear();
+	}
+
+	[[nodiscard]] constexpr bool empty() const noexcept {
+		return size() == 0;
 	}
 
 private:

@@ -1,21 +1,22 @@
 #ifndef CUI_CT_FMT_FORMAT_HPP
 #define CUI_CT_FMT_FORMAT_HPP
 
-#include <limits>
 #include <array>
+#include <exception>
+#include <limits>
 
+#include <aliases.hpp>
 #include <compile_time/format/detail/log10.hpp>
 #include <compile_time/format/detail/pow.hpp>
 #include <utils/abs.hpp>
-#include <aliases.hpp>
 
 namespace cui::ct {
 
-template <u32 Size>
+template <std::size_t Size>
 class Format
 {
 public:
-	using size_type = u32;
+	using size_type = std::size_t;
 	using data_type = std::array<char, Size>;
 	using value_type = char;
 	using reference = data_type&;
@@ -46,23 +47,8 @@ public:
 	}
 
 	constexpr void append(const value_type& el) {
-		if (size() == max_size()) throw "Out of range";
+		if (size() == max_size()) throw std::length_error{"Exceeded maximum size"};
 		data_[pos_++] = el;
-	}
-
-	constexpr auto operator<<(i32 x) -> Format<Size>& {
-		const auto minus = x < 0 ? true : false;
-		x = cui::abs(x);
-		auto digits = cui::ct::log10(x) + 1;
-		if (minus) append('-');
-		do {
-			const u16 digit = x / cui::ct::pow(10, digits - 1);
-			const auto div = static_cast<u64>(cui::ct::pow(10, --digits));
-			x %= div;
-			append(digit + '0');
-		} while (digits > 0);
-
-		return (*this);
 	}
 
 	constexpr auto operator<<(i64 x) -> Format<Size>& {
@@ -70,18 +56,6 @@ public:
 		x = cui::abs(x);
 		auto digits = cui::ct::log10(x) + 1;
 		if (minus) append('-');
-		do {
-			const u16 digit = x / cui::ct::pow(10, digits - 1);
-			const auto div = static_cast<u64>(cui::ct::pow(10, --digits));
-			x %= div;
-			append(digit + '0');
-		} while (digits > 0);
-
-		return (*this);
-	}
-
-	constexpr auto operator<<(u32 x) -> Format<Size>& {
-		auto digits = cui::ct::log10(x) + 1;
 		do {
 			const u16 digit = x / cui::ct::pow(10, digits - 1);
 			const auto div = static_cast<u64>(cui::ct::pow(10, --digits));
@@ -104,9 +78,9 @@ public:
 		return (*this);
 	}
 
-	template <u32 N>
+	template <std::size_t N>
 	constexpr auto operator<<(const char (&s)[N]) -> Format<Size>& {
-		u32 i = 0;
+		std::size_t i = 0;
 		while (i < N - 1) {
 			append(s[i++]);
 		}

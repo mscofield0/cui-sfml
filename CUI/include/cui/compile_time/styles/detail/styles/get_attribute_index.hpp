@@ -1,27 +1,15 @@
 #ifndef CUI_CT_STYLES_GET_ATTRIBUTE_INDEX_HPP
 #define CUI_CT_STYLES_GET_ATTRIBUTE_INDEX_HPP
 
+#include <cstdint>
+
 #include <compile_time/string/string_view.hpp>
 #include <compile_time/styles/detail/constants.hpp>
-#include <aliases.hpp>
 
 namespace cui::ct::styles::detail {
 
-enum class AttributeIndexes : u64
-{
-	Background = 0,
-	X,
-	Y,
-	Width,
-	Height,
-	Font,
-	FontSize,
-	TextColor,
-	TextPosition
-};
-
-constexpr auto get_attribute_index(const StringView name) -> u64 {
-	u64 i = 0;
+constexpr auto get_attribute_index(const StringView name) -> std::size_t {
+	std::size_t i = 0;
 	for (; i < attribute_names.size(); ++i) {
 		if (name == attribute_names[i]) {
 			break;

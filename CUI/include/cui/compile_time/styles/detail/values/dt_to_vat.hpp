@@ -1,14 +1,13 @@
 #ifndef CUI_CT_STYLES_DT_TO_VAT_HPP
 #define CUI_CT_STYLES_DT_TO_VAT_HPP
 
-#include <compile_time/styles/detail/values/validate_attribute_type.hpp>
 #include <compile_time/styles/detail/constants.hpp>
+#include <compile_time/styles/detail/values/validate_attribute_type.hpp>
 #include <data_types/data_types.hpp>
 
 namespace cui::ct::styles::detail {
 
-constexpr auto dt_to_vat(data_types::DataTypes data_type) -> ValidAttributeType {
-	using namespace cui::data_types;
+constexpr auto dt_to_vat(DataTypes data_type) -> ValidAttributeType {
 	switch (data_type) {
 		case DataTypes::Color: {
 			return ValidAttributeType::RGBA;

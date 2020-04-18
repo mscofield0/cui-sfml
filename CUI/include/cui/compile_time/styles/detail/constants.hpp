@@ -1,13 +1,13 @@
 #ifndef CUI_CT_STYLES_CONSTANTS_HPP
 #define CUI_CT_STYLES_CONSTANTS_HPP
 
-#include <utils/make_array.hpp>
 #include <compile_time/string/string_view.hpp>
 #include <compile_time/styles/detail/valid_attribute_types.hpp>
 #include <compile_time/value_data.hpp>
 #include <data_types/color.hpp>
 #include <data_types/instruction.hpp>
 #include <data_types/vec.hpp>
+#include <utils/make_array.hpp>
 
 #include <aliases.hpp>
 
@@ -23,6 +23,19 @@ template <typename T, typename... Args>
 constexpr auto make_sv_array(T arg, Args... args) -> std::array<StringView, sizeof...(Args) + 1>{
 	return {StringView{arg}, StringView{args}...};
 }
+
+enum class AttributeIndexes : u64
+{
+	Background = 0,
+	X,
+	Y,
+	Width,
+	Height,
+	Font,
+	FontSize,
+	TextColor,
+	TextPosition
+};
 
 // Enum class representing function names
 enum class FunctionId : u8
@@ -112,15 +125,15 @@ constexpr auto string_values =
         ValueData{Color(0, 0, 0, 0)},
         ValueData{Color::white},
         ValueData{Color::black},
-		ValueData{Instruction{Functions::TopLeft}},
-		ValueData{Instruction{Functions::Top}},
-		ValueData{Instruction{Functions::TopRight}},
-		ValueData{Instruction{Functions::Left}},
-		ValueData{Instruction{Functions::Center}},
-		ValueData{Instruction{Functions::Right}},
-		ValueData{Instruction{Functions::BottomLeft}},
-		ValueData{Instruction{Functions::Bottom}},
-		ValueData{Instruction{Functions::BottomRight}}
+		ValueData{Instruction::TopLeft},
+		ValueData{Instruction::Top},
+		ValueData{Instruction::TopRight},
+		ValueData{Instruction::Left},
+		ValueData{Instruction::Center},
+		ValueData{Instruction::Right},
+		ValueData{Instruction::BottomLeft},
+		ValueData{Instruction::Bottom},
+		ValueData{Instruction::BottomRight}
     );
 
 

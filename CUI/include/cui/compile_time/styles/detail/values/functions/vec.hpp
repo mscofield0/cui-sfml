@@ -5,12 +5,10 @@
 
 namespace cui::ct::styles::detail {
 
-DEFINE_FUNCTION(vec) {
+CUI_DEFINE_FUNCTION(vec) {
 	const auto& args = fal.list();
-	IF_NOT_IN_SET(2, 3, 4) {
-		RETURN_ERROR(
-		  "ERROR: Invalid amount of arguments.\n\tSupplied {} arguments.vec() only supports 2 - 4 arguments ",
-		  args.size());
+	CUI_IF_NOT_IN_SET(2, 3, 4) {
+		CUI_RETURN_ERROR("ERROR: Invalid amount of arguments.\n\tSupplied {} arguments.vec() only supports 2 - 4 arguments ", args.size());
 	}
 
 	if (!validate_args(args, args.size(), all_int)) {
@@ -18,20 +16,20 @@ DEFINE_FUNCTION(vec) {
 			case 2: {
 				const float a = args[0].integer_value();
 				const float b = args[1].integer_value();
-				RETURN_VALUE((Vec2f{a, b}), ValueType::VectorInt);
+				CUI_RETURN_VALUE((Vec2f{a, b}), ValueType::VectorInt);
 			}
 			case 3: {
 				const float a = args[0].integer_value();
 				const float b = args[1].integer_value();
 				const float c = args[2].integer_value();
-				RETURN_VALUE((Vec3f{a, b, c}), ValueType::VectorInt);
+				CUI_RETURN_VALUE((Vec3f{a, b, c}), ValueType::VectorInt);
 			}
 			case 4: {
 				const float a = args[0].integer_value();
 				const float b = args[1].integer_value();
 				const float c = args[2].integer_value();
 				const float d = args[3].integer_value();
-				RETURN_VALUE((Vec4f{a, b, c, d}), ValueType::VectorInt);
+				CUI_RETURN_VALUE((Vec4f{a, b, c, d}), ValueType::VectorInt);
 			}
 		}
 	} else if (!validate_args(args, args.size(), all_float)) {
@@ -39,25 +37,25 @@ DEFINE_FUNCTION(vec) {
 			case 2: {
 				const float a = args[0].float_value();
 				const float b = args[1].float_value();
-				RETURN_VALUE((Vec2f{a, b}), ValueType::VectorFloat);
+				CUI_RETURN_VALUE((Vec2f{a, b}), ValueType::VectorFloat);
 			}
 			case 3: {
 				const float a = args[0].float_value();
 				const float b = args[1].float_value();
 				const float c = args[2].float_value();
-				RETURN_VALUE((Vec3f{a, b, c}), ValueType::VectorFloat);
+				CUI_RETURN_VALUE((Vec3f{a, b, c}), ValueType::VectorFloat);
 			}
 			case 4: {
 				const float a = args[0].float_value();
 				const float b = args[1].float_value();
 				const float c = args[2].float_value();
 				const float d = args[3].float_value();
-				RETURN_VALUE((Vec4f{a, b, c, d}), ValueType::VectorFloat);
+				CUI_RETURN_VALUE((Vec4f{a, b, c, d}), ValueType::VectorFloat);
 			}
 		}
 	}
 
-	RETURN_ERROR("ERROR: Expected the vector values to be int or float types.");
+	CUI_RETURN_ERROR("ERROR: Expected the vector values to be int or float types.");
 }
 
 }	 // namespace cui::ct::styles::detail

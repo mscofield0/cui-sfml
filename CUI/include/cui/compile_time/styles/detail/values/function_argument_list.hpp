@@ -1,17 +1,15 @@
 #ifndef CUI_CT_STYLES_FUNCTION_ARGUMENT_LIST_HPP
 #define CUI_CT_STYLES_FUNCTION_ARGUMENT_LIST_HPP
 
-#include <compile_time/value_data.hpp>
-#include <compile_time/styles/data_with_rule.hpp>
-#include <compile_time/styles/parse_attribute_value.hpp>
-#include <compile_time/string/string_view.hpp>
-#include <compile_time/variant/variant.hpp>
-#include <containers/static_vector.hpp>
-
+#include <compile_time/format/fmt.hpp>
 #include <compile_time/format/fmt_string_view.hpp>
 #include <compile_time/format/format.hpp>
-#include <compile_time/format/fmt.hpp>
-#include <aliases.hpp>
+#include <compile_time/string/string_view.hpp>
+#include <compile_time/styles/data_with_rule.hpp>
+#include <compile_time/styles/parse_attribute_value.hpp>
+#include <compile_time/value_data.hpp>
+#include <compile_time/variant/variant.hpp>
+#include <containers/static_vector.hpp>
 
 namespace cui::ct::styles::detail {
 
@@ -42,8 +40,8 @@ public:
 		FunctionArgumentList fal;
 		if (str.empty()) return fal;
 
-		u64 prev = 0;
-		u64 pos = str.find(',');
+		std::size_t prev = 0;
+		std::size_t pos = str.find(',');
 		while (pos != StringView::npos) {
 			if (prev == pos) {
 				return fmt_s<256>("ERROR: Function argument list is invalid\n\tList: {}", str);

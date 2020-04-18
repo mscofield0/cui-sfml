@@ -3,9 +3,9 @@
 
 #include <iterator>
 
+#include <aliases.hpp>
 #include <compile_time/string/char_traits.hpp>
 #include <compile_time/string/string_view.hpp>
-#include <aliases.hpp>
 
 namespace cui::ct {
 
@@ -20,41 +20,40 @@ public:
 	using const_iterator = typename string_view_t::const_iterator;
 
 	/// \param data A \a cui::BasicStringView<CharT,Traits> to enable stream-like functionality on
-	constexpr Stream(string_view_t data)
-		: str_(data), begin_(str_.begin()), end_(str_.end()), current_(begin_), state_(true), line_(1), col_(0) {
+	constexpr Stream(string_view_t data) : str_(data), begin_(str_.begin()), end_(str_.end()), current_(begin_), state_(true), line_(1), col_(0) {
 		state_ = begin_ != end_;
 	}
 
 	/// \brief Gets the internal \see str_ begin iterator
-	/// \return Returns a \a cui::BasicStringView<CharT,Traits>::iterator marked with const
+	/// \return An immutable iterator to the beginning
 	[[nodiscard]] constexpr auto begin() const noexcept -> const_iterator {
 		return begin_;
 	}
 
 	/// \brief Gets the internal \see str_ end iterator
-	/// \return Returns a \a cui::BasicStringView<CharT,Traits>::iterator marked with const
+	/// \return An immutable iterator to the end
 	[[nodiscard]] constexpr auto end() const noexcept -> const_iterator {
 		return end_;
 	}
 
 	/// \brief Gets the internal \see current_ iterator that marks
 	/// 		the current position in the \see Stream
-	/// \return Returns a \a cui::BasicStringView<CharT,Traits>::iterator marked with const
+	/// \return An immutable iterator to the current position
 	[[nodiscard]] constexpr auto current() const noexcept -> const_iterator {
 		return current_;
 	}
 
 	/// \brief Gets the internal \see str_ variable
-	/// \return Returns a \a cui::BasicStringView<CharT,Traits>
+	/// \return A \sa cui::BasicStringView<CharT,Traits> to the underlying data that's being streamed on
 	[[nodiscard]] constexpr auto data() const noexcept -> const string_view_t {
 		return str_;
 	}
 
-	/// \brief Looks at the next iterator in the \see Stream
-	/// \details If the \see Stream object is invalid (i.e. the next
+	/// \brief Looks at the next iterator in the \sa Stream
+	/// \details If the \sa cui::ct::Stream object is invalid (i.e. the next
 	/// 		 iterator is the end iterator) then the function
 	/// 		 returns the end iterator
-	/// \return Returns the following iterator in the \see Stream object
+	/// \return The following iterator in the \see Stream object
 	[[nodiscard]] constexpr auto peek() noexcept -> iterator {
 		if (current_ + 1 == end_) {
 			set_bad_stream();
@@ -64,7 +63,7 @@ public:
 	}
 
 	/// \brief Returns the distance between the begin and current iterator
-	/// \return Returns an according \a difference_type
+	/// \returns The distance between the begin iterator and the current iterator
 	[[nodiscard]] constexpr auto distance() const noexcept -> int {
 		return current() - begin();
 	}
@@ -72,7 +71,7 @@ public:
 	/// \brief Advances and returns the following iterator
 	/// \details If the \see Stream object is invalid (i.e. the state is bad)
 	/// 		 then the function returns the end iterator
-	/// \return Returns the following iterator in the \see Stream object
+	/// \returns The following iterator in the \see Stream object
 	constexpr auto next() noexcept -> iterator {
 		if (peek() == end_) {
 			return end_;
@@ -89,19 +88,19 @@ public:
 	/// \brief Returns whether the \see Stream object is valid
 	/// \details If the \see Stream object is good, it returns \a true
 	/// 		 If the \see Stream object is bad, it returns false
-	/// \return Returns the internal \see state_ variable
+	/// \returns The internal \see state_ variable
 	[[nodiscard]] constexpr bool good() const noexcept {
 		return state_;
 	}
 
 	/// \brief Returns the current line number
-	/// \return Returns the current line number
+	/// \returns The current line number
 	[[nodiscard]] constexpr auto line() const noexcept -> u64 {
 		return line_;
 	}
 
 	/// \brief Returns the current column number
-	/// \return Returns the current column number
+	/// \returns The current column number
 	[[nodiscard]] constexpr auto col() const noexcept -> u64 {
 		return col_;
 	}

@@ -5,19 +5,19 @@
 
 namespace cui::ct::styles::detail {
 
-DEFINE_FUNCTION(rgba) {
+CUI_DEFINE_FUNCTION(rgba) {
 	const auto& args = fal.list();
-	IF_NOT_IN_SET(4) {
-		RETURN_ERROR("ERROR: Invalid amount of arguments; Supplied {} arguments", args.size());
+	CUI_IF_NOT_IN_SET(4) {
+		CUI_RETURN_ERROR("ERROR: Invalid amount of arguments; Supplied {} arguments", args.size());
 	}
 	if (!validate_args(args, 4, all_int)) {
-		RETURN_ERROR("ERROR: Expected a set of int RGBA value.");
+		CUI_RETURN_ERROR("ERROR: Expected a set of int RGBA value.");
 	}
 	const auto& r = args[0].integer_value();
 	const auto& g = args[1].integer_value();
 	const auto& b = args[2].integer_value();
 	const auto& a = args[3].integer_value();
-	RETURN_VALUE(Color(r, g, b, a), ValueType::Color);
+	CUI_RETURN_VALUE(Color(r, g, b, a), ValueType::Color);
 }
 
 }	 // namespace cui::ct::styles::detail

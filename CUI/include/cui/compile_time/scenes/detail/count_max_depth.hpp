@@ -1,17 +1,18 @@
 #ifndef CUI_CT_SCENES_COUNT_MAX_DEPTH_HPP
 #define CUI_CT_SCENES_COUNT_MAX_DEPTH_HPP
 
+#include <cstdint>
+
 #include <compile_time/scenes/detail/count_tabs.hpp>
 #include <compile_time/stream/stream.hpp>
 #include <compile_time/stream/stream_utils.hpp>
 #include <compile_time/string/string_view.hpp>
-#include <aliases.hpp>
 
 namespace cui::ct::scenes::detail {
 
-constexpr auto count_max_depth(const StringView str) -> u64 {
+constexpr auto count_max_depth(const StringView str) -> std::size_t {
 	CharStream stream(str);
-	u64 max = 0;
+	std::size_t max = 0;
 	while (stream.good()) {
 		const auto line = consume_line(stream);
 		const auto trimmed = line.trim();

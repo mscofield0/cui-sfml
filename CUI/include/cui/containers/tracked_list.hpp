@@ -1,20 +1,17 @@
 #ifndef CUI_TRACKED_LIST_HPP
 #define CUI_TRACKED_LIST_HPP
 
-#include <initializer_list>
 #include <exception>
-
-#include <containers/list.hpp>
-#include <utils/forward.hpp>
-#include <utils/move.hpp>
+#include <initializer_list>
+#include <list>
 
 namespace cui {
 
 template <typename T>
-class TrackedList : public List<T>
+class TrackedList : public std::list<T>
 {
 public:
-	using base_t = List<T>;
+	using base_t = std::list<T>;
 	using value_type = typename base_t::value_type;
 	using size_type = typename base_t::size_type;
 	using difference_type = typename base_t::difference_type;
@@ -33,14 +30,20 @@ public:
 	TrackedList(size_type p_tracker, size_type count, const_reference value = value_type())
 		: base_t(count, value), tracker_(p_tracker) {}
 	template <typename... Args>
-	TrackedList(Args&&... args) : base_t{cui::forward<Args>(args)...}, tracker_(0) {}
+	TrackedList(Args&&... args) : base_t{std::forward<Args>(args)...}, tracker_(0) {}
 
-	reference current_item() noexcept {
-		return (*(static_cast<base_t*>(this)))[tracker_];
+	[[nodiscard]] auto current_item() noexcept -> reference {
+		auto it = base_t::begin();
+		size_type i = 0;
+		while (it != base_t::end() && i++ < tracker_) ++it;
+		return *it;
 	}
 
-	const_reference current_item() const noexcept {
-		return (*(static_cast<const base_t*>(this)))[tracker_];
+	[[nodiscard]] auto current_item() const noexcept -> const_reference {
+		auto it = base_t::begin();
+		size_type i = 0;
+		while (it != base_t::end() && i++ < tracker_) ++it;
+		return *it;
 	}
 
 	void change_tracked_item(size_type idx) {

@@ -1,13 +1,12 @@
 #ifndef CUI_NARY_TREE_HPP
 #define CUI_NARY_TREE_HPP
 
-#include <vector>
-#include <functional>
 #include <algorithm>
+#include <functional>
+#include <vector>
 
-#include <containers/detail/nary_tree/node.hpp>
-#include <utils/move.hpp>
 #include <aliases.hpp>
+#include <containers/detail/nary_tree/node.hpp>
 
 namespace cui {
 
@@ -83,7 +82,7 @@ public:
 
 	template <typename... Args>
 	void emplace_back(Args&&... args) {
-		vec_.emplace_back(cui::move(args)...);
+		vec_.emplace_back(std::move(args)...);
 	}
 
 	void add_node(const data_type& val) {
@@ -91,7 +90,7 @@ public:
 	}
 
 	void add_node(data_type&& val) {
-		vec_.emplace_back(cui::move(val));
+		vec_.emplace_back(std::move(val));
 	}
 
 	void add_node(const data_type& val, const size_type idx) {
