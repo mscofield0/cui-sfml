@@ -128,11 +128,11 @@ public:
 	}
 
 	[[nodiscard]] auto cache() noexcept -> cache_t& {
-		return *cache_;
+		return cache_;
 	}
 
 	[[nodiscard]] auto cache() const noexcept -> const cache_t& {
-		return *cache_;
+		return cache_;
 	}
 
 	[[nodiscard]] bool is_running() noexcept {
@@ -172,7 +172,7 @@ private:
 	bool timer_wait_awakened_;
 	bool update_cache_flag_;
 	TrackedList<scene_t> scenes_;
-	std::unique_ptr<RenderCache> cache_;
+	RenderCache cache_;
 	std::unique_ptr<sf::RenderWindow> window_;
 };
 
@@ -186,16 +186,15 @@ void Window::init(const WindowOptions& options) {
 		this->resize(w, h);
 		auto& graph = this->active_scene().graph();
 		this->window_ = std::make_unique<sf::RenderWindow>(sf::VideoMode(w, h), title, style, ctx_settings);
-		this->cache_ = std::make_unique<RenderCache>();
 
-		this->cache_->cache_resource(graph.root());
+		this->cache_.cache_resource(graph.root());
 		for (auto& node : graph) {
-			this->cache_->cache_resource(node.data());
+			this->cache_.cache_resource(node.data());
 		}
 
-		this->cache_->reserve(graph.length() + 1);
-		this->cache_->emplace_back();
-		this->cache_->update_cache(graph);
+		this->cache_.reserve(graph.length() + 1);
+		this->cache_.emplace_back();
+		this->cache_.update_cache(graph);
 
 		for (const auto& ve : this->cache()) {
 			println(ve);
@@ -458,7 +457,7 @@ void Window::schedule_to_update_cache() {
 /// \brief Updates the internal \sa RenderCache
 /// \details Locks the internal scene mutex with a \sa std::shared_lock
 void Window::update_cache() {
-	cache_->update_cache(this->active_scene().graph());
+	cache_.update_cache(this->active_scene().graph());
 }
 
 /// \brief Renders the current scene
@@ -577,8 +576,13 @@ void Window::process_event(const sf::Event& event) {
 		for (std::size_t i = graph.length() - 1;; --i) {
 			auto& node = graph[i];
 
+			bool contains = false;
+			for (auto rit = cache_.rbegin(); rit != cache_.rend(); ++rit) {
+				// NOTICE
+			}
 			if (node.data().attached_events().contains(event_name)) {
 				this->dispatch_event(type, event_name, event_data_t(event_data.get(), &(node.data()), i + 1, event_name));
+				break;
 			}
 
 			if (i == 0) break;
