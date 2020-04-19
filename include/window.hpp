@@ -23,6 +23,7 @@
 #include <detail/timer_event.hpp>
 #include <moodycamel/concurrent_queue.hpp>
 #include <render_cache.hpp>
+#include <visual_element.hpp>
 #include <window_options.hpp>
 
 #include <SFML/Graphics.hpp>
@@ -196,6 +197,9 @@ void Window::init(const WindowOptions& options) {
 		this->cache_->emplace_back();
 		this->cache_->update_cache(graph);
 
+		for (const auto& ve : this->cache()) {
+			println(ve);
+		}
 		this->window_->setFramerateLimit(framerate);
 		this->update_cache_flag_ = false;
 

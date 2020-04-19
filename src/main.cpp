@@ -1,10 +1,12 @@
 
 #include <any>
 #include <iostream>
+#include <print_stuff.hpp>
 #include <random>
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <visual_element.hpp>
 
 #include <cui/compile_time/scene.hpp>
 #include <cui/compile_time/scenes/parse_scenes.hpp>
@@ -22,7 +24,6 @@
 #include <detail/templates/on_hover.hpp>
 #include <detail/templates/on_resize.hpp>
 #include <detail/templates/switch_schematic.hpp>
-#include <print_stuff.hpp>
 #include <render_cache.hpp>
 #include <window.hpp>
 #include <window_options.hpp>
@@ -166,31 +167,12 @@ int main() {
 
 	// Attaches the registered event `on_click_btn` to the node named `button`
 	window->attach_event_to_node("button1", "on_click_btn1");
-	window->attach_event_to_node("button2", "on_click_btn2");
-	window->attach_event_to_node("button3", "on_click_btn3");
+	//window->attach_event_to_node("button2", "on_click_btn2");
+	//window->attach_event_to_node("button3", "on_click_btn3");
 	// Attaches the registered event `on_hover` to the node named `button`
 	window->attach_event_to_node("button1", "on_hover");
-	window->attach_event_to_node("button2", "on_hover");
-	window->attach_event_to_node("button3", "on_hover");
-
-	for (const auto& el : window->active_scene().graph()) {
-		for (const auto& set_value : el.data().attached_events()) {
-			println("Node:", el.data().name(), "Attached event:", set_value);
-		}
-	}
-	println();
-
-	for (const auto& kvp : window->active_scene().marked_sections()) {
-		println("EventType:", static_cast<u64>(kvp.first));
-		println("\tNode-local events:");
-		for (const auto& nl_events : kvp.second.first) {
-			println("\t\tName:", nl_events.first);
-		}
-		println("\tGlobal events:");
-		for (const auto& g_events : kvp.second.second) {
-			println("\t\tName:", g_events.first);
-		}
-	}
+	//window->attach_event_to_node("button2", "on_hover");
+	//window->attach_event_to_node("button3", "on_hover");
 
 	// Initialize the window
 	window->init({800, 600, "Title", sf::Style::Default, sf::ContextSettings{}, 60});

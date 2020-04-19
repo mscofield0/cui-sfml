@@ -7,8 +7,10 @@
 #include <cui/compile_time/value_data.hpp>
 #include <cui/visual/node.hpp>
 #include <cui/visual/scene_graph.hpp>
+#include <detail/intermediaries/color.hpp>
 #include <iostream>
 #include <type_traits>
+#include <visual_element.hpp>
 
 std::ostream& operator<<(std::ostream& os, const cui::ct::StringView str) {
 	for (const auto ch : str) os << ch;

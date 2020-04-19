@@ -12,7 +12,7 @@ font {
 }
 
 btn_size {
-	width: 100;
+	width: 200;
 	height: 60;
 }
 
@@ -56,6 +56,7 @@ btn3 [on_hover] {
 }
 
 text_box_holder {
+	background: rgb(43, 45, 47);
 	x: 30%;
 	y: 50;
 	width: 40%;
@@ -63,8 +64,9 @@ text_box_holder {
 }
 
 text_box {
+	background: rgb(192, 192, 192);
 	x: 10%;
-	y: 20;
+	y: 70;
 	width: 80%;
 	height: 60;
 }
