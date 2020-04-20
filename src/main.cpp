@@ -83,11 +83,6 @@ int main() {
 		window = std::make_unique<win_t>(std::move(sty), std::move(scenes_variant.type_a()));
 	}
 
-	// stdlib utilities for RNG
-	std::unique_ptr<std::random_device> device = std::make_unique<std::random_device>();
-	std::unique_ptr<std::mt19937> gen = std::make_unique<std::mt19937>((*device)());
-	std::uniform_int_distribution<int> dist(0, 255);
-
 	// Create a typedef for the event types
 	using EventType = sf::Event::EventType;
 
@@ -101,15 +96,20 @@ int main() {
 	window->register_global_event(EventType::Resized, "on_resize", [&window](auto event_data) { templates::OnResize((*window), event_data); });
 
 	// Register the on_click_btn event [OPTIONAL, defines functionality on button click]
-	window->register_event(EventType::MouseButtonPressed, "on_click_btn1", [&window, &gen, &dist](event_data_t event_data) {
+	window->register_event(EventType::MouseButtonPressed, "on_click_btn1", [&window](event_data_t event_data) {
 		// Uses CUI's GUI helper template `OnClick` to provide functionality on click
-		templates::OnClick((*window), event_data, [&gen, &dist](Window& window, event_data_t& event_data) {
+		templates::OnClick((*window), event_data, [](Window& window, event_data_t& event_data) {
+			println("Clicked on btn1");
 			auto& graph = window.active_scene().graph();
 			auto text_box = std::find_if(graph.begin(), graph.end(), [](const auto& node) { return node.data().name() == "text_box"; });
+			println("Name of text_box:", text_box->data().name());
 			const auto index = static_cast<std::size_t>(std::distance(graph.begin(), text_box));
+			println("Index of text_box:", index);
 			auto& scheme = text_box->data().active_schematic().get();
 			scheme.text_color() = cui::Color(255, 0, 0);
+			println("Text color:", scheme.text_color());
 			window.cache()[index].text().setString("Red text");
+			println("Text:", window.cache()[index].text().getString().toAnsiString());
 
 			// Schedule the render cache to be updated
 			window.schedule_to_update_cache();
@@ -117,9 +117,9 @@ int main() {
 	});
 
 	// Register the on_click_btn event [OPTIONAL, defines functionality on button click]
-	window->register_event(EventType::MouseButtonPressed, "on_click_btn2", [&window, &gen, &dist](event_data_t event_data) {
+	window->register_event(EventType::MouseButtonPressed, "on_click_btn2", [&window](event_data_t event_data) {
 		// Uses CUI's GUI helper template `OnClick` to provide functionality on click
-		templates::OnClick((*window), event_data, [&gen, &dist](Window& window, event_data_t& event_data) {
+		templates::OnClick((*window), event_data, [](Window& window, event_data_t& event_data) {
 			auto& graph = window.active_scene().graph();
 			auto text_box = std::find_if(graph.begin(), graph.end(), [](const auto& node) { return node.data().name() == "text_box"; });
 			const auto index = static_cast<std::size_t>(std::distance(graph.begin(), text_box));
@@ -133,9 +133,9 @@ int main() {
 	});
 
 	// Register the on_click_btn event [OPTIONAL, defines functionality on button click]
-	window->register_event(EventType::MouseButtonPressed, "on_click_btn3", [&window, &gen, &dist](event_data_t event_data) {
+	window->register_event(EventType::MouseButtonPressed, "on_click_btn3", [&window](event_data_t event_data) {
 		// Uses CUI's GUI helper template `OnClick` to provide functionality on click
-		templates::OnClick((*window), event_data, [&gen, &dist](Window& window, event_data_t& event_data) {
+		templates::OnClick((*window), event_data, [](Window& window, event_data_t& event_data) {
 			auto& graph = window.active_scene().graph();
 			auto text_box = std::find_if(graph.begin(), graph.end(), [](const auto& node) { return node.data().name() == "text_box"; });
 			const auto index = static_cast<std::size_t>(std::distance(graph.begin(), text_box));

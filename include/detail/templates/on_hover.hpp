@@ -18,6 +18,7 @@ void OnHover(Window& window, event_data_t& event_data, const std::string& event_
 		auto& hovered_before = std::any_cast<bool&>(cache_item);
 		if (!hovered_before) return;
 
+		println("New non hover");
 		cache_item = false;
 
 		fn_no_hover(window, event_data);
@@ -30,6 +31,8 @@ void OnHover(Window& window, event_data_t& event_data, const std::string& event_
 	if (!cache_item.has_value()) cache_item = false;
 	auto& hovered_before = std::any_cast<bool&>(cache_item);
 	if (hovered_before) return;
+
+	println("New hover");
 
 	cache_item = true;
 

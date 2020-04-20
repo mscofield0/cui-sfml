@@ -1,21 +1,21 @@
 {
-    "name": "scofield-cpp",
-    "displayName": "scofield-cpp",
-    "description": "Color theme for C++",
-    "version": "0.0.1",
-    "engines": {
-        "vscode": "^1.44.0"
-    },
-    "categories": [
-        "Themes"
-    ],
-    "contributes": {
-        "themes": [
-            {
-                "label": "Scofield C++ Color Theme",
-                "uiTheme": "vs-dark",
-                "path": "./themes/Scofield C++ Color Theme-color-theme.json"
-            }
-        ]
-    }
+	"name": "scofield-cpp",
+	"displayName": "scofield-cpp",
+	"description": "Color theme for C++",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.44.0"
+	},
+	"categories": [
+		"Themes"
+	],
+	"contributes": {
+		"themes": [
+			{
+				"label": "Scofield C++ Color Theme",
+				"uiTheme": "vs-dark",
+				"path": "./themes/Scofield C++ Color Theme-color-theme.json"
+			}
+		]
+	}
 }

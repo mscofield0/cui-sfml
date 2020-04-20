@@ -464,11 +464,12 @@ void Window::update_cache() {
 /// \details Iterates through the cache and draws visible elements then displays them
 void Window::render() noexcept {
 	if (update_cache_flag_) {
+		println("Updating the cache");
 		this->update_cache();
 		update_cache_flag_ = false;
 	}
 	window_->clear();
-	for (const auto& ve : *cache_) {
+	for (const auto& ve : cache_) {
 		window_->setView(ve);
 		if (!ve.visible()) continue;
 		window_->draw(ve);
@@ -487,6 +488,8 @@ void Window::process_event(const sf::Event& event) {
 	auto& scene = this->active_scene();
 	const auto it = scene.marked_sections().find(type);
 	if (it == scene.marked_sections().end()) return;
+
+	if (!event_cache["mouse_position"].has_value()) event_cache["mouse_position"] = sf::Vector2f(sf::Mouse::getPosition());
 
 	event_data_t event_data;
 
@@ -511,12 +514,22 @@ void Window::process_event(const sf::Event& event) {
 			event_data.get() = event.mouseWheelScroll;
 			break;
 		}
+		case EventType::MouseMoved: {
+			const auto [x, y] = event.mouseMove;
+			event_data.get() = event.mouseMove;
+			event_cache["mouse_position"] = sf::Vector2f(x, y);
+			break;
+		}
 		case EventType::MouseButtonPressed: {
+			const auto [_, x, y] = event.mouseButton;
 			event_data.get() = event.mouseButton;
+			event_cache["mouse_position"] = sf::Vector2f(x, y);
 			break;
 		}
 		case EventType::MouseButtonReleased: {
+			const auto [_, x, y] = event.mouseButton;
 			event_data.get() = event.mouseButton;
+			event_cache["mouse_position"] = sf::Vector2f(x, y);
 			break;
 		}
 		case EventType::JoystickButtonPressed: {
@@ -555,10 +568,6 @@ void Window::process_event(const sf::Event& event) {
 			event_data.get() = event.sensor;
 			break;
 		}
-		case EventType::MouseMoved: {
-			event_data.get() = event.mouseMove;
-			break;
-		}
 		default: {
 		}
 	}
@@ -577,22 +586,24 @@ void Window::process_event(const sf::Event& event) {
 			auto& node = graph[i];
 
 			bool contains = false;
+			const auto [x, y] = std::any_cast<sf::Vector2f>(event_cache["mouse_position"]);
 			for (auto rit = cache_.rbegin(); rit != cache_.rend(); ++rit) {
 				// NOTICE
-			}
-			if (node.data().attached_events().contains(event_name)) {
-				this->dispatch_event(type, event_name, event_data_t(event_data.get(), &(node.data()), i + 1, event_name));
-				break;
+				if (rit->getGlobalBounds().contains(x, y)) {
+					if (node.data().attached_events().contains(event_name)) {
+						this->dispatch_event(type, event_name, event_data_t(event_data.get(), &(node.data()), i + 1, event_name));
+						break;
+					}
+				}
+
+				if (i == 0) break;
 			}
 
-			if (i == 0) break;
-		}
-
-		if (graph.root().attached_events().contains(event_name)) {
-			this->dispatch_event(type, event_name, event_data_t(event_data.get(), &(graph.root()), 0, event_name));
+			if (graph.root().attached_events().contains(event_name)) {
+				this->dispatch_event(type, event_name, event_data_t(event_data.get(), &(graph.root()), 0, event_name));
+			}
 		}
 	}
-}
 
 }	 // namespace cui
 

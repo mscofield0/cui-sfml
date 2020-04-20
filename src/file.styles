@@ -69,6 +69,7 @@ text_box {
 	y: 70;
 	width: 80%;
 	height: 60;
+	font_size: 18;
 }
 
 )"
