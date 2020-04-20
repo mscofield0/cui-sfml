@@ -582,28 +582,20 @@ void Window::process_event(const sf::Event& event) {
 	for (const auto& kvp : node_events) {
 		const auto& event_name = kvp.first;
 
-		for (std::size_t i = graph.length() - 1;; --i) {
-			auto& node = graph[i];
+		const auto [x, y] = std::any_cast<sf::Vector2f>(event_cache["mouse_position"]);
+		for (auto rit = cache_.rbegin(); rit != cache_.rend(); ++rit) {
+			const std::size_t index = std::distance(cache_.rbegin(), rit);
+			auto& node = index == 0 ? graph.root() : graph[index].data();
 
-			bool contains = false;
-			const auto [x, y] = std::any_cast<sf::Vector2f>(event_cache["mouse_position"]);
-			for (auto rit = cache_.rbegin(); rit != cache_.rend(); ++rit) {
-				// NOTICE
-				if (rit->getGlobalBounds().contains(x, y)) {
-					if (node.data().attached_events().contains(event_name)) {
-						this->dispatch_event(type, event_name, event_data_t(event_data.get(), &(node.data()), i + 1, event_name));
-						break;
-					}
+			if (rit->getGlobalBounds().contains(x, y)) {
+				if (node.attached_events().contains(event_name)) {
+					this->dispatch_event(type, event_name, event_data_t(event_data.get(), &node, index - 1, event_name));
 				}
-
-				if (i == 0) break;
-			}
-
-			if (graph.root().attached_events().contains(event_name)) {
-				this->dispatch_event(type, event_name, event_data_t(event_data.get(), &(graph.root()), 0, event_name));
+				break;
 			}
 		}
 	}
+}
 
 }	 // namespace cui
 

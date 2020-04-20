@@ -59,7 +59,7 @@
 			"name": "Operator symbols",
 			"scope": "keyword.operator",
 			"settings": {
-				"foreground": "#d4d4d4"
+				"foreground": "#030202"
 			}
 		},
 		{
@@ -141,7 +141,8 @@
 		{
 			"name": "Braces",
 			"scope": [
-				"punctuation"
+				"punctuation",
+				"keyword.operator"
 			],
 			"settings": {
 				"foreground": "#a88842"
