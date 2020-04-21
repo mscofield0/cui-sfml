@@ -579,20 +579,20 @@ void Window::process_event(const sf::Event& event) {
 		this->dispatch_event(type, kvp.first, event_data_t(event_data.get(), kvp.first));
 	}
 
-	for (const auto& kvp : node_events) {
-		const auto& event_name = kvp.first;
+	const auto [x, y] = std::any_cast<sf::Vector2f>(event_cache["mouse_position"]);
+	for (auto rit = cache_.rbegin(); rit != cache_.rend(); ++rit) {
+		const std::size_t index = std::abs(std::distance(cache_.rend(), rit)) - 1;
+		auto& node = index == 0 ? graph.root() : graph[index - 1].data();
 
-		const auto [x, y] = std::any_cast<sf::Vector2f>(event_cache["mouse_position"]);
-		for (auto rit = cache_.rbegin(); rit != cache_.rend(); ++rit) {
-			const std::size_t index = std::distance(cache_.rbegin(), rit);
-			auto& node = index == 0 ? graph.root() : graph[index].data();
-
-			if (rit->getGlobalBounds().contains(x, y)) {
+		if (rit->getGlobalBounds().contains(x, y)) {
+			for (const auto& kvp : node_events) {
+				const auto& event_name = kvp.first;
 				if (node.attached_events().contains(event_name)) {
 					this->dispatch_event(type, event_name, event_data_t(event_data.get(), &node, index - 1, event_name));
 				}
-				break;
 			}
+
+			break;
 		}
 	}
 }

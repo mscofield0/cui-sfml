@@ -23,7 +23,7 @@ struct SizeInformation<const char (&)[N]>
 	static constexpr std::size_t size = N - 1;
 };
 
-template <unsigned int StrSize, typename... Args>
+template <std::size_t StrSize, typename... Args>
 static constexpr std::size_t calculate_buffer_size() {
 	return (1 + StrSize + (SizeInformation<Args>::size + ... + 0));
 }

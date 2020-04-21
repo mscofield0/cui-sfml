@@ -78,8 +78,7 @@ private:
 /// \brief Constructs the root node
 /// \details Schematics are default constructed, active schematic is set to the default schematic,
 /// name is "root" and text is empty
-Node::Node() noexcept
-	: default_schematic_(), event_schematics_(), active_(std::ref(default_schematic_)), name_("root"), text_("") {}
+Node::Node() noexcept : default_schematic_(), event_schematics_(), active_(std::ref(default_schematic_)), name_("root"), text_("") {}
 
 /// \brief Constructs the node
 /// \details Schematics are default constructed and active schematic is set to the default schematic
@@ -93,38 +92,34 @@ Node::Node(const std::string& p_name, const std::string& p_text)
 /// \param p_name The name of the node
 /// \param p_text The text of the node
 Node::Node(const std::string& p_name, const ct::StringView p_text)
-	: default_schematic_(), event_schematics_(), active_(std::ref(default_schematic_)), name_(p_name),
-	  text_(p_text.begin(), p_text.end()) {}
+	: default_schematic_(), event_schematics_(), active_(std::ref(default_schematic_)), name_(p_name), text_(p_text.begin(), p_text.end()) {}
 
 /// \brief Constructs the node
 /// \details Schematics are default constructed and active schematic is set to the default schematic
 /// \param p_name The name of the node
 /// \param p_text The text of the node
 Node::Node(const ct::StringView p_name, const std::string& p_text)
-	: default_schematic_(), event_schematics_(), active_(std::ref(default_schematic_)),
-	  name_(p_name.begin(), p_name.end()), text_(p_text) {}
+	: default_schematic_(), event_schematics_(), active_(std::ref(default_schematic_)), name_(p_name.begin(), p_name.end()), text_(p_text) {}
 
 /// \brief Constructs the node
 /// \details Schematics are default constructed and active schematic is set to the default schematic
 /// \param p_name The name of the node
 /// \param p_text The text of the node
 Node::Node(const ct::StringView p_name, const ct::StringView p_text)
-	: default_schematic_(), event_schematics_(), active_(std::ref(default_schematic_)),
-	  name_(p_name.begin(), p_name.end()), text_(p_text.begin(), p_text.end()) {}
+	: default_schematic_(), event_schematics_(), active_(std::ref(default_schematic_)), name_(p_name.begin(), p_name.end()),
+	  text_(p_text.begin(), p_text.end()) {}
 
 /// \brief Copy constructs the node
 /// \details Reassigns the active schematic to the default schematic
 Node::Node(const Node& rhs)
-	: default_schematic_(rhs.default_schematic_), event_schematics_(rhs.event_schematics_),
-	  active_(std::ref(default_schematic_)), name_(rhs.name_), text_(rhs.text_),
-	  attached_events_(rhs.attached_events_) {}
+	: default_schematic_(rhs.default_schematic_), event_schematics_(rhs.event_schematics_), active_(std::ref(default_schematic_)), name_(rhs.name_),
+	  text_(rhs.text_), attached_events_(rhs.attached_events_) {}
 
 /// \brief Copy constructs the node
 /// \details Reassigns the active schematic to the default schematic
 Node::Node(Node&& rhs)
-	: default_schematic_(std::move(rhs.default_schematic_)), event_schematics_(std::move(rhs.event_schematics_)),
-	  active_(std::ref(default_schematic_)), name_(std::move(rhs.name_)), text_(std::move(rhs.text_)),
-	  attached_events_(std::move(rhs.attached_events_)) {}
+	: default_schematic_(std::move(rhs.default_schematic_)), event_schematics_(std::move(rhs.event_schematics_)), active_(std::ref(default_schematic_)),
+	  name_(std::move(rhs.name_)), text_(std::move(rhs.text_)), attached_events_(std::move(rhs.attached_events_)) {}
 
 /// \brief Copy assigns the node
 /// \details Reassigns the active schematic to the default schematic

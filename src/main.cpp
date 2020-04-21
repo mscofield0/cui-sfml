@@ -95,21 +95,19 @@ int main() {
 	// Register the on_resize event [OPTIONAL, but a resize event is one of the events that should update the scene graph]
 	window->register_global_event(EventType::Resized, "on_resize", [&window](auto event_data) { templates::OnResize((*window), event_data); });
 
+	auto& graph = window->active_scene().graph();
+	auto text_box = std::find_if(graph.begin(), graph.end(), [](const auto& node) { return node.data().name() == "text_box"; });
+
 	// Register the on_click_btn event [OPTIONAL, defines functionality on button click]
-	window->register_event(EventType::MouseButtonPressed, "on_click_btn1", [&window](event_data_t event_data) {
+	window->register_event(EventType::MouseButtonPressed, "on_click_btn1", [&window, &text_box](event_data_t event_data) {
 		// Uses CUI's GUI helper template `OnClick` to provide functionality on click
-		templates::OnClick((*window), event_data, [](Window& window, event_data_t& event_data) {
+		templates::OnClick((*window), event_data, [&text_box](Window& window, event_data_t& event_data) {
 			println("Clicked on btn1");
 			auto& graph = window.active_scene().graph();
-			auto text_box = std::find_if(graph.begin(), graph.end(), [](const auto& node) { return node.data().name() == "text_box"; });
-			println("Name of text_box:", text_box->data().name());
-			const auto index = static_cast<std::size_t>(std::distance(graph.begin(), text_box));
-			println("Index of text_box:", index);
 			auto& scheme = text_box->data().active_schematic().get();
 			scheme.text_color() = cui::Color(255, 0, 0);
 			println("Text color:", scheme.text_color());
-			window.cache()[index].text().setString("Red text");
-			println("Text:", window.cache()[index].text().getString().toAnsiString());
+			text_box->data().text() = "Red text";
 
 			// Schedule the render cache to be updated
 			window.schedule_to_update_cache();
@@ -152,14 +150,18 @@ int main() {
 	// Register the on_hover event [OPTIONAL, defines functionality on hover]
 	window->register_event(EventType::MouseMoved, "on_hover", [&window](event_data_t event_data) {
 		// Uses CUI's GUI helper template `OnHover` to provide functionality on hover
+		println("Node index:", event_data.caller_index());
 		templates::OnHover((*window),
 						   event_data,
-						   event_data.caller()->name(),
 						   [](Window& window, event_data_t& event_data) {
+							   if (event_data.caller_index() == SceneGraph::root_index) return;
+							   println("Switching to default");
 							   templates::SwitchToDefaultSchematic(window, event_data);
 							   window.window()->setMouseCursor(cursors::Arrow);
 						   },
 						   [](Window& window, event_data_t& event_data) {
+							   if (event_data.caller_index() == SceneGraph::root_index) return;
+							   println("Switching to event");
 							   templates::SwitchToEventSchematic(window, event_data);
 							   window.window()->setMouseCursor(cursors::Hand);
 						   });
@@ -170,6 +172,7 @@ int main() {
 	//window->attach_event_to_node("button2", "on_click_btn2");
 	//window->attach_event_to_node("button3", "on_click_btn3");
 	// Attaches the registered event `on_hover` to the node named `button`
+	window->attach_event_to_node("root", "on_hover");
 	window->attach_event_to_node("button1", "on_hover");
 	//window->attach_event_to_node("button2", "on_hover");
 	//window->attach_event_to_node("button3", "on_hover");

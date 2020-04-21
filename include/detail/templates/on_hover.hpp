@@ -7,62 +7,51 @@
 
 namespace cui::templates {
 
-using on_hover_invoke_fn_t = std::function<void(Window&, event_data_t&)>;
-using on_hover_with_id_invoke_fn_t = std::function<void(Window&, event_data_t&, const std::string&)>;
+using on_hover_invoke_fn_t = std::function<void(Window&)>;
+using on_hover_with_event_data_invoke_fn_t = std::function<void(Window&, event_data_t&)>;
 
-void OnHover(Window& window, event_data_t& event_data, const std::string& event_cache_id, on_hover_invoke_fn_t&& fn_no_hover, on_hover_invoke_fn_t&& fn_hover) {
-	if (!NodeContainsPoint(window, event_data.caller_index(), GetMousePosition(event_data))) {
-		auto& cache_item = window.event_cache[event_cache_id];
+void OnHover(Window& window, event_data_t& event_data, on_hover_invoke_fn_t&& fn_no_hover, on_hover_invoke_fn_t&& fn_hover) {
+	auto& prev_node_index_any = window.event_cache["previous_hover_node"];
+	if (!prev_node_index_any.has_value()) {
+		prev_node_index_any = event_data.caller_index();
 
-		if (!cache_item.has_value()) cache_item = false;
-		auto& hovered_before = std::any_cast<bool&>(cache_item);
-		if (!hovered_before) return;
-
-		println("New non hover");
-		cache_item = false;
-
-		fn_no_hover(window, event_data);
-
+		fn_hover(window);
 		return;
 	}
 
-	auto& cache_item = window.event_cache[event_cache_id];
+	auto& prev_node_index = std::any_cast<std::size_t&>(prev_node_index_any);
 
-	if (!cache_item.has_value()) cache_item = false;
-	auto& hovered_before = std::any_cast<bool&>(cache_item);
-	if (hovered_before) return;
+	if (prev_node_index == event_data.caller_index()) return;
 
-	println("New hover");
+	fn_no_hover(window);
 
-	cache_item = true;
+	prev_node_index = event_data.caller_index();
 
-	fn_hover(window, event_data);
+	fn_hover(window);
 }
 
-void OnHover(Window& window, event_data_t& event_data, const std::string& event_cache_id, on_hover_with_id_invoke_fn_t&& fn_no_hover, on_hover_with_id_invoke_fn_t&& fn_hover) {
-	if (!NodeContainsPoint(window, event_data.caller_index(), GetMousePosition(event_data))) {
-		auto& cache_item = window.event_cache[event_cache_id];
+void OnHover(Window& window, event_data_t& event_data, on_hover_with_event_data_invoke_fn_t&& fn_no_hover, on_hover_with_event_data_invoke_fn_t&& fn_hover) {
+	auto& prev_node_index_any = window.event_cache["previous_hover_node"];
+	if (!prev_node_index_any.has_value()) {
+		prev_node_index_any = event_data.caller_index();
 
-		if (!cache_item.has_value()) cache_item = false;
-		auto& hovered_before = std::any_cast<bool&>(cache_item);
-		if (!hovered_before) return;
-
-		cache_item = false;
-
-		fn_no_hover(window, event_data, event_cache_id);
-
+		fn_hover(window, event_data);
 		return;
 	}
 
-	auto& cache_item = window.event_cache[event_cache_id];
+	auto& prev_node_index = std::any_cast<std::size_t&>(prev_node_index_any);
 
-	if (!cache_item.has_value()) cache_item = false;
-	auto& hovered_before = std::any_cast<bool&>(cache_item);
-	if (hovered_before) return;
+	if (prev_node_index == event_data.caller_index()) return;
 
-	cache_item = true;
+	auto& graph = window.active_scene().graph();
+	auto& prev_node = (prev_node_index == SceneGraph::root_index) ? graph.root() : graph[prev_node_index].data();
+	auto temp_event_data = event_data_t(event_data.get(), &prev_node, prev_node_index, event_data.event_name());
 
-	fn_hover(window, event_data, event_cache_id);
+	fn_no_hover(window, temp_event_data);
+
+	prev_node_index = event_data.caller_index();
+
+	fn_hover(window, event_data);
 }
 
 }	 // namespace cui::templates

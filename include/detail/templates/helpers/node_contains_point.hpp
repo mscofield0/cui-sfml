@@ -6,7 +6,7 @@
 namespace cui::templates {
 
 bool NodeContainsPoint(Window& window, std::size_t caller_index, const sf::Vector2f& point) {
-	return window.cache()[caller_index].getGlobalBounds().contains(point);
+	return window.cache()[caller_index + 1].getGlobalBounds().contains(point);
 }
 
 }	 // namespace cui::templates

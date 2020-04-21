@@ -201,6 +201,7 @@ std::ostream& operator<<(std::ostream& os, const cui::VisualElement& ve) {
 	os << "\n\tX:" << x << ',' << "Y:" << y;
 	os << "\n\tW:" << w << ',' << "H:" << h;
 	os << "\n\trgba(" << bg.red() << "," << bg.green() << "," << bg.blue() << ',' << bg.alpha() << ')';
+	os << "\n\ttext: " << ve.text().getString().toAnsiString();
 	os << "\n\tVisible?: " << (is_visible ? "true" : "false");
 	return os;
 }
