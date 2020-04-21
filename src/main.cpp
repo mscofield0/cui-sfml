@@ -6,7 +6,6 @@
 #include <string>
 #include <type_traits>
 #include <utility>
-#include <visual_element.hpp>
 
 #include <cui/compile_time/scene.hpp>
 #include <cui/compile_time/scenes/parse_scenes.hpp>
@@ -25,6 +24,7 @@
 #include <detail/templates/on_resize.hpp>
 #include <detail/templates/switch_schematic.hpp>
 #include <render_cache.hpp>
+#include <visual_element.hpp>
 #include <window.hpp>
 #include <window_options.hpp>
 
@@ -102,11 +102,9 @@ int main() {
 	window->register_event(EventType::MouseButtonPressed, "on_click_btn1", [&window, &text_box](event_data_t event_data) {
 		// Uses CUI's GUI helper template `OnClick` to provide functionality on click
 		templates::OnClick((*window), event_data, [&text_box](Window& window, event_data_t& event_data) {
-			println("Clicked on btn1");
 			auto& graph = window.active_scene().graph();
 			auto& scheme = text_box->data().active_schematic().get();
 			scheme.text_color() = cui::Color(255, 0, 0);
-			println("Text color:", scheme.text_color());
 			text_box->data().text() = "Red text";
 
 			// Schedule the render cache to be updated
@@ -115,15 +113,13 @@ int main() {
 	});
 
 	// Register the on_click_btn event [OPTIONAL, defines functionality on button click]
-	window->register_event(EventType::MouseButtonPressed, "on_click_btn2", [&window](event_data_t event_data) {
+	window->register_event(EventType::MouseButtonPressed, "on_click_btn2", [&window, &text_box](event_data_t event_data) {
 		// Uses CUI's GUI helper template `OnClick` to provide functionality on click
-		templates::OnClick((*window), event_data, [](Window& window, event_data_t& event_data) {
+		templates::OnClick((*window), event_data, [&text_box](Window& window, event_data_t& event_data) {
 			auto& graph = window.active_scene().graph();
-			auto text_box = std::find_if(graph.begin(), graph.end(), [](const auto& node) { return node.data().name() == "text_box"; });
-			const auto index = static_cast<std::size_t>(std::distance(graph.begin(), text_box));
 			auto& scheme = text_box->data().active_schematic().get();
 			scheme.text_color() = cui::Color(0, 255, 0);
-			window.cache()[index].text().setString("Green text");
+			text_box->data().text() = "Green text";
 
 			// Schedule the render cache to be updated
 			window.schedule_to_update_cache();
@@ -131,16 +127,13 @@ int main() {
 	});
 
 	// Register the on_click_btn event [OPTIONAL, defines functionality on button click]
-	window->register_event(EventType::MouseButtonPressed, "on_click_btn3", [&window](event_data_t event_data) {
+	window->register_event(EventType::MouseButtonPressed, "on_click_btn3", [&window, &text_box](event_data_t event_data) {
 		// Uses CUI's GUI helper template `OnClick` to provide functionality on click
-		templates::OnClick((*window), event_data, [](Window& window, event_data_t& event_data) {
+		templates::OnClick((*window), event_data, [&text_box](Window& window, event_data_t& event_data) {
 			auto& graph = window.active_scene().graph();
-			auto text_box = std::find_if(graph.begin(), graph.end(), [](const auto& node) { return node.data().name() == "text_box"; });
-			const auto index = static_cast<std::size_t>(std::distance(graph.begin(), text_box));
 			auto& scheme = text_box->data().active_schematic().get();
 			scheme.text_color() = cui::Color(0, 0, 255);
-
-			window.cache()[index].text().setString("Blue text");
+			text_box->data().text() = "Blue text";
 
 			// Schedule the render cache to be updated
 			window.schedule_to_update_cache();
@@ -150,6 +143,8 @@ int main() {
 	// Register the on_hover event [OPTIONAL, defines functionality on hover]
 	window->register_event(EventType::MouseMoved, "on_hover", [&window](event_data_t event_data) {
 		// Uses CUI's GUI helper template `OnHover` to provide functionality on hover
+		window->event_cache["mouse_position"] = templates::GetMousePosition(event_data);
+
 		println("Node index:", event_data.caller_index());
 		templates::OnHover((*window),
 						   event_data,
@@ -169,11 +164,11 @@ int main() {
 
 	// Attaches the registered event `on_click_btn` to the node named `button`
 	window->attach_event_to_node("button1", "on_click_btn1");
-	//window->attach_event_to_node("button2", "on_click_btn2");
-	//window->attach_event_to_node("button3", "on_click_btn3");
+	window->attach_event_to_node("button2", "on_click_btn2");
+	window->attach_event_to_node("button3", "on_click_btn3");
 	// Attaches the registered event `on_hover` to the node named `button`
-	window->attach_event_to_node("root", "on_hover");
-	window->attach_event_to_node("button1", "on_hover");
+	//window->attach_event_to_node("root", "on_hover");
+	//window->attach_event_to_node("button1", "on_hover");
 	//window->attach_event_to_node("button2", "on_hover");
 	//window->attach_event_to_node("button3", "on_hover");
 

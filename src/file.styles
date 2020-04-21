@@ -8,7 +8,7 @@ button {
 }
 
 font {
-	font: url(bin/sansation.ttf);
+	font: url(bin/bebas_neue.ttf);
 }
 
 btn_size {
@@ -21,36 +21,12 @@ btn1 {
 	y: 70%;
 }
 
-btn1 [on_hover] {
-	background: url(bin/button_hovered.png);
-	text_color: white;
-	
-	x: left;
-	y: 70%;
-}
-
 btn2 {
 	x: center;
 	y: 70%;
 }
 
-btn2 [on_hover] {
-	background: url(bin/button_hovered.png);
-	text_color: white;
-	
-	x: center;
-	y: 70%;
-}
-
 btn3 {
-	x: right;
-	y: 70%;
-}
-
-btn3 [on_hover] {
-	background: url(bin/button_hovered.png);
-	text_color: white;
-	
 	x: right;
 	y: 70%;
 }
@@ -69,7 +45,7 @@ text_box {
 	y: 70;
 	width: 80%;
 	height: 60;
-	font_size: 18;
+	font_size: 26;
 }
 
 )"

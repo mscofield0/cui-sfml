@@ -373,6 +373,11 @@ void RenderCache::handle_text_position(const Schematic& scheme, VisualElement& v
 		case Instruction::Center: {
 			nx = x + w / 2 - tw / 2;
 			ny = y + h / 2 - th / 2;
+			
+			println("Text x:", nx);
+			println("Text y:", ny);
+			println("Text width:", tw);
+			println("Text height:", th);
 
 			break;
 		}

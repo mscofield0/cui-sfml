@@ -581,10 +581,9 @@ void Window::process_event(const sf::Event& event) {
 
 	const auto [x, y] = std::any_cast<sf::Vector2f>(event_cache["mouse_position"]);
 	for (auto rit = cache_.rbegin(); rit != cache_.rend(); ++rit) {
-		const std::size_t index = std::abs(std::distance(cache_.rend(), rit)) - 1;
-		auto& node = index == 0 ? graph.root() : graph[index - 1].data();
-
 		if (rit->getGlobalBounds().contains(x, y)) {
+			const std::size_t index = std::abs(std::distance(cache_.rend(), rit)) - 1;
+			auto& node = index == 0 ? graph.root() : graph[index - 1].data();
 			for (const auto& kvp : node_events) {
 				const auto& event_name = kvp.first;
 				if (node.attached_events().contains(event_name)) {
