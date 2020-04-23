@@ -372,7 +372,7 @@ void RenderCache::handle_text_position(const Schematic& scheme, VisualElement& v
 		}
 		case Instruction::Center: {
 			nx = x + w / 2 - tw / 2;
-			ny = y + h / 2 - th / 2;
+			ny = y + h / 2 - 2 * th / 3;
 			
 			break;
 		}

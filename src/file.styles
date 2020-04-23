@@ -4,11 +4,11 @@ root {
 }
 
 button {
-	background: url(bin/button.png);
+	background: url(button.png);
 }
 
 font {
-	font: url(bin/bebas_neue.ttf);
+	font: url(bebas_neue.ttf);
 }
 
 btn_size {
