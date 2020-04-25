@@ -5,47 +5,11 @@ root {
 
 button {
 	background: url(button.png);
-}
-
-font {
 	font: url(bebas_neue.ttf);
-}
-
-btn_size {
-	width: 200;
-	height: 60;
-}
-
-btn1 {
-	x: left;
-	y: 70%;
-}
-
-btn2 {
 	x: center;
 	y: 70%;
-}
-
-btn3 {
-	x: right;
-	y: 70%;
-}
-
-text_box_holder {
-	background: rgb(43, 45, 47);
-	x: 30%;
-	y: 50;
-	width: 40%;
+	width: 350;
 	height: 100;
-}
-
-text_box {
-	background: rgb(192, 192, 192);
-	x: 10%;
-	y: 70;
-	width: 80%;
-	height: 60;
-	font_size: 26;
 }
 
 )"

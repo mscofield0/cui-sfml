@@ -13,6 +13,7 @@
 #include <cui/visual/scene_graph.hpp>
 #include <detail/intermediaries/color.hpp>
 #include <detail/iterator_pair.hpp>
+#include <detail/utils/floor.hpp>
 #include <tsl/hopscotch_map.h>
 #include <visual_element.hpp>
 
@@ -329,6 +330,7 @@ void RenderCache::handle_font_size(const Schematic& scheme, VisualElement& ve) {
 	const auto& val = scheme.font_size();
 
 	ve.text().setCharacterSize(val.integer_value());
+	ve.text().setLineSpacing(val.integer_value());
 }
 
 void RenderCache::handle_text_color(const Schematic& scheme, VisualElement& ve) {
@@ -343,6 +345,7 @@ void RenderCache::handle_text_position(const Schematic& scheme, VisualElement& v
 	const auto [w, h] = ve.getSize();
 
 	const auto [_0, _1, tw, th] = ve.text().getGlobalBounds();
+	const auto line_height = ve.text().getLineSpacing();
 	float nx = 0, ny = 0;
 
 	switch (val.instruction()) {
@@ -366,19 +369,19 @@ void RenderCache::handle_text_position(const Schematic& scheme, VisualElement& v
 		}
 		case Instruction::Left: {
 			nx = x;
-			ny = y + h / 2 - th / 2;
+			ny = y + h / 2 - (line_height - th / 2);
 
 			break;
 		}
 		case Instruction::Center: {
 			nx = x + w / 2 - tw / 2;
-			ny = y + h / 2 - 2 * th / 3;
-			
+			ny = y + h / 2 - (line_height - th / 2);
+
 			break;
 		}
 		case Instruction::Right: {
 			nx = x + w - tw;
-			ny = y + h / 2 - th / 2;
+			ny = y + h / 2 - (line_height - th / 2);
 
 			break;
 		}
@@ -401,6 +404,9 @@ void RenderCache::handle_text_position(const Schematic& scheme, VisualElement& v
 			break;
 		}
 	}
+
+	nx = floor(nx);
+	ny = floor(ny);
 
 	ve.text().setPosition(nx, ny);
 }

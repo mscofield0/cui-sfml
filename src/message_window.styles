@@ -1,0 +1,17 @@
+R"(
+
+root {
+	background: rgb(42, 48, 101);
+}
+
+text_box {
+	font: url(bebas_neue.ttf);
+	x: center;
+	y: center;
+	width: 50%;
+	height: 50%;
+	text_color: white;
+	font_size: 40;
+}
+
+)"

@@ -1,3 +1,3 @@
 R"(
-button "font, button, btn1" <Click me>
+button "button" <Change the background color>
 )"

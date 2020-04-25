@@ -1,7 +1,3 @@
 R"(
-text_box_container "text_box_holder"
-	text_box "font, text_box" <Click on the button!>
-button1 "font, button, btn_size, btn1" <Red text>
-button2 "font, button, btn_size, btn2" <Green text>
-button3 "font, button, btn_size, btn3" <Blue text>
+button "button" <Show message window>
 )"
