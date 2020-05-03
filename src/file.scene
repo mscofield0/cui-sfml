@@ -1,3 +1,14 @@
 R"(
-button "button" <Show message window>
+text_box "text_box_style, font" <Enter from keypad>
+keypad_container "container"
+	one "button, font" <1>
+	two "button, font" <2>
+	three "button, font" <3>
+	four "button, font" <4>
+	five "button, font" <5>
+	six "button, font" <6>
+	seven "button, font" <7>
+	eight "button, font" <8>
+	nine "button, font" <9>
+	zero "button, font" <0>
 )"

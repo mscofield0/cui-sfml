@@ -3,13 +3,29 @@ root {
 	background: rgb(116, 109, 105);
 }
 
+font {
+	font: url(bebas_neue.ttf);
+}
+
+text_box_style {
+	width: 50%;
+	height: 100;
+	x: 25%;
+	y: 50;
+	background: rgb(148,0,211);
+	text_color: white;
+}
+
+container {
+	width: 100%;
+	height: 400;
+	y: 200;
+}
+
 button {
 	background: url(button.png);
-	font: url(bebas_neue.ttf);
-	x: center;
-	y: 70%;
-	width: 350;
-	height: 100;
+	width: 50;
+	height: 50;
 }
 
 )"
