@@ -83,8 +83,11 @@ int main() {
 		}
 	}
 
+
 	constexpr auto text_box_index = 0;
 	edit_button_positions(window->active_scene().graph());
+	
+	println(window->active_scene().graph());
 
 	// Create a typedef for the event types
 	using EventType = sf::Event::EventType;
@@ -104,6 +107,8 @@ int main() {
 			auto& graph = window.active_scene().graph();
 			auto& node = graph[text_box_index].data();
 			node.text().append(event_data.caller()->text());
+
+			window.schedule_to_update_cache();
 		});
 	});
 
@@ -142,5 +147,8 @@ void edit_button_positions(cui::SceneGraph& graph) {
 
 		ascheme.x() = x;
 		ascheme.y() = y;
+		ascheme.set_y_rule(true);
+
+		println("ascheme.y():", ascheme.y());
 	}
 }
