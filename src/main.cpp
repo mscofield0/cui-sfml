@@ -26,8 +26,6 @@
 #define STATIC_STRING_HOLDER(name) static constexpr const char name[] =
 #define END_STATIC_STRING_HOLDER ;
 
-void edit_button_positions(cui::SceneGraph& graph);
-
 int main() {
 	using namespace cui;
 
@@ -83,10 +81,10 @@ int main() {
 		}
 	}
 
-
 	constexpr auto text_box_index = 0;
-	edit_button_positions(window->active_scene().graph());
-	
+	// Za ponovno ispisivanje "Enter from keypad" poruke
+	static bool is_first_time = true;
+
 	println(window->active_scene().graph());
 
 	// Create a typedef for the event types
@@ -98,57 +96,45 @@ int main() {
 	// Register the on_resize event [OPTIONAL, but a resize event is one of the events that should update the scene graph]
 	window->register_global_event(EventType::Resized, "on_resize", [&window](auto event_data) { templates::OnResize((*window), event_data); });
 
-	// Register the on_click_btn event [OPTIONAL, defines functionality on button click]
-	window->register_event(EventType::MouseButtonPressed, "on_click_btn", [&window](event_data_t event_data) {
+	// Register the on_click_keypad_btn event [OPTIONAL, defines functionality on button click]
+	window->register_event(EventType::MouseButtonPressed, "on_click_keypad_btn", [&window](event_data_t event_data) {
 		// Uses CUI's GUI helper template `OnClick` to provide functionality on click
-		println("Caller index:", event_data.caller_index());
-
 		templates::OnClick((*window), event_data, [](Window& window, event_data_t& event_data) {
 			auto& graph = window.active_scene().graph();
 			auto& node = graph[text_box_index].data();
+			if (is_first_time) node.text() = "";
+			is_first_time = false;
 			node.text().append(event_data.caller()->text());
 
 			window.schedule_to_update_cache();
 		});
 	});
 
+	window->register_event(EventType::MouseButtonPressed, "on_click_clear_btn", [&window](event_data_t event_data) {
+		// Uses CUI's GUI helper template `OnClick` to provide functionality on click
+		templates::OnClick((*window), event_data, [](Window& window, event_data_t& event_data) {
+			auto& graph = window.active_scene().graph();
+			auto& node = graph[text_box_index].data();
+			node.text() = "Enter from keypad";
+			is_first_time = true;
+
+			window.schedule_to_update_cache();
+		});
+	});
+
 	// Attaches the registered event `on_click_btn` to the button nodes
-	window->attach_event_to_node("one", "on_click_btn");
-	window->attach_event_to_node("two", "on_click_btn");
-	window->attach_event_to_node("three", "on_click_btn");
-	window->attach_event_to_node("four", "on_click_btn");
-	window->attach_event_to_node("five", "on_click_btn");
-	window->attach_event_to_node("six", "on_click_btn");
-	window->attach_event_to_node("seven", "on_click_btn");
-	window->attach_event_to_node("eight", "on_click_btn");
-	window->attach_event_to_node("nine", "on_click_btn");
-	window->attach_event_to_node("zero", "on_click_btn");
+	window->attach_event_to_node("one", "on_click_keypad_btn");
+	window->attach_event_to_node("two", "on_click_keypad_btn");
+	window->attach_event_to_node("three", "on_click_keypad_btn");
+	window->attach_event_to_node("four", "on_click_keypad_btn");
+	window->attach_event_to_node("five", "on_click_keypad_btn");
+	window->attach_event_to_node("six", "on_click_keypad_btn");
+	window->attach_event_to_node("seven", "on_click_keypad_btn");
+	window->attach_event_to_node("eight", "on_click_keypad_btn");
+	window->attach_event_to_node("nine", "on_click_keypad_btn");
+	window->attach_event_to_node("zero", "on_click_keypad_btn");
+	window->attach_event_to_node("clear", "on_click_clear_btn");
 
 	// Initialize the window
 	window->init({800, 600, "Title", sf::Style::Default, sf::ContextSettings{}, 60});
-}
-
-void edit_button_positions(cui::SceneGraph& graph) {
-	for (std::size_t i = 0; i < graph.length() - 2; ++i) {
-		const auto idx = i + 2;
-		auto& node = graph[idx].data();
-		auto& ascheme = node.active_schematic().get();
-
-		int x = 0;
-		float y = 0;
-
-		if (i <= 5) {
-			x = i * 60;
-			y = 0.f;
-		} else {
-			x = i * 60 + 40;
-			y = 0.5f;
-		}
-
-		ascheme.x() = x;
-		ascheme.y() = y;
-		ascheme.set_y_rule(true);
-
-		println("ascheme.y():", ascheme.y());
-	}
 }

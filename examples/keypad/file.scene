@@ -1,0 +1,15 @@
+R"(
+text_box "text_box_style, font" <Enter from keypad>
+keypad_container "container"
+	one "button, font, b1" <1>
+	two "button, font, b2" <2>
+	three "button, font, b3" <3>
+	four "button, font, b4" <4>
+	five "button, font, b5" <5>
+	six "button, font, b6" <6>
+	seven "button, font, b7" <7>
+	eight "button, font, b8" <8>
+	nine "button, font, b9" <9>
+	zero "button, font, b0" <0>
+	clear "font, clear_btn" <Clear>
+)"

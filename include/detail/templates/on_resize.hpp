@@ -5,6 +5,7 @@
 
 namespace cui::templates {
 
+/// \brief Resizes the root node and schedules a render cache update
 void OnResize(Window& window, event_data_t& event_data) {
 	const auto [w, h] = std::get<sf::Event::SizeEvent>(event_data.get());
 	window.resize(w, h);
