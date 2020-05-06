@@ -1,4 +1,4 @@
-R"(
+R"style(
 root {
 	background: url(matte_blue.jpg);
 }
@@ -46,4 +46,4 @@ b8 { x: 370; y: 50%; }
 b9 { x: 430; y: 50%; }
 b0 { x: 490; y: 50%; }
 
-)"
+)style"
