@@ -9,9 +9,9 @@
 #include <compile_time/string/string_view.hpp>
 #include <compile_time/styles/definition.hpp>
 #include <compile_time/styles/detail/styles/count_definitions.hpp>
+#include <compile_time/styles/detail/styles/valid_style_name.hpp>
 #include <compile_time/variant/variant.hpp>
 #include <containers/static_vector.hpp>
-
 
 #define CUI_CT_RETURN_STYLES_PARSE_ERROR(msg) return fmt_s<256>("ERROR at LINE:{}, COL:{} :: {}", stream.line(), stream.col(), msg)
 
@@ -32,6 +32,7 @@ constexpr auto parse_styles() -> Variant<StaticVector<Definition, count_definiti
 	constexpr const char empty_attribute_value[] = "Attribute value is empty";
 	constexpr const char expected_event_list_definition_symbol[] = "Expected a '[' previously";
 	constexpr const char missing_event_list[] = "Expected an event list";
+	constexpr const char invalid_style_name[] = "Style identifier is invalid; Must contain only [A-Za-z0-9_] not starting with a number";
 
 	enum class States : u8
 	{
@@ -58,6 +59,9 @@ constexpr auto parse_styles() -> Variant<StaticVector<Definition, count_definiti
 				}
 				if (trimmed.empty()) {
 					CUI_CT_RETURN_STYLES_PARSE_ERROR(missing_styles_identifier);
+				}
+				if (!detail::is_valid_style_name(trimmed)) {
+					CUI_CT_RETURN_STYLES_PARSE_ERROR(invalid_style_name);
 				}
 
 				defs.emplace_back();
@@ -91,6 +95,10 @@ constexpr auto parse_styles() -> Variant<StaticVector<Definition, count_definiti
 				}
 
 				if (state == States::None) {
+					if (!detail::is_valid_style_name(trimmed)) {
+						CUI_CT_RETURN_STYLES_PARSE_ERROR(invalid_style_name);
+					}
+
 					defs.emplace_back();
 					defs.back().identifier() = trimmed;
 				}
