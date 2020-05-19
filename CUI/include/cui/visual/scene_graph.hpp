@@ -24,8 +24,6 @@ public:
 	using size_type = typename tree_t::size_type;
 	static constexpr u64 root_index = -1;
 
-	SceneGraph();
-
 	// Compile time graph generation
 
 	template <u64 AOB, template <typename, u64> typename Container, u64 N>
@@ -49,9 +47,6 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/// \brief Default constructs the \sa cui::SceneGraph
-SceneGraph::SceneGraph() : tree_t() {}
 
 /// \brief Generates the graph from a \sa ct::Scene and a container of \sa ct::Style
 template <u64 AOB, template <typename, u64> typename Container, u64 N>

@@ -18,7 +18,6 @@
 #include <cui/containers/tracked_list.hpp>
 #include <cui/scene_state.hpp>
 #include <detail/event_data.hpp>
-#include <detail/event_package.hpp>
 #include <detail/node_cache.hpp>
 #include <detail/timer_event.hpp>
 #include <moodycamel/concurrent_queue.hpp>
@@ -51,7 +50,6 @@ public:
 	using event_t = std::function<void(event_data_t)>;
 	using timer_event_t = TimerEvent;
 	using timer_event_fn_t = typename timer_event_t::event_t;
-	using event_package_t = EventPackage<event_data_t>;
 	using marker_t = sf::Event::EventType;
 
 	// Window typedefs
