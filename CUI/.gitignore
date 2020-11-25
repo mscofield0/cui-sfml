@@ -1,6 +1,6 @@
 .vscode
 bin
 build
-CMakeFiles
+/CMakeFiles
 *.bat
 CMakeCache.txt
